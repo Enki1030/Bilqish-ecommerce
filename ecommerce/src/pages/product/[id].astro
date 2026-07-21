@@ -1,0 +1,321 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { supabase } from '../../lib/supabase';
+
+export async function getStaticPaths() {
+  const { data: products } = await supabase.from('products').select('id');
+  
+  if (!products) return [];
+
+  return products.map(product => ({
+    params: { id: product.id },
+  }));
+}
+
+const { id } = Astro.params;
+
+const { data: product, error } = await supabase
+  .from('products')
+  .select('*')
+  .eq('id', id)
+  .single();
+
+if (error || !product) {
+  return Astro.redirect('/404');
+}
+
+// Convert sizes array from JSON string if needed, or if it's already an array
+const sizes = Array.isArray(product.sizes) ? product.sizes : JSON.parse(product.sizes || '[]');
+
+---
+
+<Layout title={`${product.name} - Ballqish Shoes`}>
+  <Header />
+
+  <main class="flex-1 bg-[#FAF9F6] pt-8 pb-24">
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Breadcrumb -->
+      <nav class="flex text-xs font-heading tracking-widest uppercase text-gray-500 mb-8 font-medium">
+        <a href="/" class="hover:text-primary transition-colors">Shop</a>
+        <span class="mx-3">/</span>
+        <span class="text-gray-900">{product.name}</span>
+      </nav>
+
+      <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
+        
+        <!-- LEFT: Image Gallery -->
+        <div class="w-full lg:w-1/2 flex flex-col-reverse md:flex-row gap-4 lg:sticky lg:top-32 lg:h-max">
+          <!-- Thumbnails (Mockup) -->
+          <div class="flex md:flex-col gap-4 overflow-x-auto md:overflow-visible hide-scrollbar w-full md:w-24 flex-shrink-0">
+            <button class="w-20 h-20 md:w-full md:h-28 bg-white border border-gray-900 flex-shrink-0 flex items-center justify-center">
+              <img src={product.image_url} alt="Thumbnail 1" class="w-full h-full object-cover mix-blend-multiply" />
+            </button>
+            <button class="w-20 h-20 md:w-full md:h-28 bg-white border border-transparent hover:border-gray-300 transition-colors flex-shrink-0 opacity-70 flex items-center justify-center">
+              <img src={product.image_url} alt="Thumbnail 2" class="w-full h-full object-cover mix-blend-multiply filter grayscale" />
+            </button>
+            <button class="w-20 h-20 md:w-full md:h-28 bg-white border border-transparent hover:border-gray-300 transition-colors flex-shrink-0 opacity-70 flex items-center justify-center">
+              <img src={product.image_url} alt="Thumbnail 3" class="w-full h-full object-cover mix-blend-multiply filter grayscale" />
+            </button>
+          </div>
+          
+          <!-- Main Image -->
+          <div class="flex-1 bg-white border border-gray-200 aspect-[4/5] flex items-center justify-center p-8 relative">
+            <img src={product.image_url} alt={product.name} class="w-full h-full object-cover mix-blend-multiply" />
+          </div>
+        </div>
+
+        <!-- RIGHT: Product Details -->
+        <div class="w-full lg:w-1/2 flex flex-col">
+          
+          <!-- Title & Price -->
+          <div class="mb-10 border-b border-gray-200 pb-8">
+            <p class="text-xs font-heading font-medium text-gray-500 mb-3 tracking-[0.2em] uppercase">{product.category}</p>
+            <h1 class="text-3xl lg:text-4xl font-heading font-normal text-gray-900 tracking-wider uppercase leading-tight mb-4">{product.name}</h1>
+            <p class="text-2xl font-body font-bold text-gray-900">Rp {product.price.toLocaleString('id-ID')}</p>
+          </div>
+
+          <!-- Outsole Model Selection -->
+          <div class="mb-8">
+            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Pilih Model Outsole</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <label class="cursor-pointer group">
+                <input type="radio" name="outsole" value="Model 1" class="peer sr-only" checked />
+                <div class="flex items-center gap-3 p-3 border border-gray-200 peer-checked:border-gray-900 peer-checked:bg-white hover:border-gray-300 transition-colors">
+                  <div class="w-12 h-12 bg-gray-50 flex-shrink-0 flex items-center justify-center">
+                    <img src={product.image_url} alt="Model 1" class="w-full h-full object-cover mix-blend-multiply opacity-80" />
+                  </div>
+                  <div>
+                    <p class="font-heading font-semibold text-gray-900 text-sm tracking-wide">Model 1</p>
+                    <p class="text-sm text-gray-600 font-body">Standard Sole</p>
+                  </div>
+                </div>
+              </label>
+              
+              <label class="cursor-pointer group">
+                <input type="radio" name="outsole" value="Model 2" class="peer sr-only" />
+                <div class="flex items-center gap-3 p-3 border border-gray-200 peer-checked:border-gray-900 peer-checked:bg-white hover:border-gray-300 transition-colors">
+                  <div class="w-12 h-12 bg-gray-50 flex-shrink-0 flex items-center justify-center">
+                    <img src={product.image_url} alt="Model 2" class="w-full h-full object-cover mix-blend-multiply filter contrast-125" />
+                  </div>
+                  <div>
+                    <p class="font-heading font-semibold text-gray-900 text-sm tracking-wide">Model 2</p>
+                    <p class="text-sm text-gray-600 font-body">Premium Sole</p>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Size Selection -->
+          <div class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest">Pilih Ukuran Size</h3>
+              <a href="#size-chart" class="text-xs text-gray-500 hover:text-primary uppercase tracking-widest transition-colors font-heading">Panduan Ukuran</a>
+            </div>
+            <div class="grid grid-cols-4 sm:grid-cols-5 gap-3" id="size-selector">
+              {sizes.map(size => (
+                <button type="button" data-size={size} class="size-btn py-3 border border-gray-200 text-sm font-button font-medium text-gray-700 hover:border-gray-900 transition-all focus:outline-none">
+                  {size}
+                </button>
+              ))}
+            </div>
+            <p id="size-error" class="hidden text-xs text-primary font-heading uppercase tracking-wide mt-3 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              Harap pilih ukuran terlebih dahulu
+            </p>
+          </div>
+
+          <!-- Quantity -->
+          <div class="mb-10">
+            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Jumlah</h3>
+            <div class="flex items-center border border-gray-200 w-max bg-white">
+              <button type="button" id="qty-minus" class="px-5 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 12H4"></path></svg>
+              </button>
+              <input type="number" id="qty-input" value="1" min="1" max={product.stock} class="w-12 text-center text-gray-900 font-heading font-semibold focus:outline-none bg-transparent appearance-none border-none p-0" readonly />
+              <button type="button" id="qty-plus" class="px-5 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 font-body mt-3">Sisa stok: {product.stock} pasang</p>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-col sm:flex-row gap-4 mb-12">
+            <button id="add-to-cart-btn" class="flex-1 bg-transparent border border-gray-900 text-gray-900 font-button font-medium text-xs tracking-widest uppercase px-8 py-4 hover:bg-gray-900 hover:text-white transition-colors focus:outline-none">
+              Add to cart
+            </button>
+            <button id="buy-now-btn" class="flex-1 bg-gray-900 border border-gray-900 text-white font-button font-medium text-xs tracking-widest uppercase px-8 py-4 hover:bg-gray-800 transition-colors focus:outline-none">
+              Buy it now
+            </button>
+          </div>
+
+          <!-- Description Accordion -->
+          <div class="border-t border-gray-200">
+            <details class="group py-5" open>
+              <summary class="flex justify-between items-center font-heading font-semibold text-gray-900 uppercase tracking-widest text-sm cursor-pointer list-none">
+                Description
+                <span class="transition group-open:rotate-180">
+                  <svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </summary>
+              <div class="text-gray-700 mt-4 leading-snug font-body font-light text-base">
+                Sepatu <span class="font-semibold text-gray-900">{product.name}</span> dari Ballqish dirancang dengan tingkat ketelitian tinggi. Model {product.model} ini menghadirkan perpaduan material premium yang tahan lama, sangat nyaman digunakan untuk kegiatan sehari-hari maupun acara khusus.
+                <br><br>
+                Dengan detail desain mutakhir dan konstruksi outsole kokoh yang meredam benturan, langkah kaki Anda akan terasa lebih ringan tanpa mengorbankan estetika.
+              </div>
+            </details>
+            <details class="group py-5 border-t border-gray-200">
+              <summary class="flex justify-between items-center font-heading font-semibold text-gray-900 uppercase tracking-widest text-sm cursor-pointer list-none">
+                Shipping & Returns
+                <span class="transition group-open:rotate-180">
+                  <svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </summary>
+              <div class="text-gray-700 mt-4 leading-snug font-body font-light text-base">
+                Pengiriman akan diproses 1x24 jam setelah pembayaran dikonfirmasi. Garansi retur ukuran maksimal 3 hari sejak barang diterima (syarat dan ketentuan berlaku).
+              </div>
+            </details>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <Footer />
+
+  <style>
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* Hide number input arrows */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+  </style>
+
+  <script define:vars={{ product }}>
+    document.addEventListener('DOMContentLoaded', () => {
+      let selectedSize = null;
+      let quantity = 1;
+
+      // --- DOM Elements ---
+      const sizeBtns = document.querySelectorAll('.size-btn');
+      const errorMsg = document.getElementById('size-error');
+      const qtyInput = document.getElementById('qty-input');
+      const btnMinus = document.getElementById('qty-minus');
+      const btnPlus = document.getElementById('qty-plus');
+      const btnAddToCart = document.getElementById('add-to-cart-btn');
+      const btnBuyNow = document.getElementById('buy-now-btn');
+      const outsoleRadios = document.querySelectorAll('input[name="outsole"]');
+
+      // --- Size Selection Logic ---
+      sizeBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget;
+          selectedSize = target.dataset.size;
+          
+          // Reset styles
+          sizeBtns.forEach(b => {
+            b.classList.remove('border-gray-900', 'bg-gray-900', 'text-white');
+            b.classList.add('border-gray-200', 'text-gray-700');
+          });
+          
+          // Apply active style
+          target.classList.remove('border-gray-200', 'text-gray-700');
+          target.classList.add('border-gray-900', 'bg-gray-900', 'text-white');
+          
+          // Hide error if selected
+          if (errorMsg) errorMsg.classList.add('hidden');
+        });
+      });
+
+      // --- Quantity Logic ---
+      btnMinus?.addEventListener('click', () => {
+        if (quantity > 1) {
+          quantity--;
+          if (qtyInput) qtyInput.value = quantity.toString();
+        }
+      });
+
+      btnPlus?.addEventListener('click', () => {
+        if (quantity < product.stock) {
+          quantity++;
+          if (qtyInput) qtyInput.value = quantity.toString();
+        } else {
+          if (window.showToast) window.showToast('Maksimal stok tercapai', 'error');
+        }
+      });
+
+      // --- Add to Cart Logic ---
+      function handleAddToCart(buyNow = false) {
+        if (!selectedSize) {
+          if (errorMsg) errorMsg.classList.remove('hidden');
+          
+          // Shake animation on size selector
+          const selector = document.getElementById('size-selector');
+          selector.classList.add('animate-[shake_0.5s_ease-in-out]');
+          setTimeout(() => selector.classList.remove('animate-[shake_0.5s_ease-in-out]'), 500);
+          
+          if (window.showToast) window.showToast('Pilih ukuran terlebih dahulu', 'error');
+          return;
+        }
+
+        let selectedOutsole = 'Model 1';
+        outsoleRadios.forEach(radio => {
+          if (radio.checked) selectedOutsole = radio.value;
+        });
+
+        // Load existing cart
+        let cart = [];
+        try {
+          const c = localStorage.getItem('ballqish_cart');
+          if (c) cart = JSON.parse(c);
+        } catch(e) {}
+
+        const itemToAdd = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image_url,
+          size: selectedSize,
+          outsole: selectedOutsole,
+          quantity: quantity
+        };
+
+        const existingItemIndex = cart.findIndex(item => item.id === itemToAdd.id && item.size === itemToAdd.size && item.outsole === itemToAdd.outsole);
+        
+        if (existingItemIndex > -1) {
+          cart[existingItemIndex].quantity += itemToAdd.quantity;
+        } else {
+          cart.push(itemToAdd);
+        }
+
+        localStorage.setItem('ballqish_cart', JSON.stringify(cart));
+
+        if (window.showToast) {
+          window.showToast(`Berhasil menambahkan ${itemToAdd.quantity} pasang ke keranjang!`, 'success');
+        }
+
+        // Trigger custom event so Header can update cart count
+        window.dispatchEvent(new Event('cartUpdated'));
+
+        if (buyNow) {
+          // If buy now, we could theoretically redirect directly to checkout page, 
+          // or just open the cart modal. For now, redirect home to open cart.
+          setTimeout(() => {
+            window.location.href = '/?openCart=true';
+          }, 500);
+        }
+      }
+
+      btnAddToCart?.addEventListener('click', () => handleAddToCart(false));
+      btnBuyNow?.addEventListener('click', () => handleAddToCart(true));
+    });
+  </script>
+</Layout>

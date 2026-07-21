@@ -1,0 +1,147 @@
+---
+---
+<header class="bg-white border-b border-gray-100 py-4 sticky top-0 z-50">
+  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center gap-8">
+      {/* Logo */}
+      <div class="flex-shrink-0">
+        <a href="/" class="text-2xl font-heading font-bold text-primary tracking-widest uppercase">
+          BALL<span class="text-gray-900">QISH</span>
+        </a>
+      </div>
+      
+      {/* Navigation Links */}
+      <nav class="hidden lg:flex items-center space-x-8">
+        <a href="/" class="text-sm font-medium text-gray-900 hover:text-primary transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-primary">Shop</a>
+        <a href="/blog" class="text-sm font-medium text-gray-500 hover:text-primary transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-primary">Blog</a>
+        <a href="#about" class="text-sm font-medium text-gray-500 hover:text-primary transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-primary">About</a>
+        <a href="#contact" class="text-sm font-medium text-gray-500 hover:text-primary transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-primary">Contact</a>
+      </nav>
+
+      {/* Search */}
+      <div class="flex-1 max-w-sm hidden md:block ml-auto">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <input type="text" class="block w-full pl-10 pr-4 py-2 border border-gray-200 text-sm bg-transparent placeholder-gray-400 focus:outline-none focus:border-primary transition-colors" placeholder="Cari sepatu...">
+        </div>
+      </div>
+
+      {/* Right Icons */}
+      <div class="flex items-center space-x-6">
+        <button id="orders-btn" class="text-gray-500 hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+        </button>
+        <button id="favorites-btn" class="text-gray-500 hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+        </button>
+        <button id="cart-button" class="relative text-gray-500 hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+          <span id="cart-count" class="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-primary hidden">0</span>
+        </button>
+        <div id="auth-container" class="relative ml-2 border-l border-gray-200 pl-4">
+          <a href="/login" id="login-link" class="text-xs font-heading font-semibold text-gray-900 hover:text-primary uppercase tracking-wider transition-colors hidden">
+            Login
+          </a>
+          <div id="user-menu" class="hidden flex items-center gap-3">
+            <div class="h-8 w-8 bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0 cursor-pointer">
+              <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile" class="w-full h-full object-cover">
+            </div>
+            <button id="logout-btn" class="text-xs font-heading font-semibold text-gray-500 hover:text-primary uppercase tracking-wider transition-colors">
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  const loginLink = document.getElementById('login-link');
+  const userMenu = document.getElementById('user-menu');
+  const userAvatar = document.getElementById('user-avatar') as HTMLImageElement;
+  const logoutBtn = document.getElementById('logout-btn');
+
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      if (loginLink) loginLink.classList.add('hidden');
+      if (userMenu) {
+        userMenu.classList.remove('hidden');
+        userMenu.classList.add('flex');
+      }
+      
+      const email = session.user.email || 'User';
+      if (userAvatar) {
+        userAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(email)}&background=random&color=fff`;
+      }
+    } else {
+      if (loginLink) loginLink.classList.remove('hidden');
+      if (userMenu) {
+        userMenu.classList.add('hidden');
+        userMenu.classList.remove('flex');
+      }
+    }
+  }
+
+  // Initial check
+  checkAuth();
+
+  // Listen for changes
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+      checkAuth();
+    }
+  });
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.reload();
+    });
+  }
+
+  // Global Cart Count Logic
+  function updateCartCountGlobal() {
+    const cartCountEl = document.getElementById('cart-count');
+    if (!cartCountEl) return;
+    
+    let cart = [];
+    try {
+      const c = localStorage.getItem('ballqish_cart');
+      if (c) cart = JSON.parse(c);
+    } catch(e) {}
+    
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    if (totalItems > 0) {
+      cartCountEl.textContent = totalItems.toString();
+      cartCountEl.classList.remove('hidden');
+    } else {
+      cartCountEl.classList.add('hidden');
+    }
+  }
+
+  updateCartCountGlobal();
+  window.addEventListener('cartUpdated', updateCartCountGlobal);
+
+  // Global Navigation for Modals
+  const triggerCart = document.getElementById('cart-button');
+  const triggerFav = document.getElementById('favorites-btn');
+  const triggerOrder = document.getElementById('orders-btn');
+
+  function handleModalNavigation(param) {
+    if (window.location.pathname !== '/') {
+      window.location.href = `/?${param}=true`;
+    }
+  }
+
+  triggerCart?.addEventListener('click', () => handleModalNavigation('openCart'));
+  triggerFav?.addEventListener('click', () => handleModalNavigation('openFav'));
+  triggerOrder?.addEventListener('click', () => handleModalNavigation('openOrders'));
+</script>

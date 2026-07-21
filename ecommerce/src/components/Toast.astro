@@ -1,0 +1,73 @@
+---
+---
+
+<div id="toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-[999] flex flex-col gap-3 pointer-events-none items-center"></div>
+
+<style is:global>
+  .toast-enter {
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0;
+  }
+  .toast-enter-active {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-exit {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  .toast-exit-active {
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+</style>
+
+<script>
+  window.showToast = function(message: string, type: 'success' | 'error' | 'info' = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `pointer-events-auto flex items-center px-6 py-4 mb-2 text-gray-900 bg-white border border-gray-900 shadow-xl shadow-gray-900/10 toast-enter`;
+    
+    let icon = '';
+    if (type === 'success') {
+      icon = `<svg class="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"></path></svg>`;
+    } else if (type === 'error') {
+      icon = `<svg class="w-4 h-4 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+    } else {
+      icon = `<svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+    }
+
+    toast.innerHTML = `
+      ${icon}
+      <div class="text-[10px] font-heading font-bold uppercase tracking-widest leading-tight pr-6 pl-3">${message}</div>
+      <button type="button" class="ml-auto -mr-2 text-gray-400 hover:text-gray-900 p-1 transition-colors" onclick="this.parentElement.remove()">
+        <span class="sr-only">Close</span>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    `;
+
+    container.appendChild(toast);
+
+    // Animate in
+    requestAnimationFrame(() => {
+      toast.classList.remove('toast-enter');
+      toast.classList.add('toast-enter-active');
+    });
+
+    // Auto remove after 3.5 seconds
+    setTimeout(() => {
+      if (toast.parentElement) {
+        toast.classList.remove('toast-enter-active');
+        toast.classList.add('toast-exit');
+        requestAnimationFrame(() => {
+          toast.classList.add('toast-exit-active');
+        });
+        setTimeout(() => toast.remove(), 300);
+      }
+    }, 3500);
+  };
+</script>

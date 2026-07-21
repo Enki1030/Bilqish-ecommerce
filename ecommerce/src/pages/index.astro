@@ -1,0 +1,545 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Footer from '../components/Footer.astro';
+import { supabase } from '../lib/supabase';
+import bgPantofel from '../assets/backgroundpantofel.jpg';
+
+const { data: productsData, error } = await supabase
+  .from('products')
+  .select('*')
+  .order('created_at', { ascending: false });
+
+if (error) {
+  console.error('Error fetching from Supabase:', error);
+}
+
+const allProducts = (productsData || []).map(p => ({
+  ...p,
+  image: p.image_url
+}));
+
+const uniqueModels = [...new Set(allProducts.map(p => p.model))].sort();
+---
+
+<Layout title="Ballqish Shoes - Official Store">
+  <Header />
+
+  <main class="flex-1 bg-[#FAF9F6]">
+    
+    <section class="w-full flex flex-col bg-[#E9E9E9]">
+      <!-- Top Text (Above Image) -->
+      <div class="w-full text-center pt-12 pb-2 z-10 relative">
+        <span class="text-gray-800 font-heading text-sm md:text-base font-normal tracking-[0.4em] uppercase">Ballqish Exclusive Collection</span>
+      </div>
+
+      <!-- Image Area -->
+      <div class="w-full h-[50vh] md:h-[60vh] relative z-0">
+        <img src={bgPantofel.src} alt="Premium Pantofel" class="w-full h-full object-cover object-center mix-blend-darken" />
+      </div>
+
+      <!-- Bottom Text Area -->
+      <div class="w-full text-center px-4 pt-0 pb-16 flex flex-col items-center relative z-10 -mt-16 md:-mt-24">
+        <h1 class="text-5xl md:text-7xl font-heading font-normal text-gray-900 uppercase tracking-widest leading-tight mb-6">
+          Elegance In <br/><span class="font-normal text-gray-900">Every Step</span>
+        </h1>
+        <p class="text-xl text-gray-600 font-body mb-10 max-w-2xl font-light leading-snug">
+          Simbol kemapanan dan presisi. Dirancang khusus untuk para profesional yang menghargai kualitas tanpa kompromi.
+        </p>
+        <a href="#collection" class="inline-block bg-primary text-white font-button font-normal text-sm tracking-widest uppercase px-12 py-5 hover:bg-gray-900 transition-colors border border-transparent">
+          Discover Collection
+        </a>
+      </div>
+    </section>
+
+    <!-- Collection Section -->
+    <section id="collection" class="py-24 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-heading font-medium text-gray-900 tracking-widest uppercase mb-4">The Collection</h2>
+        <div class="h-0.5 w-16 bg-primary mx-auto mb-6"></div>
+        <p class="text-gray-500 font-body">Karya seni pengrajin berpengalaman untuk kaki Anda.</p>
+      </div>
+
+      <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {allProducts.map(product => (
+          <ProductCard product={product} />
+        ))}
+      </div>
+    </section>
+
+    <!-- Product Anatomy / Features -->
+    <section class="py-24 bg-white border-t border-gray-100">
+      <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl font-heading font-medium text-gray-900 tracking-widest uppercase mb-4">Uncompromising Quality</h2>
+          <div class="h-0.5 w-16 bg-primary mx-auto"></div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row items-center justify-center gap-16">
+          <div class="flex-1 space-y-12">
+            <div class="text-right">
+              <h3 class="text-lg font-heading font-semibold text-gray-900 uppercase tracking-widest mb-3">Premium Leather</h3>
+              <p class="text-gray-600 font-body text-base font-light leading-snug">Terbuat dari kulit sapi asli pilihan (Full Grain Leather) yang memberikan ketahanan maksimal dan kilau natural seiring waktu.</p>
+            </div>
+            <div class="text-right">
+              <h3 class="text-lg font-heading font-semibold text-gray-900 uppercase tracking-widest mb-3">Breathable Insole</h3>
+              <p class="text-gray-600 font-body text-base font-light leading-snug">Insole dengan sirkulasi udara yang baik, mencegah kelembapan dan menjaga kenyamanan sepanjang hari di kantor.</p>
+            </div>
+          </div>
+          
+          <div class="w-full lg:w-1/3 flex justify-center">
+            <div class="relative w-64 h-64 md:w-80 md:h-80 bg-gray-200 flex items-center justify-center border border-gray-300">
+              <img src="https://images.unsplash.com/photo-1614252209825-96144e1c25fc?q=80&w=600&auto=format&fit=crop" alt="Shoe Anatomy" class="w-full h-full object-cover mix-blend-multiply" />
+            </div>
+          </div>
+          
+          <div class="flex-1 space-y-12">
+            <div class="text-left">
+              <h3 class="text-lg font-heading font-semibold text-gray-900 uppercase tracking-widest mb-3">Durable Outsole</h3>
+              <p class="text-gray-600 font-body text-base font-light leading-snug">Tersedia dalam 2 pilihan outsole TPR dan Karet yang anti-slip, memastikan pijakan mantap di segala permukaan.</p>
+            </div>
+            <div class="text-left">
+              <h3 class="text-lg font-heading font-semibold text-gray-900 uppercase tracking-widest mb-3">Precision Stitching</h3>
+              <p class="text-gray-600 font-body text-base font-light leading-snug">Jahitan rapi dan kuat hasil mahakarya pengrajin lokal berpengalaman puluhan tahun.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Size Chart Section -->
+    <section id="size-chart" class="py-24 bg-[#FAF9F6] border-t border-gray-100">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl font-heading font-medium text-gray-900 tracking-widest uppercase mb-4">Size Guide</h2>
+          <div class="h-0.5 w-16 bg-primary mx-auto"></div>
+        </div>
+        
+        <div class="bg-white border border-gray-200 p-10 md:p-16 flex flex-col md:flex-row gap-12 items-center">
+          <!-- Table -->
+          <div class="flex-1 w-full">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr>
+                  <th class="border-b border-gray-900 py-4 text-sm font-heading font-bold text-gray-900 uppercase tracking-widest">Ukuran</th>
+                  <th class="border-b border-gray-900 py-4 text-sm font-heading font-bold text-gray-900 uppercase tracking-widest">Panjang Kaki</th>
+                </tr>
+              </thead>
+              <tbody class="font-body text-gray-600">
+                <tr><td class="border-b border-gray-100 py-4">39</td><td class="border-b border-gray-100 py-4">24 cm</td></tr>
+                <tr><td class="border-b border-gray-100 py-4">40</td><td class="border-b border-gray-100 py-4">25 cm</td></tr>
+                <tr><td class="border-b border-gray-100 py-4">41</td><td class="border-b border-gray-100 py-4">26 cm</td></tr>
+                <tr><td class="border-b border-gray-100 py-4">42</td><td class="border-b border-gray-100 py-4">27 cm</td></tr>
+                <tr><td class="border-b border-gray-100 py-4">43</td><td class="border-b border-gray-100 py-4">28 cm</td></tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Instruction -->
+          <div class="flex-1 w-full border-l-0 md:border-l border-gray-200 md:pl-12">
+            <h3 class="text-sm font-heading font-bold text-gray-900 uppercase tracking-widest mb-4">Cara Mengukur</h3>
+            <p class="text-gray-600 font-body text-base font-light leading-snug mb-6">
+              Panjang telapak kaki di ukur dari <b class="text-gray-900 font-medium">ujung jempol kaki</b> sampai <b class="text-gray-900 font-medium">tumit</b>. Gunakan penggaris atau meteran kain untuk hasil yang akurat.
+            </p>
+            <p class="text-gray-500 font-body text-sm font-light leading-snug italic">
+              *Jika tipe kaki Anda lebar, disarankan untuk naik 1 ukuran.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-24 bg-white border-t border-gray-100">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl font-heading font-medium text-gray-900 tracking-widest uppercase mb-4">F.A.Q</h2>
+          <div class="h-0.5 w-16 bg-primary mx-auto"></div>
+        </div>
+
+        <div class="space-y-4 font-body">
+          <details class="group border border-gray-200 p-6 bg-[#FAF9F6] cursor-pointer">
+            <summary class="flex justify-between items-center font-button font-medium text-gray-900 uppercase tracking-wider text-sm list-none">
+              Apakah sepatu ini menggunakan kulit asli?
+              <span class="transition group-open:rotate-180">
+                <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+              </span>
+            </summary>
+            <p class="text-gray-600 mt-4 text-base leading-relaxed group-open:animate-fadeIn">
+              Ya, semua sepatu Ballqish menggunakan 100% kulit sapi asli jenis Full Grain dan Crazy Horse yang telah melalui proses penyamakan premium.
+            </p>
+          </details>
+          <details class="group border border-gray-200 p-6 bg-[#FAF9F6] cursor-pointer">
+            <summary class="flex justify-between items-center font-button font-medium text-gray-900 uppercase tracking-wider text-sm list-none">
+              Berapa lama estimasi pengiriman?
+              <span class="transition group-open:rotate-180">
+                <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+              </span>
+            </summary>
+            <p class="text-gray-600 mt-4 text-base leading-relaxed group-open:animate-fadeIn">
+              Pengiriman reguler memakan waktu 2-4 hari kerja untuk area Jabodetabek, dan 3-7 hari kerja untuk luar Jabodetabek.
+            </p>
+          </details>
+          <details class="group border border-gray-200 p-6 bg-[#FAF9F6] cursor-pointer">
+            <summary class="flex justify-between items-center font-button font-medium text-gray-900 uppercase tracking-wider text-sm list-none">
+              Apakah bisa tukar size jika kebesaran/kekecilan?
+              <span class="transition group-open:rotate-180">
+                <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+              </span>
+            </summary>
+            <p class="text-gray-600 mt-4 text-base leading-relaxed group-open:animate-fadeIn">
+              Bisa. Kami memberikan garansi tukar size maksimal 3 hari setelah barang diterima, dengan syarat sepatu belum pernah dipakai keluar ruangan (sol bawah masih mulus).
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODALS -->
+  <div id="modal-overlay" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[90] hidden transition-opacity duration-300"></div>
+
+  <!-- Cart Modal -->
+  <div id="cart-modal" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-[100] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <div class="px-6 py-6 border-b border-gray-200 flex justify-between items-center bg-white">
+      <h2 class="text-sm font-heading font-bold text-gray-900 tracking-widest uppercase">Keranjang Belanja</h2>
+      <button class="close-modal text-gray-400 hover:text-primary transition-colors p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4 bg-[#FAF9F6]">
+    </div>
+    <div class="border-t border-gray-200 p-6 bg-white">
+      <div class="flex justify-between items-center mb-6">
+        <span class="font-heading font-semibold text-gray-500 uppercase tracking-wider text-xs">Total Pembayaran</span>
+        <span id="cart-total" class="font-body font-bold text-gray-900 text-xl">Rp 0</span>
+      </div>
+      <button id="btn-checkout-wa" class="w-full bg-primary text-white font-button font-normal text-xs tracking-widest uppercase py-4 hover:bg-gray-900 transition-colors">
+        Lanjut ke Pembayaran
+      </button>
+    </div>
+  </div>
+
+  <!-- Favorites Modal -->
+  <div id="favorites-modal" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-[100] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+      <h2 class="text-lg font-bold text-gray-900">Sepatu Favorit</h2>
+      <button class="close-modal text-gray-400 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-red-50">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div id="favorites-items" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+    </div>
+  </div>
+
+  <!-- Orders Modal -->
+  <div id="orders-modal" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-[100] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+      <h2 class="text-lg font-bold text-gray-900">Riwayat Pesanan</h2>
+      <button class="close-modal text-gray-400 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-red-50">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div id="orders-items" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+      <div class="flex flex-col items-center justify-center h-full text-gray-400 mt-20">
+        <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <p class="font-medium">Belum ada riwayat pesanan</p>
+      </div>
+    </div>
+  </div>
+
+  <Footer />
+
+  <style>
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
+  <script>
+    import { supabase } from '../lib/supabase';
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- STATE ---
+      let cart = [];
+      let favorites = [];
+      let selectedCategory = 'all';
+      let selectedSize = null;
+      let selectedModels = [];
+
+      // --- DOM ELEMENTS ---
+      const categoryBtns = document.querySelectorAll('.category-btn');
+      const typeFilterContainer = document.getElementById('filter-jenis-container');
+      const typeFilterEmpty = document.getElementById('filter-jenis-empty');
+      const typeFilters = document.querySelectorAll('.type-filter');
+      const sizeBtns = document.querySelectorAll('.size-filter-btn');
+      const clearSizeBtn = document.getElementById('clear-size');
+      const productCards = document.querySelectorAll('.product-card');
+      const emptyState = document.getElementById('empty-state');
+      
+      const addToCartBtns = document.querySelectorAll('.add-to-cart');
+      const favBtns = document.querySelectorAll('.favorite-btn');
+      
+      // Modals
+      const overlay = document.getElementById('modal-overlay');
+      const cartModal = document.getElementById('cart-modal');
+      const favModal = document.getElementById('favorites-modal');
+      const orderModal = document.getElementById('orders-modal');
+      
+      // Load from LocalStorage
+      try {
+        const c = localStorage.getItem('ballqish_cart');
+        const f = localStorage.getItem('ballqish_favs');
+        if (c) {
+          cart = JSON.parse(c);
+          // Auto-remove old hardcoded items (non-uuid)
+          cart = cart.filter(item => item.id && item.id.length === 36);
+          localStorage.setItem('ballqish_cart', JSON.stringify(cart));
+        }
+        if (f) {
+          favorites = JSON.parse(f);
+          favorites = favorites.filter(item => item.id && item.id.length === 36);
+          localStorage.setItem('ballqish_favs', JSON.stringify(favorites));
+        }
+      } catch(e) {}
+
+      // --- SCRIPT FOR UI (FILTER LOGIC REMOVED AS SIDEBAR IS GONE) ---
+
+      // --- CART & FAVORITE LOGIC ---
+      function updateFavUI() {
+        favBtns.forEach(btn => {
+          const b = btn as HTMLButtonElement;
+          const id = b.dataset.productId;
+          const icon = b.querySelector('.heart-icon');
+          if (favorites.some(f => f.id === id)) {
+            icon.classList.add('text-red-500', 'fill-red-500');
+            icon.classList.remove('text-gray-300', 'fill-current');
+          } else {
+            icon.classList.remove('text-red-500', 'fill-red-500');
+            icon.classList.add('text-gray-300', 'fill-current');
+          }
+        });
+        
+        const favContainer = document.getElementById('favorites-items');
+        if (favorites.length === 0) {
+          favContainer.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-gray-400 mt-20"><svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg><p class="font-medium">Belum ada favorit</p></div>';
+        } else {
+          favContainer.innerHTML = favorites.map(item => `
+            <div class="flex items-center gap-4 bg-white border border-gray-100 p-3 rounded-xl shadow-sm">
+              <img src="${item.image}" class="w-20 h-20 object-cover rounded-lg" />
+              <div class="flex-1">
+                <h4 class="text-sm font-bold text-gray-900 line-clamp-1 mb-1">${item.name}</h4>
+                <p class="text-[15px] font-bold text-gray-900">Rp ${item.price.toLocaleString('id-ID')}</p>
+              </div>
+            </div>
+          `).join('');
+        }
+        localStorage.setItem('ballqish_favs', JSON.stringify(favorites));
+      }
+
+      function updateCartUI() {
+        const cartCountEl = document.getElementById('cart-count');
+        const cartTotalEl = document.getElementById('cart-total');
+        const cartItemsEl = document.getElementById('cart-items');
+        
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        if(totalItems > 0 && cartCountEl) {
+          cartCountEl.textContent = totalItems.toString();
+          cartCountEl.classList.remove('hidden');
+        } else if (cartCountEl) {
+          cartCountEl.classList.add('hidden');
+        }
+        
+        if (cartTotalEl) cartTotalEl.textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+        
+        if (cartItemsEl) {
+          if (cart.length === 0) {
+            cartItemsEl.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-gray-400 mt-20"><svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg><p class="font-medium">Keranjang masih kosong</p></div>';
+          } else {
+            cartItemsEl.innerHTML = cart.map(item => `
+              <div class="flex items-center gap-4 bg-white border border-gray-100 p-3 rounded-xl shadow-sm">
+                <img src="${item.image}" class="w-20 h-20 object-cover rounded-lg bg-gray-50 mix-blend-multiply" />
+                <div class="flex-1">
+                  <h4 class="text-sm font-bold text-gray-900 line-clamp-1 mb-1">${item.name}</h4>
+                  <div class="flex justify-between items-center mb-1 flex-wrap gap-2">
+                    <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">Size: ${item.size}</span>
+                    <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">${item.outsole || 'Model 1'}</span>
+                    <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">Qty: ${item.quantity}</span>
+                  </div>
+                  <p class="text-[15px] font-bold text-gray-900 mt-1">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</p>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+        
+        localStorage.setItem('ballqish_cart', JSON.stringify(cart));
+      }
+
+      // Add to Cart changed to View Details
+      addToCartBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const b = e.currentTarget as HTMLButtonElement;
+          const id = b.dataset.productId;
+          window.location.href = `/product/${id}`;
+        });
+      });
+
+      // Add to Fav
+      favBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const b = e.currentTarget as HTMLButtonElement;
+          const id = b.dataset.productId;
+          const name = b.dataset.productName;
+          const price = parseInt(b.dataset.productPrice || "0");
+          const image = b.dataset.productImage;
+          
+          const existingIndex = favorites.findIndex(f => f.id === id);
+          if (existingIndex > -1) {
+            favorites.splice(existingIndex, 1);
+          } else {
+            favorites.push({ id, name, price, image });
+          }
+          updateFavUI();
+          
+          // Animate
+          b.classList.add('scale-125');
+          setTimeout(() => b.classList.remove('scale-125'), 200);
+        });
+      });
+
+      // --- MODALS OPEN/CLOSE ---
+      const triggerCart = document.getElementById('cart-button');
+      const triggerFav = document.getElementById('favorites-btn');
+      const triggerOrder = document.getElementById('orders-btn');
+      const closeBtns = document.querySelectorAll('.close-modal');
+      
+      function openModal(modalEl) {
+        overlay.classList.remove('hidden');
+        setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+        modalEl.classList.remove('translate-x-full');
+      }
+      
+      function closeAllModals() {
+        overlay.classList.add('opacity-0');
+        cartModal.classList.add('translate-x-full');
+        favModal.classList.add('translate-x-full');
+        orderModal.classList.add('translate-x-full');
+        setTimeout(() => overlay.classList.add('hidden'), 300);
+      }
+
+      triggerCart?.addEventListener('click', () => openModal(cartModal));
+      triggerFav?.addEventListener('click', () => openModal(favModal));
+      triggerOrder?.addEventListener('click', () => openModal(orderModal));
+      
+      closeBtns.forEach(btn => btn.addEventListener('click', closeAllModals));
+      overlay.addEventListener('click', closeAllModals);
+
+      // --- CHECKOUT LOGIC ---
+      const checkoutBtn = document.getElementById('btn-checkout-wa');
+      checkoutBtn?.addEventListener('click', async () => {
+        if (cart.length === 0) {
+          if (window.showToast) window.showToast('Keranjang masih kosong!', 'error');
+          return;
+        }
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          if (window.showToast) window.showToast('Silakan Masuk/Daftar terlebih dahulu untuk Checkout', 'error');
+          setTimeout(() => window.location.href = '/login', 2000);
+          return;
+        }
+        
+        // Save user info to checkout temporarily if needed, but we rely on session
+        window.location.href = '/checkout';
+      });
+      
+      // --- LOAD ORDERS ---
+      async function loadOrders() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        
+        const { data: orders, error } = await supabase
+          .from('orders')
+          .select('*, order_items(*)')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
+
+        const ordersContainer = document.getElementById('orders-items');
+        if (!ordersContainer || error) return;
+        
+        if (orders.length === 0) {
+          ordersContainer.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full text-gray-400 mt-20">
+              <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <p class="font-medium">Belum ada riwayat pesanan</p>
+            </div>
+          `;
+          return;
+        }
+
+        ordersContainer.innerHTML = orders.map(order => {
+          let statusColor = 'bg-gray-100 text-gray-600 border-gray-200';
+          if (order.status === 'Menunggu Pembayaran') statusColor = 'bg-yellow-50 text-yellow-600 border-yellow-200';
+          if (order.status === 'Diproses') statusColor = 'bg-blue-50 text-blue-600 border-blue-200';
+          if (order.status === 'Dikirim') statusColor = 'bg-purple-50 text-purple-600 border-purple-200';
+          if (order.status === 'Selesai') statusColor = 'bg-green-50 text-green-600 border-green-200';
+          if (order.status === 'Dibatalkan') statusColor = 'bg-red-50 text-red-600 border-red-200';
+
+          return `
+            <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <span class="text-[10px] font-bold text-gray-400">Order #${order.id.slice(0,8)}</span>
+                  <h4 class="font-bold text-sm text-gray-900 mt-1">${new Date(order.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year:'numeric'})}</h4>
+                </div>
+                <span class="${statusColor} border text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">${order.status}</span>
+              </div>
+              
+              <div class="space-y-2 mt-3">
+                ${order.order_items.map(item => `
+                  <div class="flex gap-3">
+                    <img src="${item.product_image}" class="w-12 h-12 rounded object-cover bg-gray-50" />
+                    <div class="flex-1">
+                      <p class="text-xs font-bold text-gray-900 line-clamp-1">${item.product_name}</p>
+                      <p class="text-[10px] text-gray-500">Size ${item.size} | ${item.outsole_model}</p>
+                      <p class="text-[10px] font-bold text-gray-500">Qty: ${item.quantity} x Rp ${item.price.toLocaleString('id-ID')}</p>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div class="flex justify-between items-center pt-3 mt-3 border-t border-gray-100">
+                <p class="text-xs font-medium text-gray-500">Total Belanja</p>
+                <p class="text-sm font-bold text-gray-900">Rp ${order.total_amount.toLocaleString('id-ID')}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Init UI
+      updateFavUI();
+      updateCartUI();
+      loadOrders();
+
+      // Check if openCart, openFav, or openOrders is in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('openCart') === 'true') {
+        openModal(cartModal);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (urlParams.get('openFav') === 'true') {
+        openModal(favModal);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (urlParams.get('openOrders') === 'true') {
+        openModal(orderModal);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (urlParams.get('success') === 'true') {
+        if (window.showToast) window.showToast('Pembayaran Sukses! Pesanan Anda sedang diproses.', 'success');
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    });
+  </script>
+</Layout>

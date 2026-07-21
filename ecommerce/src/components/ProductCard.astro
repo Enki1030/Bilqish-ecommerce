@@ -1,0 +1,35 @@
+---
+import type { Product } from '../data/products';
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+---
+<div class="product-card group relative bg-white flex flex-col hover:-translate-y-1 transition-transform duration-500" data-category={product.category} data-model={product.model} data-sizes={JSON.stringify(product.sizes)}>
+  <!-- Image & Favorite -->
+  <div class="bg-gray-100 aspect-[4/5] overflow-hidden relative flex items-center justify-center">
+    <button data-product-id={product.id} data-product-name={product.name} data-product-price={product.price} data-product-image={product.image} class="favorite-btn absolute top-3 right-3 p-2 bg-transparent text-gray-400 hover:text-primary transition-colors z-10 focus:outline-none">
+      <svg class="w-5 h-5 fill-current transition-colors heart-icon" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+    </button>
+    <img src={product.image} alt={product.name} class="w-full h-full object-center object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out" />
+  </div>
+  
+  <!-- Info -->
+  <div class="pt-5 pb-3 flex flex-col flex-1 text-center">
+    <h3 class="text-base font-heading font-normal text-gray-900 tracking-widest uppercase mb-2" title={product.name}>
+      {product.name}
+    </h3>
+    <p class="text-xl font-body font-medium text-gray-900 mb-6">Rp {product.price.toLocaleString('id-ID')}</p>
+    
+    <div class="mt-auto">
+      <button 
+        data-product-id={product.id}
+        class="add-to-cart w-full bg-white border border-gray-900 text-gray-900 text-xs font-button font-medium uppercase tracking-widest px-4 py-3 hover:bg-gray-900 hover:text-white transition-colors focus:outline-none"
+      >
+        View Details
+      </button>
+    </div>
+  </div>
+</div>
