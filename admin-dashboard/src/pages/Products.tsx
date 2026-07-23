@@ -275,6 +275,7 @@ export default function Products() {
         alert('Gagal menghapus produk: ' + error.message);
       } else {
         fetchProducts();
+        fetch('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/984ad6b4-c842-44cb-a50e-855dbfb7d6d4', { method: 'POST' }).catch(console.error);
       }
     }
   };
@@ -443,6 +444,8 @@ export default function Products() {
       setIsModalOpen(false);
       setEditingProduct(null);
       fetchProducts();
+      // Otomatis picu Cloudflare rebuild E-Commerce di latar belakang
+      fetch('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/984ad6b4-c842-44cb-a50e-855dbfb7d6d4', { method: 'POST' }).catch(console.error);
     }
   };
 
