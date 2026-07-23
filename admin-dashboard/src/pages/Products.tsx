@@ -21,6 +21,7 @@ export default function Products() {
   const [isLoading, setIsLoading] = useState(true);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Form State
@@ -50,13 +51,13 @@ export default function Products() {
     fetchProducts();
   }, []);
 
-  // Sync display name automatically if admin has not custom-edited it
+  // Sync display name automatically if admin has not custom-edited it (for new mode)
   useEffect(() => {
-    if (!isCustomNameEdited) {
+    if (!editingProduct && !isCustomNameEdited) {
       const prefix = category === 'Laced' ? 'T' : 'G';
       setDisplayName(modelNumber ? `${prefix}${modelNumber} Hitam` : '');
     }
-  }, [category, modelNumber, isCustomNameEdited]);
+  }, [category, modelNumber, isCustomNameEdited, editingProduct]);
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -78,6 +79,38 @@ export default function Products() {
       setProducts(mapped);
     }
     setIsLoading(false);
+  };
+
+  const handleOpenAdd = () => {
+    setEditingProduct(null);
+    setCategory('Slip-on');
+    setModelNumber('');
+    setDisplayName('');
+    setIsCustomNameEdited(false);
+    setPrice('85000');
+    setInitialStock('50');
+    setImageFile(null);
+    setImagePreview('');
+    setGalleryFiles([]);
+    setGalleryPreviews([]);
+    setSelectedSizes([...availableSizes]);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (product: Product) => {
+    setEditingProduct(product);
+    setCategory(product.category || 'Slip-on');
+    setModelNumber(product.model ? product.model.replace(/[^0-9]/g, '') : '');
+    setDisplayName(product.name || '');
+    setIsCustomNameEdited(true);
+    setPrice((product.price || 85000).toString());
+    setInitialStock((product.stock || 50).toString());
+    setSelectedSizes(product.sizes && product.sizes.length > 0 ? product.sizes : [...availableSizes]);
+    setImagePreview(product.image_url || '');
+    setImageFile(null);
+    setGalleryPreviews([]);
+    setGalleryFiles([]);
+    setIsModalOpen(true);
   };
 
   // Filtered & Sorted Products Calculation
@@ -162,6 +195,16 @@ export default function Products() {
     setGalleryPreviews(previews);
   };
 
+  const replaceGalleryImage = (index: number, file: File) => {
+    const updatedFiles = [...galleryFiles];
+    updatedFiles[index] = file;
+    setGalleryFiles(updatedFiles);
+
+    const updatedPreviews = [...galleryPreviews];
+    updatedPreviews[index] = URL.createObjectURL(file);
+    setGalleryPreviews(updatedPreviews);
+  };
+
   const removeGalleryImage = (index: number) => {
     const updatedFiles = galleryFiles.filter((_, i) => i !== index);
     const updatedPreviews = galleryPreviews.filter((_, i) => i !== index);
@@ -171,8 +214,12 @@ export default function Products() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!modelNumber || !imageFile) {
-      alert('Kode Model dan Foto Thumbnail Utama harus diisi!');
+    if (!modelNumber) {
+      alert('Kode Model harus diisi!');
+      return;
+    }
+    if (!editingProduct && !imageFile) {
+      alert('Foto Thumbnail Utama harus diisi untuk produk baru!');
       return;
     }
     if (selectedSizes.length === 0) {
@@ -186,29 +233,32 @@ export default function Products() {
     const modelCode = `${prefix}${modelNumber}`;
     const finalName = displayName.trim() || `${modelCode} Hitam`;
     
-    // 1. Upload Thumbnail Utama
-    const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${modelCode}-thumb-${Math.random()}.${fileExt}`;
-    const filePath = `products/${fileName}`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from('product-image')
-      .upload(filePath, imageFile);
-      
-    if (uploadError) {
-      alert('Gagal mengupload thumbnail: ' + uploadError.message);
-      setIsSubmitting(false);
-      return;
-    }
-    
-    const { data: urlData } = supabase.storage
-      .from('product-image')
-      .getPublicUrl(filePath);
-      
-    const finalImageUrl = urlData.publicUrl;
+    let finalImageUrl = editingProduct ? editingProduct.image_url : '';
 
-    // 2. Simpan data ke Database
-    const newProduct = {
+    // If new thumbnail file is uploaded
+    if (imageFile) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${modelCode}-thumb-${Math.random()}.${fileExt}`;
+      const filePath = `products/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('product-image')
+        .upload(filePath, imageFile);
+        
+      if (uploadError) {
+        alert('Gagal mengupload thumbnail: ' + uploadError.message);
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const { data: urlData } = supabase.storage
+        .from('product-image')
+        .getPublicUrl(filePath);
+        
+      finalImageUrl = urlData.publicUrl;
+    }
+
+    const payload = {
       name: finalName,
       description: `Sepatu Ballqish model ${modelCode} warna hitam.`,
       price: parseInt(price) || 0,
@@ -217,10 +267,16 @@ export default function Products() {
       sizes: selectedSizes,
       image_url: finalImageUrl,
       stock: parseInt(initialStock) || 50,
-      sold: 0
     };
 
-    const { error } = await supabase.from('products').insert([newProduct]);
+    let error = null;
+    if (editingProduct) {
+      const res = await supabase.from('products').update(payload).eq('id', editingProduct.id);
+      error = res.error;
+    } else {
+      const res = await supabase.from('products').insert([{ ...payload, sold: 0 }]);
+      error = res.error;
+    }
     
     setIsSubmitting(false);
     
@@ -228,19 +284,7 @@ export default function Products() {
       alert('Gagal menyimpan produk: ' + error.message);
     } else {
       setIsModalOpen(false);
-      // Reset form
-      setModelNumber('');
-      setDisplayName('');
-      setIsCustomNameEdited(false);
-      setImageFile(null);
-      setImagePreview('');
-      setGalleryFiles([]);
-      setGalleryPreviews([]);
-      setCategory('Slip-on');
-      setPrice('85000');
-      setInitialStock('50');
-      setSelectedSizes([...availableSizes]);
-      
+      setEditingProduct(null);
       fetchProducts();
     }
   };
@@ -253,7 +297,7 @@ export default function Products() {
           <p className="text-[12px] font-normal text-[#71717A] mt-1">Kelola katalog sepatu, stok pasti, dan performa penjualan produk Anda.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenAdd}
           className="bg-[#5c1616] hover:bg-[#400f0f] text-white px-5 py-2.5 rounded-lg text-[14px] font-medium flex items-center gap-2 transition-all shadow-xs active:scale-95 cursor-pointer"
         >
           <Plus size={16} />
@@ -408,7 +452,7 @@ export default function Products() {
                       </td>
                       <td className="px-8 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="p-2 text-[#71717A] hover:text-[#5c1616] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" title="Edit Produk"><Edit size={16} /></button>
+                          <button onClick={() => handleOpenEdit(product)} className="p-2 text-[#71717A] hover:text-[#5c1616] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" title="Edit Produk"><Edit size={16} /></button>
                           <button onClick={() => handleDelete(product.id, product.name)} className="p-2 text-[#71717A] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer" title="Hapus Produk"><Trash2 size={16} /></button>
                         </div>
                       </td>
@@ -426,7 +470,7 @@ export default function Products() {
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => !isSubmitting && setIsModalOpen(false)}></div>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl relative z-10 overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-[#E2E8F0] flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-[20px] font-bold text-[#1A1A1A]">Tambah Produk Baru</h2>
+              <h2 className="text-[20px] font-bold text-[#1A1A1A]">{editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}</h2>
               <button disabled={isSubmitting} onClick={() => setIsModalOpen(false)} className="text-[#71717A] hover:text-[#1A1A1A] hover:bg-slate-200 p-2 rounded-xl transition-colors disabled:opacity-50 cursor-pointer">
                 <X size={20} />
               </button>
@@ -441,7 +485,7 @@ export default function Products() {
                       value={category}
                       onChange={(e) => {
                         setCategory(e.target.value);
-                        setModelNumber('');
+                        if (!editingProduct) setModelNumber('');
                       }}
                       className="w-full border border-[#E2E8F0] rounded-lg px-4 py-2.5 text-[14px] font-medium text-[#1A1A1A] focus:border-[#5c1616] outline-none transition-colors cursor-pointer"
                     >
@@ -468,7 +512,16 @@ export default function Products() {
                 </div>
 
                 <div>
-                  <label className="block text-[14px] font-semibold text-[#333333] mb-2">Nama Tampilan Produk</label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-[14px] font-semibold text-[#333333]">Nama Tampilan Produk</label>
+                  </div>
+                  
+                  {editingProduct && (
+                    <div className="bg-slate-100 border border-[#E2E8F0] rounded-lg px-3 py-1.5 mb-2 text-[12px] text-[#71717A]">
+                      Nama sebelumnya: <span className="font-semibold text-[#1A1A1A]">{editingProduct.name}</span>
+                    </div>
+                  )}
+
                   <input 
                     type="text" 
                     value={displayName}
@@ -487,6 +540,11 @@ export default function Products() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[14px] font-semibold text-[#333333] mb-2">Harga (Rp)</label>
+                    {editingProduct && (
+                      <div className="bg-slate-100 border border-[#E2E8F0] rounded-lg px-3.5 py-1.5 mb-2 text-[12px] text-[#71717A]">
+                        Harga sebelumnya: <span className="font-semibold text-[#1A1A1A]">Rp {editingProduct.price?.toLocaleString('id-ID')}</span>
+                      </div>
+                    )}
                     <input 
                       type="text" 
                       value={price}
@@ -495,7 +553,7 @@ export default function Products() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[14px] font-semibold text-[#333333] mb-2">Stok Awal (pcs)</label>
+                    <label className="block text-[14px] font-semibold text-[#333333] mb-2">Stok (pcs)</label>
                     <input 
                       type="text" 
                       value={initialStock}
@@ -542,34 +600,71 @@ export default function Products() {
 
                 <div>
                   <label className="block text-[14px] font-semibold text-[#333333] mb-2">Foto Thumbnail Utama (Katalog)</label>
-                  <div className="relative border-2 border-dashed border-[#E2E8F0] hover:border-[#5c1616] rounded-xl p-4 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group overflow-hidden">
-                    {imagePreview ? (
-                      <div className="relative w-full flex justify-center">
-                        <img src={imagePreview} alt="Preview" className="h-32 object-contain mix-blend-multiply" />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                          <span className="text-white text-[12px] font-medium">Ganti Gambar</span>
+                  
+                  {imagePreview ? (
+                    <div className="flex items-center justify-between gap-4 p-3 bg-slate-50 border border-[#E2E8F0] rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 bg-white rounded-lg border border-[#E2E8F0] overflow-hidden flex-shrink-0">
+                          <img src={imagePreview} alt="Thumbnail Preview" className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <span className="text-[14px] font-medium text-[#1A1A1A] block">Foto Thumbnail Utama</span>
+                          <span className="text-[12px] text-[#16A34A] font-semibold">Tersimpan di katalog</span>
                         </div>
                       </div>
-                    ) : (
+
+                      <div className="flex items-center gap-2">
+                        <label className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-[#1A1A1A] text-[12px] font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer">
+                          <RefreshCw size={13} />
+                          <span>Ganti</span>
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                setImageFile(file);
+                                setImagePreview(URL.createObjectURL(file));
+                              }
+                            }}
+                            className="hidden" 
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImageFile(null);
+                            setImagePreview('');
+                          }}
+                          className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[12px] font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={13} />
+                          <span>Hapus</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative border-2 border-dashed border-[#E2E8F0] hover:border-[#5c1616] rounded-xl p-4 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group overflow-hidden">
                       <div className="text-center py-4">
                         <UploadCloud className="w-8 h-8 text-[#71717A] mx-auto mb-2" />
                         <p className="text-[14px] font-medium text-[#1A1A1A]">Klik untuk upload foto thumbnail utama</p>
                         <p className="text-[12px] text-[#71717A] mt-1">JPG, PNG (Maks. 2MB)</p>
                       </div>
-                    )}
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          const file = e.target.files[0];
-                          setImageFile(file);
-                          setImagePreview(URL.createObjectURL(file));
-                        }
-                      }}
-                      className="absolute inset-0 opacity-0 cursor-pointer" 
-                    />
-                  </div>
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const file = e.target.files[0];
+                            setImageFile(file);
+                            setImagePreview(URL.createObjectURL(file));
+                          }
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer" 
+                      />
+                    </div>
+                  )}
+
                   <p className="text-[12px] font-normal text-[#71717A] mt-1.5">
                     Foto ini akan digunakan sebagai foto thumbnail utama yang akan muncul di bagian katalog awal.
                   </p>
@@ -578,35 +673,66 @@ export default function Products() {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-[14px] font-semibold text-[#333333]">Foto Pendukung (Mockup / Promosi)</label>
-                    <span className="text-[12px] text-[#71717A] font-medium">{galleryFiles.length} / 6 Foto</span>
+                    <span className="text-[12px] text-[#71717A] font-medium">{galleryFiles.length || galleryPreviews.length} / 6 Foto</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 mb-2">
-                    {galleryPreviews.map((src, idx) => (
-                      <div key={idx} className="relative h-24 rounded-lg overflow-hidden border border-[#E2E8F0] group bg-slate-100">
-                        <img src={src} alt={`Mockup ${idx+1}`} className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeGalleryImage(idx)}
-                          className="absolute top-1 right-1 bg-rose-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
-                    {galleryFiles.length < 6 && (
-                      <label className="h-24 border-2 border-dashed border-[#E2E8F0] hover:border-[#5c1616] rounded-lg flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
-                        <Plus size={20} className="text-[#71717A] mb-1" />
-                        <span className="text-[11px] font-medium text-[#71717A]">Tambah Foto</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={(e) => handleGalleryAdd(e.target.files)}
-                          className="hidden"
-                        />
-                      </label>
-                    )}
-                  </div>
+
+                  {galleryPreviews.length > 0 ? (
+                    <div className="space-y-2 mb-3">
+                      {galleryPreviews.map((src, idx) => (
+                        <div key={idx} className="flex items-center justify-between gap-3 p-2.5 bg-slate-50 border border-[#E2E8F0] rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-white rounded-lg border border-[#E2E8F0] overflow-hidden flex-shrink-0">
+                              <img src={src} alt={`Promosi ${idx+1}`} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <span className="text-[13px] font-medium text-[#1A1A1A] block">Foto Promosi #{idx+1}</span>
+                              <span className="text-[11px] text-[#71717A]">Mockup tampilan produk</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <label className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-[#1A1A1A] text-[12px] font-medium rounded-lg flex items-center gap-1 transition-colors cursor-pointer">
+                              <RefreshCw size={12} />
+                              <span>Ganti</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    replaceGalleryImage(idx, e.target.files[0]);
+                                  }
+                                }}
+                                className="hidden"
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => removeGalleryImage(idx)}
+                              className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[12px] font-medium rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                            >
+                              <Trash2 size={12} />
+                              <span>Hapus</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {galleryFiles.length < 6 && (
+                    <label className="h-20 border-2 border-dashed border-[#E2E8F0] hover:border-[#5c1616] rounded-xl flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
+                      <Plus size={18} className="text-[#71717A]" />
+                      <span className="text-[12px] font-medium text-[#1A1A1A]">Tambah Foto Promosi Baru (Maks. 6)</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleGalleryAdd(e.target.files)}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+
                   <p className="text-[12px] font-normal text-[#71717A] mt-1.5 leading-relaxed">
                     Foto pendukung untuk mockup / foto promosi (maksimal 6 foto). Foto-foto ini akan tampil saat produk diklik untuk memberikan opsi sudut tampilan yang memikat pelanggan.
                   </p>
@@ -634,7 +760,7 @@ export default function Products() {
                     <span>Menyimpan...</span>
                   </>
                 ) : (
-                  <span>Simpan Produk</span>
+                  <span>{editingProduct ? 'Simpan Perubahan' : 'Simpan Produk'}</span>
                 )}
               </button>
             </div>
