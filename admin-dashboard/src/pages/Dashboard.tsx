@@ -47,26 +47,31 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  // 1. Top 4 Executive Stat Cards Calculations
+  // 1. Top Executive Stat Calculations
   const stats = useMemo(() => {
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
     const todayStart = new Date().setHours(0, 0, 0, 0);
 
-    // Card 1: Urgent Actions (>24h unpaid or unfulfilled)
+    // Status 1: Perlu Diproses (Pending or unfulfilled > 24h or newly placed)
     const urgentOrders = orders.filter(o => {
-      const isPending = ['Menunggu Pembayaran', 'Sedang Diverifikasi', 'Perlu Diproses'].includes(o.status);
-      const isOlderThan24h = (now - new Date(o.created_at).getTime()) > oneDay;
-      return isPending && isOlderThan24h;
+      const isPending = ['Menunggu Pembayaran', 'Sedang Diverifikasi', 'Perlu Diproses', 'Pesanan Baru'].includes(o.status);
+      return isPending;
     });
 
-    // Card 2: New Orders (Today / New Status)
+    // Status 2: Pesanan Baru (Today's orders)
     const newOrders = orders.filter(o => {
       const orderTime = new Date(o.created_at).getTime();
       return orderTime >= todayStart || o.status === 'Pesanan Baru';
     });
 
-    // Card 3: Revenue Summary (Filtered by week, month, year)
+    // Status 3: Komplain Pelanggan
+    const complaintOrders = orders.filter(o => ['Komplain', 'Retur', 'Terkendala'].includes(o.status));
+
+    // Status 4: Pengiriman Gagal
+    const failedShipmentOrders = orders.filter(o => o.status === 'Pengiriman Gagal');
+
+    // Revenue Summary (Filtered by week, month, year)
     let filteredRevenueOrders = orders.filter(o => o.status !== 'Dibatalkan');
     if (revenuePeriod === 'week') {
       filteredRevenueOrders = filteredRevenueOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 7 * oneDay);
@@ -77,26 +82,28 @@ export default function Dashboard() {
     }
     const totalRevenue = filteredRevenueOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
 
-    // Card 4: Top Selling Shoe Model
-    const modelSalesCount: Record<string, { name: string; count: number; img: string }> = {};
+    // Top 3 Selling Shoe Models
+    const modelSalesCount: Record<string, { name: string; count: number; price: number; img: string }> = {};
     orders.forEach(o => {
       if (o.status === 'Dibatalkan') return;
       o.order_items?.forEach((item: any) => {
         const name = item.product_name || 'Sepatu Pantofel';
         if (!modelSalesCount[name]) {
-          modelSalesCount[name] = { name, count: 0, img: item.product_image };
+          modelSalesCount[name] = { name, count: 0, price: item.price || 85000, img: item.product_image };
         }
         modelSalesCount[name].count += item.quantity || 1;
       });
     });
     const sortedModels = Object.values(modelSalesCount).sort((a, b) => b.count - a.count);
-    const topSellingModel = sortedModels[0] || { name: 'G21 Hitam', count: 12, img: '' };
+    const top3Selling = sortedModels.slice(0, 3);
 
     return {
       urgentCount: urgentOrders.length,
       newOrdersCount: newOrders.length,
+      complaintCount: complaintOrders.length,
+      failedShipmentCount: failedShipmentOrders.length,
       revenue: totalRevenue,
-      topSelling: topSellingModel
+      top3Selling
     };
   }, [orders, revenuePeriod]);
 
@@ -112,22 +119,18 @@ export default function Dashboard() {
       return diff > limitMs && diff <= (limitMs * 2);
     });
 
-    // Orders Metric
     const totalOrdersCurr = currentPeriodOrders.length;
     const totalOrdersPrev = previousPeriodOrders.length;
     const ordersGrowth = totalOrdersPrev === 0 ? 100 : Math.round(((totalOrdersCurr - totalOrdersPrev) / totalOrdersPrev) * 100);
 
-    // Items Sold Metric
     const itemsCurr = currentPeriodOrders.reduce((s, o) => s + (o.order_items?.reduce((is: number, i: any) => is + (i.quantity || 1), 0) || 1), 0);
     const itemsPrev = previousPeriodOrders.reduce((s, o) => s + (o.order_items?.reduce((is: number, i: any) => is + (i.quantity || 1), 0) || 1), 0);
     const itemsGrowth = itemsPrev === 0 ? 100 : Math.round(((itemsCurr - itemsPrev) / itemsPrev) * 100);
 
-    // Cancelled Metric
     const cancelledCurr = currentPeriodOrders.filter(o => o.status === 'Dibatalkan').length;
     const cancelledPrev = previousPeriodOrders.filter(o => o.status === 'Dibatalkan').length;
     const cancelledGrowth = cancelledPrev === 0 ? 0 : Math.round(((cancelledCurr - cancelledPrev) / cancelledPrev) * 100);
 
-    // Revenue Metric
     const revCurr = currentPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (o.total_amount || 0), 0);
     const revPrev = previousPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (o.total_amount || 0), 0);
     const revGrowth = revPrev === 0 ? 100 : Math.round(((revCurr - revPrev) / revPrev) * 100);
@@ -198,7 +201,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-gray-900 font-heading tracking-tight flex items-center gap-2">
             Ringkasan Analitik Toko <Sparkles className="w-5 h-5 text-amber-500" />
           </h1>
-          <p className="text-xs text-gray-500 mt-0.5">Pantau metrik operasional urgen, omset real-time, dan tren pembelian toko Anda.</p>
+          <p className="text-xs text-gray-500 mt-0.5">Pantau metrik omset, performa sepatu terlaris, dan status operasional toko Anda.</p>
         </div>
         <div className="flex items-center gap-2">
           <button 
@@ -210,116 +213,166 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 🔴 BARIS ATAS: 4 Kartu Metrik Utama (Quick Executive Stats) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Perlu Tindakan Urgen */}
-        <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-sm hover:border-rose-300 transition-all relative overflow-hidden group">
+      {/* 🌟 BARIS 1: 60/40 HERO SECTION (Ringkasan Omset 60% + Top 3 Sepatu Terlaris 40%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        {/* Left (60%): Ringkasan Omset Hero Display */}
+        <div className="lg:col-span-7 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between space-y-4">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs font-medium text-rose-700 flex items-center gap-1">
-                <AlertTriangle size={14} /> Perlu Tindakan Urgen
+              <span className="text-xs font-medium text-gray-600 flex items-center gap-1.5">
+                <DollarSign size={16} className="text-amber-600" /> Ringkasan Omset Toko
               </span>
-              <div className="text-xl font-medium text-gray-900 font-body mt-2">
-                {stats.urgentCount} <span className="text-xs font-normal text-gray-500">Pesanan (&gt;24j)</span>
-              </div>
+              <p className="text-[11px] text-gray-400 mt-0.5">Total pendapatan dari transaksi penjualan produk yang sah.</p>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
-              <Clock size={20} />
+            
+            {/* Periode Filter Dropdown / Buttons */}
+            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg text-xs font-medium text-gray-600">
+              <button 
+                onClick={() => setRevenuePeriod('week')}
+                className={`px-3 py-1 rounded transition-all ${revenuePeriod === 'week' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
+              >
+                Minggu
+              </button>
+              <button 
+                onClick={() => setRevenuePeriod('month')}
+                className={`px-3 py-1 rounded transition-all ${revenuePeriod === 'month' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
+              >
+                Bulan
+              </button>
+              <button 
+                onClick={() => setRevenuePeriod('year')}
+                className={`px-3 py-1 rounded transition-all ${revenuePeriod === 'year' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
+              >
+                Tahun
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <span className="text-xs text-gray-400 font-normal">Total Pendapatan ({revenuePeriod === 'week' ? 'Minggu Ini' : revenuePeriod === 'month' ? 'Bulan Ini' : 'Tahun Ini'})</span>
+            <div className="text-3xl font-bold text-primary font-body mt-1 tracking-tight">
+              Rp {stats.revenue.toLocaleString('id-ID')}
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <span>Metrik omset diperbarui secara langsung</span>
+            <span className="text-emerald-600 font-medium flex items-center gap-1">● Akurat</span>
+          </div>
+        </div>
+
+        {/* Right (40%): Sepatu Terlaris (Top 3 List) */}
+        <div className="lg:col-span-5 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between space-y-3">
+          <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+            <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+              <Flame size={16} className="text-orange-500" /> Sepatu Terlaris (Top 3)
+            </span>
+            <a href="/products" className="text-[11px] text-primary hover:underline font-medium flex items-center gap-1">
+              Lihat Katalog <ChevronRight size={12} />
+            </a>
+          </div>
+
+          <div className="space-y-2.5">
+            {stats.top3Selling.length === 0 ? (
+              <p className="text-xs text-gray-400 py-4 text-center">Belum ada data penjualan.</p>
+            ) : (
+              stats.top3Selling.map((shoe, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50/70 rounded-lg border border-gray-100">
+                  <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                    idx === 0 ? 'bg-amber-100 text-amber-800' : idx === 1 ? 'bg-gray-200 text-gray-700' : 'bg-orange-100 text-orange-800'
+                  }`}>
+                    {idx + 1}
+                  </span>
+                  <div className="w-9 h-9 bg-white rounded border border-gray-200 overflow-hidden flex-shrink-0">
+                    <img src={shoe.img} alt={shoe.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 text-xs truncate">{shoe.name}</p>
+                    <p className="text-[11px] text-gray-500 font-body">Rp {shoe.price?.toLocaleString('id-ID')}</p>
+                  </div>
+                  <span className="text-xs font-medium text-gray-900 font-body bg-white px-2 py-1 rounded border border-gray-200">
+                    {shoe.count} pasang
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* 🔴 BARIS 2: 4 KARTU OPERASIONAL (Perlu Diproses, Pesanan Baru, Komplain Pelanggan, Pengiriman Gagal) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Perlu Diproses */}
+        <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-sm hover:border-rose-300 transition-all">
+          <div>
+            <span className="text-xs font-medium text-rose-700 flex items-center gap-1.5">
+              <AlertTriangle size={14} /> Perlu Diproses
+            </span>
+            <div className="text-xl font-medium text-gray-900 font-body mt-2">
+              {stats.urgentCount} <span className="text-xs font-normal text-gray-500">Pesanan</span>
             </div>
           </div>
           <a 
             href="/orders" 
-            className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-rose-600 hover:text-rose-800 transition-colors"
+            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-rose-600 hover:text-rose-800 transition-colors"
           >
-            Periksa Pesanan Urgent <ChevronRight size={13} />
+            Periksa Pesanan <ChevronRight size={13} />
           </a>
         </div>
 
-        {/* Card 2: Pesanan Baru Hari Ini */}
-        <div className="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm hover:border-emerald-300 transition-all group">
-          <div className="flex justify-between items-start">
-            <div>
-              <span className="text-xs font-medium text-emerald-700 flex items-center gap-1">
-                <ShoppingBag size={14} /> Pesanan Baru
-              </span>
-              <div className="text-xl font-medium text-gray-900 font-body mt-2">
-                {stats.newOrdersCount} <span className="text-xs font-normal text-gray-500">Transaksi Masuk</span>
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-              <Package size={20} />
+        {/* Card 2: Pesanan Baru */}
+        <div className="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm hover:border-emerald-300 transition-all">
+          <div>
+            <span className="text-xs font-medium text-emerald-700 flex items-center gap-1.5">
+              <ShoppingBag size={14} /> Pesanan Baru
+            </span>
+            <div className="text-xl font-medium text-gray-900 font-body mt-2">
+              {stats.newOrdersCount} <span className="text-xs font-normal text-gray-500">Transaksi Masuk</span>
             </div>
           </div>
           <a 
             href="/orders" 
-            className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-800 transition-colors"
+            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-800 transition-colors"
           >
             Proses Pesanan Baru <ChevronRight size={13} />
           </a>
         </div>
 
-        {/* Card 3: Ringkasan Omset (Toggle Minggu/Bulan/Tahun) */}
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-gray-300 transition-all">
-          <div className="flex justify-between items-start">
-            <div>
-              <span className="text-xs font-medium text-gray-600 flex items-center gap-1">
-                <DollarSign size={14} className="text-amber-600" /> Ringkasan Omset
-              </span>
-              <div className="text-lg font-medium text-primary font-body mt-2">
-                Rp {stats.revenue.toLocaleString('id-ID')}
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-              <TrendingUp size={20} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-center gap-1 bg-gray-100 p-0.5 rounded-lg text-[11px] font-medium text-gray-600 w-fit">
-            <button 
-              onClick={() => setRevenuePeriod('week')}
-              className={`px-2 py-0.5 rounded transition-all ${revenuePeriod === 'week' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
-            >
-              Minggu
-            </button>
-            <button 
-              onClick={() => setRevenuePeriod('month')}
-              className={`px-2 py-0.5 rounded transition-all ${revenuePeriod === 'month' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
-            >
-              Bulan
-            </button>
-            <button 
-              onClick={() => setRevenuePeriod('year')}
-              className={`px-2 py-0.5 rounded transition-all ${revenuePeriod === 'year' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
-            >
-              Tahun
-            </button>
-          </div>
-        </div>
-
-        {/* Card 4: Sepatu Terlaris */}
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-gray-300 transition-all">
-          <div className="flex justify-between items-start">
-            <div className="min-w-0 flex-1">
-              <span className="text-xs font-medium text-gray-600 flex items-center gap-1">
-                <Flame size={14} className="text-orange-500" /> Sepatu Terlaris
-              </span>
-              <div className="text-xs font-medium text-gray-900 font-body mt-2 truncate">
-                {stats.topSelling.name}
-              </div>
-              <p className="text-xs text-gray-500 mt-0.5">{stats.topSelling.count} pasang terjual</p>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0">
-              {stats.topSelling.img ? (
-                <img src={stats.topSelling.img} alt="Top" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">👞</div>
-              )}
+        {/* Card 3: Komplain Pelanggan */}
+        <div className="bg-white p-5 rounded-xl border border-amber-200 shadow-sm hover:border-amber-300 transition-all">
+          <div>
+            <span className="text-xs font-medium text-amber-700 flex items-center gap-1.5">
+              <Clock size={14} /> Komplain Pelanggan
+            </span>
+            <div className="text-xl font-medium text-gray-900 font-body mt-2">
+              {stats.complaintCount} <span className="text-xs font-normal text-gray-500">Klaim/Retur</span>
             </div>
           </div>
           <a 
-            href="/products" 
-            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-primary transition-colors"
+            href="/orders" 
+            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-amber-700 hover:text-amber-900 transition-colors"
           >
-            Lihat Katalog Produk <ChevronRight size={13} />
+            Tinjau Komplain <ChevronRight size={13} />
+          </a>
+        </div>
+
+        {/* Card 4: Pengiriman Gagal */}
+        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-gray-300 transition-all">
+          <div>
+            <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+              <Package size={14} className="text-gray-500" /> Pengiriman Gagal
+            </span>
+            <div className="text-xl font-medium text-gray-900 font-body mt-2">
+              {stats.failedShipmentCount} <span className="text-xs font-normal text-gray-500">Paket Kendall</span>
+            </div>
+          </div>
+          <a 
+            href="/orders" 
+            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Cek Resi Pengiriman <ChevronRight size={13} />
           </a>
         </div>
       </div>
