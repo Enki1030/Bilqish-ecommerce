@@ -34,9 +34,9 @@ export default function Products() {
 
   // Filter & Search States
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchCategory, setSearchCategory] = useState<'all' | 'name' | 'code'>('all');
   const [stockFilter, setStockFilter] = useState<'all' | 'available' | 'low' | 'out'>('all');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
+  const [priceRange, setPriceRange] = useState<'all' | '0-50k' | '50k-100k' | '100k-150k' | '150k-200k' | '200k+'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'price_high' | 'price_low' | 'sold_high' | 'sold_low' | 'stock_low'>('newest');
 
   const availableSizes = ['39', '40', '41', '42', '43'];
@@ -71,12 +71,14 @@ export default function Products() {
   // Filtered & Sorted Products Calculation
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
-      // 1. Search Query (Name or Model)
+      // 1. Search Query (Filtered by Search Category: All / Name / Code)
       if (searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase();
         const matchName = p.name?.toLowerCase().includes(q);
         const matchModel = p.model?.toLowerCase().includes(q);
-        if (!matchName && !matchModel) return false;
+        if (searchCategory === 'name' && !matchName) return false;
+        if (searchCategory === 'code' && !matchModel) return false;
+        if (searchCategory === 'all' && !matchName && !matchModel) return false;
       }
 
       // 2. Stock Filter
@@ -85,10 +87,13 @@ export default function Products() {
       if (stockFilter === 'low' && (stk > 5 || stk === 0)) return false;
       if (stockFilter === 'out' && stk !== 0) return false;
 
-      // 3. Price Filter
+      // 3. 5-Tier Price Range Filter
       const prc = p.price ?? 0;
-      if (minPrice !== '' && prc < parseInt(minPrice)) return false;
-      if (maxPrice !== '' && prc > parseInt(maxPrice)) return false;
+      if (priceRange === '0-50k' && prc > 50000) return false;
+      if (priceRange === '50k-100k' && (prc < 50000 || prc > 100000)) return false;
+      if (priceRange === '100k-150k' && (prc < 100000 || prc > 150000)) return false;
+      if (priceRange === '150k-200k' && (prc < 150000 || prc > 200000)) return false;
+      if (priceRange === '200k+' && prc < 200000) return false;
 
       return true;
     }).sort((a, b) => {
@@ -99,13 +104,13 @@ export default function Products() {
       if (sortBy === 'stock_low') return (a.stock || 0) - (b.stock || 0);
       return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
     });
-  }, [products, searchQuery, stockFilter, minPrice, maxPrice, sortBy]);
+  }, [products, searchQuery, searchCategory, stockFilter, priceRange, sortBy]);
 
   const resetFilters = () => {
     setSearchQuery('');
+    setSearchCategory('all');
     setStockFilter('all');
-    setMinPrice('');
-    setMaxPrice('');
+    setPriceRange('all');
     setSortBy('newest');
   };
 
@@ -227,215 +232,206 @@ export default function Products() {
         </button>
       </div>
 
-      {/* Main Grid: Jakmall-style Left Filter Box + Right Product Table */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* 🛠️ TOP FULL-WIDTH FILTER TOOLBAR (Mirrored after Orders.tsx Layout) */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-3.5">
         
-        {/* Left Sidebar Filter Panel (Jakmall Filter Layout) */}
-        <div className="lg:col-span-3 space-y-4">
-          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-5">
-            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-              <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-                <Filter size={16} className="text-primary" /> Filter Produk
-              </h3>
-              <button
-                onClick={resetFilters}
-                className="text-[11px] text-gray-400 hover:text-primary transition-colors flex items-center gap-1 font-medium"
+        {/* Row 1: Search Bar with Category Selector on the Left */}
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+          {/* Category Dropdown (Name vs Code) */}
+          <select
+            value={searchCategory}
+            onChange={(e) => setSearchCategory(e.target.value as any)}
+            className="w-full sm:w-44 bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs font-medium text-gray-700 outline-none focus:border-primary cursor-pointer hover:bg-gray-100 transition-colors"
+          >
+            <option value="all">Semua Kategori</option>
+            <option value="name">Cari Nama Produk</option>
+            <option value="code">Cari Kode Produk</option>
+          </select>
+
+          {/* Search Input Field */}
+          <div className="relative flex-1 w-full">
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari berdasarkan nama atau kode sepatu (contoh: G21, Pantofel)..." 
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-xs outline-none focus:border-primary"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+          </div>
+        </div>
+
+        {/* Row 2: Filter Dropdowns (Stock, Price Range, Sort, Reset) */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Filter 1: Stock Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-500 font-medium hidden sm:inline">Stok:</span>
+              <select
+                value={stockFilter}
+                onChange={(e) => setStockFilter(e.target.value as any)}
+                className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 outline-none focus:border-primary cursor-pointer hover:bg-gray-100 transition-colors"
               >
-                <RefreshCw size={11} /> Reset
-              </button>
+                <option value="all">Semua Stok</option>
+                <option value="available">Tersedia (&gt;5 pcs)</option>
+                <option value="low">Sisa Menipis (≤5 pcs)</option>
+                <option value="out">Habis (0 pcs)</option>
+              </select>
             </div>
 
-            {/* Filter 1: Search Name / Code */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">Pencarian</label>
-              <div className="relative">
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Nama atau Kode (G21)..." 
-                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-xs outline-none focus:border-primary"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-              </div>
+            {/* Filter 2: 5-Tier Price Range Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-500 font-medium hidden sm:inline">Harga:</span>
+              <select
+                value={priceRange}
+                onChange={(e) => setPriceRange(e.target.value as any)}
+                className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 outline-none focus:border-primary cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <option value="all">Semua Rentang Harga</option>
+                <option value="0-50k">Rp 0 - Rp 50.000</option>
+                <option value="50k-100k">Rp 50.000 - Rp 100.000</option>
+                <option value="100k-150k">Rp 100.000 - Rp 150.000</option>
+                <option value="150k-200k">Rp 150.000 - Rp 200.000</option>
+                <option value="200k+">&gt; Rp 200.000</option>
+              </select>
             </div>
 
-            {/* Filter 2: Stock Buttons */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2">Ketersediaan Stok</label>
-              <div className="flex flex-wrap gap-1.5">
-                {[
-                  { id: 'all', label: 'Semua' },
-                  { id: 'available', label: 'Tersedia (>5)' },
-                  { id: 'low', label: 'Sisa ≤ 5' },
-                  { id: 'out', label: 'Habis (0)' },
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => setStockFilter(item.id as any)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      stockFilter === item.id
-                        ? 'bg-primary text-white font-bold shadow-sm'
-                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Filter 3: Price Range */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">Rentang Harga (Rp)</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  placeholder="Terendah"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs outline-none focus:border-primary"
-                />
-                <span className="text-gray-400 text-xs">-</span>
-                <input
-                  type="number"
-                  placeholder="Tertinggi"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs outline-none focus:border-primary"
-                />
-              </div>
-            </div>
-
-            {/* Filter 4: Sort By */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1.5">Urutkan Berdasarkan</label>
+            {/* Filter 3: Sort Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-500 font-medium hidden sm:inline">Urutkan:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs font-medium text-gray-700 outline-none focus:border-primary cursor-pointer"
+                className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 outline-none focus:border-primary cursor-pointer hover:bg-gray-100 transition-colors"
               >
-                <option value="newest">Terakhir Ditambahkan</option>
-                <option value="sold_high">Penjualan: Terbanyak</option>
-                <option value="sold_low">Penjualan: Tersedikit</option>
-                <option value="price_high">Harga: Tertinggi</option>
-                <option value="price_low">Harga: Terendah</option>
-                <option value="stock_low">Stok: Paling Menipis</option>
+                <option value="newest">Terbaru (Default)</option>
+                <option value="sold_high">Penjualan Terbanyak</option>
+                <option value="price_high">Harga Tertinggi</option>
+                <option value="price_low">Harga Terendah</option>
+                <option value="stock_low">Stok Menipis</option>
               </select>
             </div>
           </div>
+
+          {/* Reset Filter Button */}
+          {(searchQuery || searchCategory !== 'all' || stockFilter !== 'all' || priceRange !== 'all' || sortBy !== 'newest') && (
+            <button
+              onClick={resetFilters}
+              className="text-xs text-gray-500 hover:text-primary flex items-center gap-1 font-medium transition-colors"
+            >
+              <RefreshCw size={12} /> Reset Filter
+            </button>
+          )}
         </div>
-
-        {/* Right Main Table (Jakmall Product List Style) */}
-        <div className="lg:col-span-9">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            {/* Table Header Controls */}
-            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center text-xs text-gray-500">
-              <span>Menampilkan <strong className="text-gray-900 font-body">{filteredProducts.length}</strong> dari {products.length} produk</span>
-            </div>
-
-            {/* Table Body */}
-            <div className="overflow-x-auto min-h-[400px]">
-              {isLoading ? (
-                <div className="flex justify-center items-center h-48">
-                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                </div>
-              ) : filteredProducts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                  <Box className="w-12 h-12 mb-3 text-gray-300" />
-                  <p className="text-sm font-bold text-gray-700">Tidak ada produk ditemukan</p>
-                  <p className="text-xs text-gray-400 mt-1">Coba sesuaikan kata kunci atau reset filter Anda.</p>
-                  <button onClick={resetFilters} className="mt-3 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded transition-colors">Reset Filter</button>
-                </div>
-              ) : (
-                <table className="w-full text-left text-xs text-gray-700">
-                  <thead className="bg-gray-50 text-gray-600 font-medium border-b border-gray-200">
-                    <tr>
-                      <th className="px-5 py-3">Produk</th>
-                      <th className="px-5 py-3">Harga</th>
-                      <th className="px-5 py-3">Stok</th>
-                      <th className="px-5 py-3">Penjualan</th>
-                      <th className="px-5 py-3 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {filteredProducts.map(product => {
-                      const stk = product.stock ?? 0;
-                      const isLow = stk > 0 && stk < 5;
-                      const isOut = stk === 0;
-
-                      return (
-                        <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
-                          {/* Produk Column */}
-                          <td className="px-5 py-3.5">
-                            <div className="flex items-center gap-3">
-                              <div className="w-11 h-11 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
-                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900 text-xs line-clamp-1">{product.name}</p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-[11px] font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-                                    {product.model || product.name.split(' ')[0]}
-                                  </span>
-                                  <span className="text-[11px] text-gray-400">
-                                    {product.category === 'Laced' ? 'Upper Tali' : 'Upper Non-Tali'}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Harga Column */}
-                          <td className="px-5 py-3.5 font-normal text-gray-800 font-body text-xs">
-                            Rp {product.price?.toLocaleString('id-ID')}
-                          </td>
-
-                          {/* Stok Column (Clean Colored Number) */}
-                          <td className="px-5 py-3.5 font-body">
-                            <span className={`text-xs font-medium ${
-                              isOut ? 'text-rose-600' :
-                              isLow ? 'text-amber-600' :
-                              'text-emerald-600'
-                            }`}>
-                              {stk} pcs
-                            </span>
-                          </td>
-
-                          {/* Penjualan Column */}
-                          <td className="px-5 py-3.5 font-body font-normal text-gray-700 text-xs">
-                            {product.sold || 0} pcs
-                          </td>
-
-                          {/* Aksi Column */}
-                          <td className="px-5 py-3.5 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button 
-                                className="p-1.5 text-gray-400 hover:text-primary hover:bg-gray-100 rounded transition-colors"
-                                title="Edit Produk"
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(product.id, product.name)} 
-                                className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                                title="Hapus Produk"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </div>
-        </div>
-
       </div>
+
+      {/* 📦 FULL-WIDTH PRODUCT TABLE */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        {/* Table Header Controls */}
+        <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center text-xs text-gray-500">
+          <span>Menampilkan <strong className="text-gray-900 font-body">{filteredProducts.length}</strong> dari {products.length} produk</span>
+        </div>
+
+        {/* Table Body */}
+        <div className="overflow-x-auto min-h-[400px]">
+          {isLoading ? (
+            <div className="flex justify-center items-center h-48">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+              <Box className="w-12 h-12 mb-3 text-gray-300" />
+              <p className="text-sm font-bold text-gray-700">Tidak ada produk ditemukan</p>
+              <p className="text-xs text-gray-400 mt-1">Coba sesuaikan kata kunci atau reset filter Anda.</p>
+              <button onClick={resetFilters} className="mt-3 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded transition-colors">Reset Filter</button>
+            </div>
+          ) : (
+            <table className="w-full text-left text-xs text-gray-700">
+              <thead className="bg-gray-50 text-gray-600 font-medium border-b border-gray-200">
+                <tr>
+                  <th className="px-5 py-3">Produk</th>
+                  <th className="px-5 py-3">Harga</th>
+                  <th className="px-5 py-3">Stok</th>
+                  <th className="px-5 py-3">Penjualan</th>
+                  <th className="px-5 py-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredProducts.map(product => {
+                  const stk = product.stock ?? 0;
+                  const isLow = stk > 0 && stk < 5;
+                  const isOut = stk === 0;
+
+                  return (
+                    <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
+                      {/* Produk Column */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-xs line-clamp-1">{product.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[11px] font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                {product.model || product.name.split(' ')[0]}
+                              </span>
+                              <span className="text-[11px] text-gray-400">
+                                {product.category === 'Laced' ? 'Upper Tali' : 'Upper Non-Tali'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Harga Column */}
+                      <td className="px-5 py-3.5 font-normal text-gray-800 font-body text-xs">
+                        Rp {product.price?.toLocaleString('id-ID')}
+                      </td>
+
+                      {/* Stok Column (Clean Colored Number) */}
+                      <td className="px-5 py-3.5 font-body">
+                        <span className={`text-xs font-medium ${
+                          isOut ? 'text-rose-600' :
+                          isLow ? 'text-amber-600' :
+                          'text-emerald-600'
+                        }`}>
+                          {stk} pcs
+                        </span>
+                      </td>
+
+                      {/* Penjualan Column */}
+                      <td className="px-5 py-3.5 font-body font-normal text-gray-700 text-xs">
+                        {product.sold || 0} pcs
+                      </td>
+
+                      {/* Aksi Column */}
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button 
+                            className="p-1.5 text-gray-400 hover:text-primary hover:bg-gray-100 rounded transition-colors"
+                            title="Edit Produk"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(product.id, product.name)} 
+                            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                            title="Hapus Produk"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
 
       {/* Floating Modal Form */}
       {isModalOpen && (
