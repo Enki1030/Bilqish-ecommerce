@@ -11,6 +11,7 @@ interface Product {
   model: string;
   sizes: string[];
   image_url: string;
+  gallery_urls?: string[];
   stock?: number;
   sold?: number;
   created_at?: string;

@@ -120,7 +120,7 @@ export default function Orders() {
 
       // 1. Filter by Main Tab
       if (activeMainTab === 'new') {
-        if (!['Pesanan Baru', 'Perlu Diproses', 'Belum Diproses', 'Draft'].includes(st) && activeMainTab !== 'all') {
+        if (!['Pesanan Baru', 'Perlu Diproses', 'Belum Diproses', 'Draft'].includes(st) && (activeMainTab as string) !== 'all') {
           // If no specific match, show if created recently without completion
         }
       } else if (activeMainTab === 'unpaid') {
