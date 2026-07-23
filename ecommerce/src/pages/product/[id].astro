@@ -4,7 +4,12 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { supabase } from '../../lib/supabase';
 
-export const prerender = false;
+export async function getStaticPaths() {
+  const { data: products } = await supabase.from('products').select('id');
+  return (products || []).map(p => ({
+    params: { id: p.id }
+  }));
+}
 
 const { id } = Astro.params;
 
