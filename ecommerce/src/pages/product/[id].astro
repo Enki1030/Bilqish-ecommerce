@@ -45,16 +45,26 @@ if (galleryList.length === 0 && product.description) {
   }
 }
 
-// Extract stock safely from product column OR embedded description tag
-let effectiveStock = 50;
+// Query total sold quantity from order_items for this product
+const { data: orderItemsData } = await supabase
+  .from('order_items')
+  .select('quantity')
+  .eq('product_id', product.id);
+
+const totalSold = (orderItemsData || []).reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
+
+// Extract initial stock from product column OR embedded description tag
+let initialStock = 50;
 if (product.stock !== undefined && product.stock !== null) {
-  effectiveStock = Number(product.stock);
+  initialStock = Number(product.stock);
 } else if (product.description) {
   const stockMatch = product.description.match(/<!--STOCK:(\d+)-->/);
   if (stockMatch && stockMatch[1]) {
-    effectiveStock = parseInt(stockMatch[1]);
+    initialStock = parseInt(stockMatch[1]);
   }
 }
+
+const effectiveStock = Math.max(0, initialStock - totalSold);
 
 const allImages = [product.image_url, ...galleryList].filter(Boolean);
 const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK):[\s\S]*?-->/g, '').trim();

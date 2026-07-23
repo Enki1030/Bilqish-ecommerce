@@ -302,37 +302,7 @@ import Layout from '../layouts/Layout.astro';
           const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
           if (itemsError) throw itemsError;
 
-          // Deduct stock for each purchased product in Supabase
-          for (const item of cart) {
-            try {
-              const { data: prod } = await supabase.from('products').select('*').eq('id', item.id).single();
-              if (prod) {
-                let currentStock = prod.stock;
-                let rawDesc = prod.description || '';
-                
-                if (currentStock === undefined || currentStock === null) {
-                  const match = rawDesc.match(/<!--STOCK:(\d+)-->/);
-                  currentStock = match && match[1] ? parseInt(match[1]) : 50;
-                }
-                
-                const newStock = Math.max(0, currentStock - item.quantity);
-                const cleanDesc = rawDesc.replace(/<!--(GALLERY|STOCK):[\s\S]*?-->/g, '').trim();
-                const stockTag = `\n<!--STOCK:${newStock}-->`;
-                const galleryTagMatch = rawDesc.match(/<!--GALLERY:[\s\S]*?-->/);
-                const galleryTag = galleryTagMatch ? `\n${galleryTagMatch[0]}` : '';
-                const newDescription = `${cleanDesc}${stockTag}${galleryTag}`;
-
-                await supabase.from('products').update({
-                  stock: newStock,
-                  description: newDescription
-                }).eq('id', item.id);
-              }
-            } catch (sErr) {
-              console.error('Stock deduction error:', sErr);
-            }
-          }
-
-          // Trigger Cloudflare Pages auto-build in background
+          // Trigger Cloudflare Pages auto-build in background so E-Commerce static catalog updates
           fetch('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/984ad6b4-c842-44cb-a50e-855dbfb7d6d4', { method: 'POST' }).catch(console.error);
 
           // SUCCESS

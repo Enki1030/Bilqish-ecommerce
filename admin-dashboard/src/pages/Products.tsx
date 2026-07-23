@@ -113,30 +113,38 @@ export default function Products() {
 
   const fetchProducts = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
+    const { data: prodData, error } = await supabase
       .from('products')
       .select('*')
       .order('created_at', { ascending: false });
-      
+
+    // Fetch order_items to calculate total sold per product dynamically
+    const { data: itemsData } = await supabase
+      .from('order_items')
+      .select('product_id, quantity');
+
+    const soldMap: Record<string, number> = {};
+    (itemsData || []).forEach((item: any) => {
+      if (item.product_id) {
+        soldMap[item.product_id] = (soldMap[item.product_id] || 0) + (Number(item.quantity) || 1);
+      }
+    });
+
     if (error) {
       console.error('Error fetching products:', error);
       alert('Gagal mengambil data produk dari Supabase.');
     } else {
-      // Map fallback stock/sold if missing from SQL schema
-      const mapped = (data || []).map((p: any) => {
-        let stk = p.stock;
-        if (stk === undefined || stk === null) {
-          const stockMatch = (p.description || '').match(/<!--STOCK:(\d+)-->/);
-          if (stockMatch && stockMatch[1]) {
-            stk = parseInt(stockMatch[1]);
-          } else {
-            stk = 50;
-          }
-        }
+      const mapped = (prodData || []).map((p: any) => {
+        const rawDesc = p.description || '';
+        const stockMatch = rawDesc.match(/<!--STOCK:(\d+)-->/);
+        const initialStk = stockMatch && stockMatch[1] ? parseInt(stockMatch[1]) : (p.stock || 50);
+        const totalSold = soldMap[p.id] || 0;
+        const currentStock = Math.max(0, initialStk - totalSold);
+
         return {
           ...p,
-          stock: stk,
-          sold: p.sold !== undefined && p.sold !== null ? p.sold : 0
+          stock: currentStock,
+          sold: totalSold
         };
       });
       setProducts(mapped);
