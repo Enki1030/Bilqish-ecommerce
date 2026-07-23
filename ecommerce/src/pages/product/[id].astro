@@ -45,6 +45,17 @@ if (galleryList.length === 0 && product.description) {
   }
 }
 
+// Extract stock safely from product column OR embedded description tag
+let effectiveStock = 50;
+if (product.stock !== undefined && product.stock !== null) {
+  effectiveStock = Number(product.stock);
+} else if (product.description) {
+  const stockMatch = product.description.match(/<!--STOCK:(\d+)-->/);
+  if (stockMatch && stockMatch[1]) {
+    effectiveStock = parseInt(stockMatch[1]);
+  }
+}
+
 const allImages = [product.image_url, ...galleryList].filter(Boolean);
 const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK):[\s\S]*?-->/g, '').trim();
 
@@ -156,12 +167,12 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
               <button type="button" id="qty-minus" class="px-5 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 12H4"></path></svg>
               </button>
-              <input type="number" id="qty-input" value="1" min="1" max={product.stock} class="w-12 text-center text-gray-900 font-heading font-semibold focus:outline-none bg-transparent appearance-none border-none p-0" readonly />
+              <input type="number" id="qty-input" value="1" min="1" max={effectiveStock} class="w-12 text-center text-gray-900 font-heading font-semibold focus:outline-none bg-transparent appearance-none border-none p-0" readonly />
               <button type="button" id="qty-plus" class="px-5 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
               </button>
             </div>
-            <p class="text-xs text-gray-500 font-body mt-3">Sisa stok: {product.stock} pasang</p>
+            <p class="text-xs text-gray-500 font-body mt-3">Sisa stok: {effectiveStock} pasang</p>
           </div>
 
           <!-- Actions -->
@@ -218,7 +229,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
     }
   </style>
 
-  <script define:vars={{ product }}>
+  <script define:vars={{ product, effectiveStock }}>
     document.addEventListener('DOMContentLoaded', () => {
       let selectedSize = null;
       let quantity = 1;
@@ -263,7 +274,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       });
 
       btnPlus?.addEventListener('click', () => {
-        if (quantity < product.stock) {
+        if (quantity < effectiveStock) {
           quantity++;
           if (qtyInput) qtyInput.value = quantity.toString();
         } else {
