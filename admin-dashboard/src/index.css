@@ -1,13 +1,15 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @theme {
-  --color-primary: #5c1616;
-  --color-primary-hover: #400f0f;
-  --color-primary-light: #fdf5f5;
-  --font-heading: "Playfair Display", serif;
-  --font-body: "Poppins", sans-serif;
-  --font-button: "Inter", sans-serif;
+  --color-primary: #0F172A;
+  --color-primary-hover: #1E293B;
+  --color-primary-light: #F1F5F9;
+  --color-accent: #16A34A;
+  --color-accent-light: #DCFCE7;
+  --font-heading: "Plus Jakarta Sans", "Inter", sans-serif;
+  --font-body: "Plus Jakarta Sans", "Inter", sans-serif;
+  --font-button: "Plus Jakarta Sans", "Inter", sans-serif;
 }
 
 html {
@@ -15,17 +17,12 @@ html {
 }
 
 body {
-  @apply font-body text-gray-800 bg-[#FAF9F6];
-}
-
-h1, h2, h3, h4, h5, h6, .font-heading {
-  @apply font-heading tracking-wide;
+  font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+  color: #1A1A1A;
+  background-color: #FAF9F6;
 }
 
 b, strong {
-  @apply font-semibold;
+  font-weight: 600;
 }
 
-* {
-  border-radius: 0 !important;
-}

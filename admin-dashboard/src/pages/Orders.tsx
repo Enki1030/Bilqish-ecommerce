@@ -198,25 +198,25 @@ export default function Orders() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-[1400px] mx-auto font-body">
-      {/* Header Summary Stats (Jakmall-style top banner) */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-gray-200 pb-4">
+    <div className="p-6 md:p-8 max-w-[1400px] mx-auto font-sans">
+      {/* 1. Header Summary Stats (24px Bold #1A1A1A, 24px bottom margin to content) */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-[#E2E8F0] pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-heading tracking-tight">Kelola Pesanan</h1>
-          <p className="text-xs text-gray-500 mt-0.5">Kelola, verifikasi, dan pantau status transaksi toko secara terstruktur.</p>
+          <h1 className="text-[24px] font-bold text-[#1A1A1A] tracking-tight">Kelola Pesanan</h1>
+          <p className="text-[12px] font-normal text-[#71717A] mt-1">Kelola, verifikasi, dan pantau status transaksi toko secara terstruktur.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
-          <div>Pesanan Otomatis: <span className="font-bold text-gray-900">0 / 20</span></div>
-          <div className="h-3 w-[1px] bg-gray-300"></div>
-          <div>Pesanan COD: <span className="font-bold text-gray-900">0 / 5</span></div>
-          <div className="h-3 w-[1px] bg-gray-300"></div>
-          <div>Kurir Instan: <span className="font-bold font-body text-primary">{counts.shipping} Aktif</span></div>
+        <div className="flex flex-wrap items-center gap-4 text-[12px] text-[#71717A] bg-slate-50 px-4 py-2 rounded-lg border border-[#E2E8F0]">
+          <div>Pesanan Otomatis: <span className="font-medium text-[#1A1A1A]">0 / 20</span></div>
+          <div className="h-3 w-[1px] bg-slate-300"></div>
+          <div>Pesanan COD: <span className="font-medium text-[#1A1A1A]">0 / 5</span></div>
+          <div className="h-3 w-[1px] bg-slate-300"></div>
+          <div>Kurir Instan: <span className="font-medium text-[#0F172A]">{counts.shipping} Aktif</span></div>
         </div>
       </div>
 
-      {/* 1. Main Navigation Tabs (Jakmall Style) */}
-      <div className="border-b border-gray-200 mb-4 overflow-x-auto">
+      {/* 1. Main Navigation Tabs */}
+      <div className="border-b border-[#E2E8F0] mb-4 overflow-x-auto">
         <nav className="flex space-x-8 min-w-max">
           {[
             { id: 'new', label: 'Pesanan Baru', count: counts.new },
@@ -229,16 +229,16 @@ export default function Orders() {
             <button
               key={tab.id}
               onClick={() => setActiveMainTab(tab.id as MainTab)}
-              className={`pb-3 text-sm font-semibold transition-all relative flex items-center gap-2 ${
+              className={`pb-3 text-[14px] font-semibold transition-all relative flex items-center gap-2 cursor-pointer ${
                 activeMainTab === tab.id
-                  ? 'text-primary border-b-2 border-primary font-bold'
-                  : 'text-gray-500 hover:text-gray-900'
+                  ? 'text-[#0F172A] border-b-2 border-[#0F172A]'
+                  : 'text-[#71717A] hover:text-[#1A1A1A]'
               }`}
             >
               {tab.label}
               {tab.count > 0 && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-body ${
-                  activeMainTab === tab.id ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
+                <span className={`text-[12px] px-2 py-0.5 rounded-full font-medium ${
+                  activeMainTab === tab.id ? 'bg-[#0F172A] text-white' : 'bg-slate-100 text-[#71717A]'
                 }`}>
                   {tab.count}
                 </span>
@@ -248,16 +248,16 @@ export default function Orders() {
         </nav>
       </div>
 
-      {/* 2. Sub-Pills Filters */}
+      {/* 2. Sub-Pills Filters (Minimalist Capsule Buttons) */}
       <div className="flex flex-wrap items-center gap-2 mb-6">
         {subTabsMap[activeMainTab].map(sub => (
           <button
             key={sub.id}
             onClick={() => setActiveSubTab(sub.id)}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-all cursor-pointer ${
               activeSubTab === sub.id
-                ? 'bg-primary text-white shadow-sm font-bold'
-                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                ? 'bg-[#0F172A] text-white shadow-xs font-semibold'
+                : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
             }`}
           >
             {sub.label}

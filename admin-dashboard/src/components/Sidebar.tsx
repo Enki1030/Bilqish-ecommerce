@@ -11,44 +11,58 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col sticky top-0">
-      <div className="h-16 flex items-center px-6 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-primary font-heading tracking-widest uppercase">Ball<span className="text-gray-400">qish</span></h1>
+    <div className="w-64 bg-white border-r border-[#E2E8F0] h-screen flex flex-col sticky top-0 font-sans">
+      {/* Sidebar Header / Logo */}
+      <div className="h-16 flex items-center px-6 border-b border-[#E2E8F0]">
+        <h1 className="text-[18px] font-bold text-[#0F172A] tracking-wider uppercase">
+          Ball<span className="text-slate-400 font-normal">qish</span>
+        </h1>
       </div>
       
-      <div className="flex-1 py-6 px-4 space-y-1">
+      {/* Navigation Links */}
+      <div className="flex-1 py-6 px-4 space-y-1.5">
         <NavLink 
           to="/dashboard"
-          className={({isActive}) => `flex items-center gap-3 px-4 py-3 font-button rounded-none font-medium transition-colors ${isActive ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+          className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
+            isActive ? 'bg-[#0F172A] text-white shadow-xs' : 'text-[#333333] hover:bg-slate-100 hover:text-[#1A1A1A]'
+          }`}
         >
-          <LayoutDashboard size={20} />
+          <LayoutDashboard size={18} />
           <span>Dashboard</span>
         </NavLink>
+        
         <NavLink 
           to="/products"
-          className={({isActive}) => `flex items-center gap-3 px-4 py-3 font-button rounded-none font-medium transition-colors ${isActive ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+          className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
+            isActive ? 'bg-[#0F172A] text-white shadow-xs' : 'text-[#333333] hover:bg-slate-100 hover:text-[#1A1A1A]'
+          }`}
         >
-          <Package size={20} />
+          <Package size={18} />
           <span>Produk & Stok</span>
         </NavLink>
+        
         <NavLink 
           to="/orders"
-          className={({isActive}) => `flex items-center gap-3 px-4 py-3 font-button rounded-none font-medium transition-colors ${isActive ? 'bg-primary-light text-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+          className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
+            isActive ? 'bg-[#0F172A] text-white shadow-xs' : 'text-[#333333] hover:bg-slate-100 hover:text-[#1A1A1A]'
+          }`}
         >
-          <ShoppingCart size={20} />
+          <ShoppingCart size={18} />
           <span>Pesanan</span>
         </NavLink>
       </div>
 
-      <div className="p-4 border-t border-gray-100">
+      {/* Logout Footer */}
+      <div className="p-4 border-t border-[#E2E8F0]">
         <button 
           onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 w-full font-button rounded-none font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:bg-primary-light hover:text-primary transition-colors"
+          className="flex items-center gap-3 px-4 py-2.5 w-full rounded-lg text-[14px] font-medium text-[#71717A] hover:bg-rose-50 hover:text-rose-600 transition-colors"
         >
-          <LogOut size={20} />
+          <LogOut size={18} />
           <span>Keluar</span>
         </button>
       </div>
     </div>
   );
 }
+

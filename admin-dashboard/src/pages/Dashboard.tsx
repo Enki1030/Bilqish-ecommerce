@@ -194,19 +194,19 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto font-body pb-12">
-      {/* Executive Welcome Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
+    <div className="space-y-6 max-w-[1400px] mx-auto font-sans pb-12">
+      {/* 1. Executive Welcome Header (24px Bold #1A1A1A, 24px bottom margin to content) */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-[#E2E8F0] pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-heading tracking-tight flex items-center gap-2">
+          <h1 className="text-[24px] font-bold text-[#1A1A1A] tracking-tight flex items-center gap-2">
             Ringkasan Analitik Toko <Sparkles className="w-5 h-5 text-amber-500" />
           </h1>
-          <p className="text-xs text-gray-500 mt-0.5">Pantau metrik omset, performa sepatu terlaris, dan status operasional toko Anda.</p>
+          <p className="text-[12px] font-normal text-[#71717A] mt-1">Pantau metrik omset, performa sepatu terlaris, dan status operasional toko Anda.</p>
         </div>
         <div className="flex items-center gap-2">
           <button 
             onClick={fetchDashboardData}
-            className="px-3.5 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors shadow-sm"
+            className="px-3.5 py-2 bg-white border border-[#E2E8F0] hover:border-slate-300 text-[#1A1A1A] text-[12px] font-medium rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <RefreshCw size={13} /> Refresh Data
           </button>
@@ -217,32 +217,32 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
         {/* Left (60%): Ringkasan Omset Hero Display */}
-        <div className="lg:col-span-7 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between space-y-4">
+        <div className="lg:col-span-7 bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col justify-between space-y-4">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs font-medium text-gray-600 flex items-center gap-1.5">
+              <span className="text-[14px] font-semibold text-[#333333] flex items-center gap-1.5">
                 <DollarSign size={16} className="text-amber-600" /> Ringkasan Omset Toko
               </span>
-              <p className="text-[11px] text-gray-400 mt-0.5">Total pendapatan dari transaksi penjualan produk yang sah.</p>
+              <p className="text-[12px] font-normal text-[#71717A] mt-1">Total pendapatan dari transaksi penjualan produk yang sah.</p>
             </div>
             
             {/* Periode Filter Dropdown / Buttons */}
-            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg text-xs font-medium text-gray-600">
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-[12px] font-medium text-[#71717A]">
               <button 
                 onClick={() => setRevenuePeriod('week')}
-                className={`px-3 py-1 rounded transition-all ${revenuePeriod === 'week' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
+                className={`px-3 py-1 rounded transition-all cursor-pointer ${revenuePeriod === 'week' ? 'bg-[#0F172A] text-white font-medium shadow-xs' : 'hover:text-[#1A1A1A]'}`}
               >
                 Minggu
               </button>
               <button 
                 onClick={() => setRevenuePeriod('month')}
-                className={`px-3 py-1 rounded transition-all ${revenuePeriod === 'month' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
+                className={`px-3 py-1 rounded transition-all cursor-pointer ${revenuePeriod === 'month' ? 'bg-[#0F172A] text-white font-medium shadow-xs' : 'hover:text-[#1A1A1A]'}`}
               >
                 Bulan
               </button>
               <button 
                 onClick={() => setRevenuePeriod('year')}
-                className={`px-3 py-1 rounded transition-all ${revenuePeriod === 'year' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
+                className={`px-3 py-1 rounded transition-all cursor-pointer ${revenuePeriod === 'year' ? 'bg-[#0F172A] text-white font-medium shadow-xs' : 'hover:text-[#1A1A1A]'}`}
               >
                 Tahun
               </button>
@@ -250,15 +250,15 @@ export default function Dashboard() {
           </div>
 
           <div className="pt-2">
-            <span className="text-xs text-gray-400 font-normal">Total Pendapatan ({revenuePeriod === 'week' ? 'Minggu Ini' : revenuePeriod === 'month' ? 'Bulan Ini' : 'Tahun Ini'})</span>
-            <div className="text-3xl font-bold text-primary font-body mt-1 tracking-tight">
+            <span className="text-[12px] text-[#71717A] font-normal">Total Pendapatan ({revenuePeriod === 'week' ? 'Minggu Ini' : revenuePeriod === 'month' ? 'Bulan Ini' : 'Tahun Ini'})</span>
+            <div className="text-3xl font-bold text-[#0F172A] mt-1 tracking-tight">
               Rp {stats.revenue.toLocaleString('id-ID')}
             </div>
           </div>
 
-          <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+          <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-[12px] text-[#71717A]">
             <span>Metrik omset diperbarui secara langsung</span>
-            <span className="text-emerald-600 font-medium flex items-center gap-1">● Akurat</span>
+            <span className="text-[#16A34A] font-medium flex items-center gap-1">● Akurat</span>
           </div>
         </div>
 
