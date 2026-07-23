@@ -182,7 +182,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
               </button>
             </div>
-            <p class="text-xs text-gray-500 font-body mt-3">Sisa stok: {effectiveStock} pasang</p>
+            <p class="text-xs text-gray-500 font-body mt-3">Sisa stok: <span id="live-stock-count">{effectiveStock}</span> pasang</p>
           </div>
 
           <!-- Actions -->
@@ -239,10 +239,11 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
     }
   </style>
 
-  <script define:vars={{ product, effectiveStock }}>
+  <script define:vars={{ product, initialStock, supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL, supabaseKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
     document.addEventListener('DOMContentLoaded', () => {
       let selectedSize = null;
       let quantity = 1;
+      let currentMaxStock = initialStock;
 
       // --- DOM Elements ---
       const sizeBtns = document.querySelectorAll('.size-btn');
@@ -253,6 +254,33 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       const btnAddToCart = document.getElementById('add-to-cart-btn');
       const btnBuyNow = document.getElementById('buy-now-btn');
       const outsoleRadios = document.querySelectorAll('input[name="outsole"]');
+
+      // --- Real-time Live Stock Sync from Supabase ---
+      async function syncLiveStock() {
+        if (!supabaseUrl || !supabaseKey) return;
+        try {
+          const res = await fetch(`${supabaseUrl}/rest/v1/order_items?product_id=eq.${product.id}&select=quantity`, {
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`
+            }
+          });
+          if (res.ok) {
+            const items = await res.json();
+            const sold = items.reduce((acc, i) => acc + (Number(i.quantity) || 1), 0);
+            currentMaxStock = Math.max(0, initialStock - sold);
+
+            const stockEl = document.getElementById('live-stock-count');
+            if (stockEl) stockEl.textContent = currentMaxStock.toString();
+
+            if (qtyInput) qtyInput.setAttribute('max', currentMaxStock.toString());
+          }
+        } catch(e) {
+          console.error('Failed to sync live stock:', e);
+        }
+      }
+
+      syncLiveStock();
 
       // --- Size Selection Logic ---
       sizeBtns.forEach(btn => {
@@ -284,7 +312,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       });
 
       btnPlus?.addEventListener('click', () => {
-        if (quantity < effectiveStock) {
+        if (quantity < currentMaxStock) {
           quantity++;
           if (qtyInput) qtyInput.value = quantity.toString();
         } else {
