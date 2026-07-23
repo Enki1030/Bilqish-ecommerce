@@ -225,7 +225,7 @@ export default function Products() {
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-[#0F172A] hover:bg-[#1E293B] text-white px-5 py-2.5 rounded-lg text-[14px] font-medium flex items-center gap-2 transition-all shadow-xs active:scale-95 cursor-pointer"
+          className="bg-[#5c1616] hover:bg-[#400f0f] text-white px-5 py-2.5 rounded-lg text-[14px] font-medium flex items-center gap-2 transition-all shadow-xs active:scale-95 cursor-pointer"
         >
           <Plus size={16} />
           <span>Tambah Produk Baru</span>

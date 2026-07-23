@@ -216,49 +216,49 @@ export default function Dashboard() {
       {/* 🌟 BARIS 1: 60/40 HERO SECTION (Ringkasan Omset 60% + Top 3 Sepatu Terlaris 40%) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
-        {/* Left (60%): Ringkasan Omset Hero Display */}
-        <div className="lg:col-span-7 bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col justify-between space-y-4">
+        {/* Left (60%): Ringkasan Omset Hero Display (Compact & Bold Display) */}
+        <div className="lg:col-span-7 bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col justify-between space-y-3">
           <div className="flex justify-between items-start">
             <div>
               <span className="text-[14px] font-semibold text-[#333333] flex items-center gap-1.5">
                 <DollarSign size={16} className="text-amber-600" /> Ringkasan Omset Toko
               </span>
-              <p className="text-[12px] font-normal text-[#71717A] mt-1">Total pendapatan dari transaksi penjualan produk yang sah.</p>
+              <p className="text-[12px] font-normal text-[#71717A] mt-0.5">Total pendapatan dari transaksi penjualan produk yang sah.</p>
             </div>
             
             {/* Periode Filter Dropdown / Buttons */}
             <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-[12px] font-medium text-[#71717A]">
               <button 
                 onClick={() => setRevenuePeriod('week')}
-                className={`px-3 py-1 rounded transition-all cursor-pointer ${revenuePeriod === 'week' ? 'bg-[#0F172A] text-white font-medium shadow-xs' : 'hover:text-[#1A1A1A]'}`}
+                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${revenuePeriod === 'week' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-[#1A1A1A]'}`}
               >
                 Minggu
               </button>
               <button 
                 onClick={() => setRevenuePeriod('month')}
-                className={`px-3 py-1 rounded transition-all cursor-pointer ${revenuePeriod === 'month' ? 'bg-[#0F172A] text-white font-medium shadow-xs' : 'hover:text-[#1A1A1A]'}`}
+                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${revenuePeriod === 'month' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-[#1A1A1A]'}`}
               >
                 Bulan
               </button>
               <button 
                 onClick={() => setRevenuePeriod('year')}
-                className={`px-3 py-1 rounded transition-all cursor-pointer ${revenuePeriod === 'year' ? 'bg-[#0F172A] text-white font-medium shadow-xs' : 'hover:text-[#1A1A1A]'}`}
+                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${revenuePeriod === 'year' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-[#1A1A1A]'}`}
               >
                 Tahun
               </button>
             </div>
           </div>
 
-          <div className="pt-2">
-            <span className="text-[12px] text-[#71717A] font-normal">Total Pendapatan ({revenuePeriod === 'week' ? 'Minggu Ini' : revenuePeriod === 'month' ? 'Bulan Ini' : 'Tahun Ini'})</span>
-            <div className="text-3xl font-bold text-[#0F172A] mt-1 tracking-tight">
+          <div className="my-1">
+            <span className="text-[12px] text-[#71717A] font-medium block">Total Pendapatan ({revenuePeriod === 'week' ? 'Minggu Ini' : revenuePeriod === 'month' ? 'Bulan Ini' : 'Tahun Ini'})</span>
+            <div className="text-3xl sm:text-4xl font-bold text-[#5c1616] mt-0.5 tracking-tight font-sans">
               Rp {stats.revenue.toLocaleString('id-ID')}
             </div>
           </div>
 
-          <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-[12px] text-[#71717A]">
+          <div className="pt-2.5 border-t border-[#E2E8F0] flex items-center justify-between text-[12px] text-[#71717A]">
             <span>Metrik omset diperbarui secara langsung</span>
-            <span className="text-[#16A34A] font-medium flex items-center gap-1">● Akurat</span>
+            <span className="text-[#16A34A] font-semibold flex items-center gap-1">● Akurat</span>
           </div>
         </div>
 
@@ -408,96 +408,96 @@ export default function Dashboard() {
           {/* 1. Pesanan */}
           <button
             onClick={() => setActiveTrendTab('orders')}
-            className={`p-4 rounded-xl border text-left transition-all relative ${
+            className={`p-4 rounded-xl border text-left transition-all relative cursor-pointer ${
               activeTrendTab === 'orders'
-                ? 'bg-white border-primary shadow-md ring-1 ring-primary'
-                : 'bg-gray-50/50 border-gray-200 hover:border-gray-300 hover:bg-white'
+                ? 'bg-white border-[#5c1616] shadow-xs ring-1 ring-[#5c1616]'
+                : 'bg-slate-50/50 border-[#E2E8F0] hover:border-slate-300 hover:bg-white'
             }`}
           >
-            <span className="text-xs text-gray-500 font-medium block">Pesanan</span>
-            <div className="text-lg font-medium text-gray-900 font-body mt-1">
+            <span className="text-[12px] text-[#71717A] font-medium block">Pesanan</span>
+            <div className="text-[18px] font-semibold text-[#1A1A1A] font-sans mt-1">
               {trendMetrics.orders.count}
             </div>
             <div className="flex items-center gap-1 text-[11px] mt-1">
-              <span className={`font-medium ${trendMetrics.orders.growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`font-medium ${trendMetrics.orders.growth >= 0 ? 'text-[#16A34A]' : 'text-rose-600'}`}>
                 {trendMetrics.orders.growth >= 0 ? `+${trendMetrics.orders.growth}%` : `${trendMetrics.orders.growth}%`}
               </span>
-              <span className="text-gray-400">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
+              <span className="text-[#71717A]">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
             </div>
-            {activeTrendTab === 'orders' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-b-xl"></div>}
+            {activeTrendTab === 'orders' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#5c1616] rounded-b-xl"></div>}
           </button>
 
           {/* 2. Produk Dibeli */}
           <button
             onClick={() => setActiveTrendTab('items')}
-            className={`p-4 rounded-xl border text-left transition-all relative ${
+            className={`p-4 rounded-xl border text-left transition-all relative cursor-pointer ${
               activeTrendTab === 'items'
-                ? 'bg-white border-primary shadow-md ring-1 ring-primary'
-                : 'bg-gray-50/50 border-gray-200 hover:border-gray-300 hover:bg-white'
+                ? 'bg-white border-[#5c1616] shadow-xs ring-1 ring-[#5c1616]'
+                : 'bg-slate-50/50 border-[#E2E8F0] hover:border-slate-300 hover:bg-white'
             }`}
           >
-            <span className="text-xs text-gray-500 font-medium block">Produk Dibeli</span>
-            <div className="text-lg font-medium text-gray-900 font-body mt-1">
-              {trendMetrics.items.count} <span className="text-xs font-normal text-gray-500">pcs</span>
+            <span className="text-[12px] text-[#71717A] font-medium block">Produk Dibeli</span>
+            <div className="text-[18px] font-semibold text-[#1A1A1A] font-sans mt-1">
+              {trendMetrics.items.count} <span className="text-[12px] font-normal text-[#71717A]">pcs</span>
             </div>
             <div className="flex items-center gap-1 text-[11px] mt-1">
-              <span className={`font-medium ${trendMetrics.items.growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`font-medium ${trendMetrics.items.growth >= 0 ? 'text-[#16A34A]' : 'text-rose-600'}`}>
                 {trendMetrics.items.growth >= 0 ? `+${trendMetrics.items.growth}%` : `${trendMetrics.items.growth}%`}
               </span>
-              <span className="text-gray-400">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
+              <span className="text-[#71717A]">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
             </div>
-            {activeTrendTab === 'items' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-b-xl"></div>}
+            {activeTrendTab === 'items' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#5c1616] rounded-b-xl"></div>}
           </button>
 
           {/* 3. Pesanan Dibatalkan */}
           <button
             onClick={() => setActiveTrendTab('cancelled')}
-            className={`p-4 rounded-xl border text-left transition-all relative ${
+            className={`p-4 rounded-xl border text-left transition-all relative cursor-pointer ${
               activeTrendTab === 'cancelled'
-                ? 'bg-white border-primary shadow-md ring-1 ring-primary'
-                : 'bg-gray-50/50 border-gray-200 hover:border-gray-300 hover:bg-white'
+                ? 'bg-white border-[#5c1616] shadow-xs ring-1 ring-[#5c1616]'
+                : 'bg-slate-50/50 border-[#E2E8F0] hover:border-slate-300 hover:bg-white'
             }`}
           >
-            <span className="text-xs text-gray-500 font-medium block">Pesanan Dibatalkan</span>
-            <div className="text-lg font-medium text-gray-900 font-body mt-1">
+            <span className="text-[12px] text-[#71717A] font-medium block">Pesanan Dibatalkan</span>
+            <div className="text-[18px] font-semibold text-[#1A1A1A] font-sans mt-1">
               {trendMetrics.cancelled.count}
             </div>
             <div className="flex items-center gap-1 text-[11px] mt-1">
-              <span className={`font-medium ${trendMetrics.cancelled.growth <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`font-medium ${trendMetrics.cancelled.growth <= 0 ? 'text-[#16A34A]' : 'text-rose-600'}`}>
                 {trendMetrics.cancelled.growth >= 0 ? `+${trendMetrics.cancelled.growth}%` : `${trendMetrics.cancelled.growth}%`}
               </span>
-              <span className="text-gray-400">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
+              <span className="text-[#71717A]">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
             </div>
-            {activeTrendTab === 'cancelled' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-b-xl"></div>}
+            {activeTrendTab === 'cancelled' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#5c1616] rounded-b-xl"></div>}
           </button>
 
           {/* 4. Pembelian (Rupiah) */}
           <button
             onClick={() => setActiveTrendTab('revenue')}
-            className={`p-4 rounded-xl border text-left transition-all relative ${
+            className={`p-4 rounded-xl border text-left transition-all relative cursor-pointer ${
               activeTrendTab === 'revenue'
-                ? 'bg-white border-primary shadow-md ring-1 ring-primary'
-                : 'bg-gray-50/50 border-gray-200 hover:border-gray-300 hover:bg-white'
+                ? 'bg-white border-[#5c1616] shadow-xs ring-1 ring-[#5c1616]'
+                : 'bg-slate-50/50 border-[#E2E8F0] hover:border-slate-300 hover:bg-white'
             }`}
           >
-            <span className="text-xs text-gray-500 font-medium block">Pembelian (Nominal)</span>
-            <div className="text-lg font-medium text-primary font-body mt-1">
+            <span className="text-[12px] text-[#71717A] font-medium block">Pembelian (Nominal)</span>
+            <div className="text-[18px] font-semibold text-[#5c1616] font-sans mt-1">
               Rp {trendMetrics.revenue.count.toLocaleString('id-ID')}
             </div>
             <div className="flex items-center gap-1 text-[11px] mt-1">
-              <span className={`font-medium ${trendMetrics.revenue.growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`font-medium ${trendMetrics.revenue.growth >= 0 ? 'text-[#16A34A]' : 'text-rose-600'}`}>
                 {trendMetrics.revenue.growth >= 0 ? `+${trendMetrics.revenue.growth}%` : `${trendMetrics.revenue.growth}%`}
               </span>
-              <span className="text-gray-400">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
+              <span className="text-[#71717A]">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
             </div>
-            {activeTrendTab === 'revenue' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-b-xl"></div>}
+            {activeTrendTab === 'revenue' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#5c1616] rounded-b-xl"></div>}
           </button>
         </div>
 
         {/* Visual Daily Bar Chart Representation */}
-        <div className="bg-gray-50/70 p-5 rounded-xl border border-gray-100 space-y-4">
-          <div className="flex justify-between items-center text-xs">
-            <span className="font-medium text-gray-700">
+        <div className="bg-slate-50/70 p-5 rounded-xl border border-[#E2E8F0] space-y-4">
+          <div className="flex justify-between items-center text-[12px]">
+            <span className="font-medium text-[#333333]">
               Grafik Harian: {
                 activeTrendTab === 'orders' ? 'Jumlah Pesanan' :
                 activeTrendTab === 'items' ? 'Jumlah Produk Dibeli' :
@@ -506,7 +506,7 @@ export default function Dashboard() {
             </span>
           </div>
 
-          <div className="h-44 flex items-end justify-between gap-2 pt-6 pb-2 px-2 border-b border-gray-200">
+          <div className="h-44 flex items-end justify-between gap-2 pt-6 pb-2 px-2 border-b border-[#E2E8F0]">
             {chartDailyData.data.map((day, idx) => {
               const val = activeTrendTab === 'orders' ? day.orders :
                           activeTrendTab === 'items' ? day.items :
@@ -516,18 +516,18 @@ export default function Dashboard() {
               return (
                 <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
                   {/* Tooltip on hover */}
-                  <span className="text-[10px] font-bold text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity bg-white px-1.5 py-0.5 rounded border shadow-xs font-body">
+                  <span className="text-[10px] font-semibold text-[#1A1A1A] opacity-0 group-hover:opacity-100 transition-opacity bg-white px-1.5 py-0.5 rounded border border-slate-200 shadow-xs font-sans">
                     {activeTrendTab === 'revenue' ? `Rp ${(val/1000).toFixed(0)}k` : val}
                   </span>
                   {/* Bar element */}
                   <div 
                     style={{ height: `${heightPct}%` }}
                     className={`w-full max-w-[36px] rounded-t transition-all ${
-                      activeTrendTab === 'cancelled' ? 'bg-rose-400 group-hover:bg-rose-600' : 'bg-primary group-hover:bg-primary-hover'
+                      activeTrendTab === 'cancelled' ? 'bg-rose-400 group-hover:bg-rose-600' : 'bg-[#5c1616] group-hover:bg-[#400f0f]'
                     }`}
                   ></div>
                   {/* X-axis date label */}
-                  <span className="text-[10px] text-gray-500 font-medium truncate w-full text-center">{day.date}</span>
+                  <span className="text-[10px] text-[#71717A] font-medium truncate w-full text-center">{day.date}</span>
                 </div>
               );
             })}

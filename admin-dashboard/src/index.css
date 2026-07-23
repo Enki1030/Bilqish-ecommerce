@@ -1,15 +1,15 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @theme {
-  --color-primary: #0F172A;
-  --color-primary-hover: #1E293B;
-  --color-primary-light: #F1F5F9;
+  --color-primary: #5c1616;
+  --color-primary-hover: #400f0f;
+  --color-primary-light: #fdf5f5;
   --color-accent: #16A34A;
   --color-accent-light: #DCFCE7;
-  --font-heading: "Plus Jakarta Sans", "Inter", sans-serif;
-  --font-body: "Plus Jakarta Sans", "Inter", sans-serif;
-  --font-button: "Plus Jakarta Sans", "Inter", sans-serif;
+  --font-heading: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-button: "Inter", sans-serif;
 }
 
 html {
@@ -17,7 +17,7 @@ html {
 }
 
 body {
-  font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+  font-family: "Inter", sans-serif;
   color: #1A1A1A;
   background-color: #FAF9F6;
 }
@@ -25,4 +25,5 @@ body {
 b, strong {
   font-weight: 600;
 }
+
 

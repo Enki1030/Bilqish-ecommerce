@@ -211,7 +211,7 @@ export default function Orders() {
           <div className="h-3 w-[1px] bg-slate-300"></div>
           <div>Pesanan COD: <span className="font-medium text-[#1A1A1A]">0 / 5</span></div>
           <div className="h-3 w-[1px] bg-slate-300"></div>
-          <div>Kurir Instan: <span className="font-medium text-[#0F172A]">{counts.shipping} Aktif</span></div>
+          <div>Kurir Instan: <span className="font-medium text-[#5c1616]">{counts.shipping} Aktif</span></div>
         </div>
       </div>
 
@@ -231,14 +231,14 @@ export default function Orders() {
               onClick={() => setActiveMainTab(tab.id as MainTab)}
               className={`pb-3 text-[14px] font-semibold transition-all relative flex items-center gap-2 cursor-pointer ${
                 activeMainTab === tab.id
-                  ? 'text-[#0F172A] border-b-2 border-[#0F172A]'
+                  ? 'text-[#5c1616] border-b-2 border-[#5c1616]'
                   : 'text-[#71717A] hover:text-[#1A1A1A]'
               }`}
             >
               {tab.label}
               {tab.count > 0 && (
                 <span className={`text-[12px] px-2 py-0.5 rounded-full font-medium ${
-                  activeMainTab === tab.id ? 'bg-[#0F172A] text-white' : 'bg-slate-100 text-[#71717A]'
+                  activeMainTab === tab.id ? 'bg-[#5c1616] text-white' : 'bg-slate-100 text-[#71717A]'
                 }`}>
                   {tab.count}
                 </span>
@@ -248,15 +248,15 @@ export default function Orders() {
         </nav>
       </div>
 
-      {/* 2. Sub-Pills Filters (Minimalist Capsule Buttons) */}
+      {/* 2. Sub-Pills Filters (Subtle rounded-lg Buttons to match design system) */}
       <div className="flex flex-wrap items-center gap-2 mb-6">
         {subTabsMap[activeMainTab].map(sub => (
           <button
             key={sub.id}
             onClick={() => setActiveSubTab(sub.id)}
-            className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-lg text-[12px] font-medium transition-all cursor-pointer ${
               activeSubTab === sub.id
-                ? 'bg-[#0F172A] text-white shadow-xs font-semibold'
+                ? 'bg-[#5c1616] text-white shadow-xs font-semibold'
                 : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
             }`}
           >

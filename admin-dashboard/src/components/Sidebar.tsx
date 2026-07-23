@@ -14,8 +14,8 @@ export default function Sidebar() {
     <div className="w-64 bg-white border-r border-[#E2E8F0] h-screen flex flex-col sticky top-0 font-sans">
       {/* Sidebar Header / Logo */}
       <div className="h-16 flex items-center px-6 border-b border-[#E2E8F0]">
-        <h1 className="text-[18px] font-bold text-[#0F172A] tracking-wider uppercase">
-          Ball<span className="text-slate-400 font-normal">qish</span>
+        <h1 className="text-[18px] font-bold text-[#5c1616] tracking-wider uppercase">
+          Ball<span className="text-gray-400 font-normal">qish</span>
         </h1>
       </div>
       
@@ -24,7 +24,7 @@ export default function Sidebar() {
         <NavLink 
           to="/dashboard"
           className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
-            isActive ? 'bg-[#0F172A] text-white shadow-xs' : 'text-[#333333] hover:bg-slate-100 hover:text-[#1A1A1A]'
+            isActive ? 'bg-[#5c1616] text-white shadow-xs' : 'text-[#333333] hover:bg-[#fdf5f5] hover:text-[#5c1616]'
           }`}
         >
           <LayoutDashboard size={18} />
@@ -34,7 +34,7 @@ export default function Sidebar() {
         <NavLink 
           to="/products"
           className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
-            isActive ? 'bg-[#0F172A] text-white shadow-xs' : 'text-[#333333] hover:bg-slate-100 hover:text-[#1A1A1A]'
+            isActive ? 'bg-[#5c1616] text-white shadow-xs' : 'text-[#333333] hover:bg-[#fdf5f5] hover:text-[#5c1616]'
           }`}
         >
           <Package size={18} />
@@ -44,7 +44,7 @@ export default function Sidebar() {
         <NavLink 
           to="/orders"
           className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
-            isActive ? 'bg-[#0F172A] text-white shadow-xs' : 'text-[#333333] hover:bg-slate-100 hover:text-[#1A1A1A]'
+            isActive ? 'bg-[#5c1616] text-white shadow-xs' : 'text-[#333333] hover:bg-[#fdf5f5] hover:text-[#5c1616]'
           }`}
         >
           <ShoppingCart size={18} />
