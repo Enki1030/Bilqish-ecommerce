@@ -366,24 +366,24 @@ export default function Orders() {
               {/* Top Order Card Bar */}
               <div className="bg-gray-50 px-5 py-3 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="font-bold text-gray-900 font-body">ID: #{order.id.slice(0, 8).toUpperCase()}</span>
+                  <span className="font-medium text-gray-900 font-body">ID: #{order.id.slice(0, 8).toUpperCase()}</span>
                   <span className="text-gray-400">•</span>
                   <span className="text-gray-500">{new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   <span className="text-gray-400">•</span>
-                  <span className="flex items-center gap-1 font-medium text-gray-700"><User size={13} /> {order.customer_name}</span>
+                  <span className="flex items-center gap-1 font-normal text-gray-700"><User size={13} /> {order.customer_name}</span>
                   <span className="text-gray-400">•</span>
-                  <span className="flex items-center gap-1 font-medium text-gray-600"><Phone size={13} /> {order.customer_phone}</span>
+                  <span className="flex items-center gap-1 font-normal text-gray-600"><Phone size={13} /> {order.customer_phone}</span>
                 </div>
 
                 {/* Status Badge */}
                 <div className="flex items-center gap-2">
-                  <span className={`px-2.5 py-1 rounded text-xs font-bold ${
-                    order.status === 'Menunggu Pembayaran' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
-                    order.status === 'Sedang Diverifikasi' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                    ['Diproses', 'Sedang Diproses'].includes(order.status) ? 'bg-indigo-100 text-indigo-800 border border-indigo-200' :
-                    ['Dikirim', 'Dalam Pengiriman', 'Siap Pickup'].includes(order.status) ? 'bg-purple-100 text-purple-800 border border-purple-200' :
-                    order.status === 'Selesai' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                    'bg-rose-100 text-rose-800 border border-rose-200'
+                  <span className={`px-2.5 py-1 rounded text-xs font-medium ${
+                    order.status === 'Menunggu Pembayaran' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                    order.status === 'Sedang Diverifikasi' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                    ['Diproses', 'Sedang Diproses'].includes(order.status) ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                    ['Dikirim', 'Dalam Pengiriman', 'Siap Pickup'].includes(order.status) ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                    order.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                    'bg-rose-50 text-rose-700 border border-rose-200'
                   }`}>
                     {order.status || 'Menunggu Pembayaran'}
                   </span>
@@ -401,9 +401,9 @@ export default function Orders() {
                           <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-gray-900 text-xs truncate">{item.product_name}</p>
+                          <p className="font-medium text-gray-900 text-xs truncate">{item.product_name}</p>
                           <p className="text-[11px] text-gray-500 mt-0.5">Ukuran: {item.size} | Model: {item.outsole_model || 'Standard'}</p>
-                          <p className="text-xs font-bold text-gray-700 mt-1">{item.quantity}x <span className="font-body">Rp {item.price?.toLocaleString('id-ID')}</span></p>
+                          <p className="text-xs font-normal text-gray-700 mt-1">{item.quantity}x <span className="font-body">Rp {item.price?.toLocaleString('id-ID')}</span></p>
                         </div>
                       </div>
                     ))}
@@ -412,12 +412,12 @@ export default function Orders() {
                   {/* Middle: Address & Summary */}
                   <div className="lg:col-span-3 text-xs border-l lg:border-r border-gray-100 px-0 lg:px-4 space-y-2">
                     <div>
-                      <span className="text-gray-400 font-medium">Alamat Pengiriman:</span>
-                      <p className="text-gray-800 font-medium line-clamp-2 mt-0.5">{order.customer_address || 'Tidak ada alamat'}</p>
+                      <span className="text-gray-400 font-normal">Alamat Pengiriman:</span>
+                      <p className="text-gray-800 font-normal line-clamp-2 mt-0.5">{order.customer_address || 'Tidak ada alamat'}</p>
                     </div>
                     <div className="pt-2 border-t border-gray-100">
-                      <span className="text-gray-400 font-medium">Total Tagihan:</span>
-                      <p className="text-sm font-bold text-primary font-body">Rp {order.total_amount?.toLocaleString('id-ID')}</p>
+                      <span className="text-gray-400 font-normal">Total Tagihan:</span>
+                      <p className="text-xs font-medium text-primary font-body mt-0.5">Rp {order.total_amount?.toLocaleString('id-ID')}</p>
                     </div>
                   </div>
 
@@ -427,7 +427,7 @@ export default function Orders() {
                     {order.status === 'Menunggu Pembayaran' && (
                       <button
                         onClick={() => updateOrderStatus(order.id, 'Diproses')}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-sm transition-colors"
                       >
                         <CheckCircle2 size={13} /> Verifikasi Bayar
                       </button>
@@ -436,7 +436,7 @@ export default function Orders() {
                     {['Diproses', 'Sedang Diproses', 'Pesanan Baru'].includes(order.status) && (
                       <button
                         onClick={() => updateOrderStatus(order.id, 'Dikirim')}
-                        className="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+                        className="w-full bg-primary hover:bg-primary-hover text-white text-xs font-medium py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-sm transition-colors"
                       >
                         <Truck size={13} /> Proses & Kirim
                       </button>
@@ -445,7 +445,7 @@ export default function Orders() {
                     {['Dikirim', 'Dalam Pengiriman', 'Siap Pickup'].includes(order.status) && (
                       <button
                         onClick={() => updateOrderStatus(order.id, 'Selesai')}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-sm transition-colors"
                       >
                         <CheckCircle2 size={13} /> Tandai Selesai
                       </button>
@@ -453,14 +453,14 @@ export default function Orders() {
 
                     {/* Manual Status Override Select */}
                     <div className="w-full">
-                      <label className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                      <label className="block text-[11px] font-medium text-gray-500 mb-1">
                         Ubah Status
                       </label>
                       <div className="relative">
                         <select
                           value={order.status || 'Menunggu Pembayaran'}
                           onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                          className="w-full appearance-none bg-white border border-gray-300 hover:border-primary text-gray-800 font-semibold text-xs py-2 pl-3 pr-8 rounded-lg cursor-pointer outline-none shadow-sm transition-all focus:ring-1 focus:ring-primary focus:border-primary"
+                          className="w-full appearance-none bg-white border border-gray-300 hover:border-primary text-gray-800 font-medium text-xs py-1.5 pl-2.5 pr-7 rounded-lg cursor-pointer outline-none transition-all focus:ring-1 focus:ring-primary focus:border-primary"
                         >
                           <option value="Menunggu Pembayaran">Menunggu Pembayaran</option>
                           <option value="Sedang Diverifikasi">Sedang Diverifikasi</option>
@@ -474,7 +474,7 @@ export default function Orders() {
                           <option value="Pengiriman Gagal">Pengiriman Gagal</option>
                           <option value="Dibatalkan">Dibatalkan</option>
                         </select>
-                        <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                        <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       </div>
                     </div>
                   </div>
