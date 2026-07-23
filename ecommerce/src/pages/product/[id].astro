@@ -21,10 +21,27 @@ if (error || !product) {
 // Convert sizes array from JSON string if needed, or if it's already an array
 const sizes = Array.isArray(product.sizes) ? product.sizes : JSON.parse(product.sizes || '[]');
 
-// Extract all gallery / promo mockup photos safely
-const rawGallery = product.gallery_urls;
-const galleryList = Array.isArray(rawGallery) ? rawGallery : (typeof rawGallery === 'string' ? JSON.parse(rawGallery || '[]') : []);
+// Extract all gallery / promo mockup photos safely from column OR embedded tag
+let galleryList: string[] = [];
+
+if (product.gallery_urls) {
+  galleryList = Array.isArray(product.gallery_urls) ? product.gallery_urls : (typeof product.gallery_urls === 'string' ? JSON.parse(product.gallery_urls || '[]') : []);
+}
+
+// Fallback to embedded description tag if galleryList is empty
+if (galleryList.length === 0 && product.description) {
+  const match = product.description.match(/<!--GALLERY:(.*?)-->/);
+  if (match && match[1]) {
+    try {
+      galleryList = JSON.parse(match[1]);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
+
 const allImages = [product.image_url, ...galleryList].filter(Boolean);
+const cleanDescription = (product.description || '').replace(/<!--GALLERY:[\s\S]*?-->/g, '').trim();
 
 ---
 
@@ -45,13 +62,13 @@ const allImages = [product.image_url, ...galleryList].filter(Boolean);
         
         <!-- LEFT: Image Gallery -->
         <div class="w-full lg:w-1/2 flex flex-col-reverse md:flex-row gap-4 lg:sticky lg:top-32 lg:h-max">
-          <!-- Thumbnails (Main Photo & Promo Mockup Photos) -->
-          <div class="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible hide-scrollbar w-full md:w-24 flex-shrink-0">
+          <!-- Thumbnails (Main Photo & Promo Mockup Photos with Scrollbar) -->
+          <div class="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto w-full md:w-24 md:max-h-[540px] flex-shrink-0 pr-1 scrollbar-thin scrollbar-thumb-gray-300">
             {allImages.map((imgSrc, idx) => (
               <button 
                 type="button"
                 data-img-src={imgSrc}
-                class={`thumbnail-btn w-20 h-20 md:w-full md:h-28 bg-white border flex-shrink-0 flex items-center justify-center transition-all cursor-pointer rounded-lg overflow-hidden ${
+                class={`thumbnail-btn w-20 h-20 md:w-full md:h-24 bg-white border flex-shrink-0 flex items-center justify-center transition-all cursor-pointer rounded-lg overflow-hidden ${
                   idx === 0 ? 'border-gray-900 border-2' : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-400'
                 }`}
               >
@@ -161,10 +178,8 @@ const allImages = [product.image_url, ...galleryList].filter(Boolean);
                   <svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
               </summary>
-              <div class="text-gray-700 mt-4 leading-snug font-body font-light text-base">
-                Sepatu <span class="font-semibold text-gray-900">{product.name}</span> dari Ballqish dirancang dengan tingkat ketelitian tinggi. Model {product.model} ini menghadirkan perpaduan material premium yang tahan lama, sangat nyaman digunakan untuk kegiatan sehari-hari maupun acara khusus.
-                <br><br>
-                Dengan detail desain mutakhir dan konstruksi outsole kokoh yang meredam benturan, langkah kaki Anda akan terasa lebih ringan tanpa mengorbankan estetika.
+              <div class="text-gray-700 mt-4 leading-snug font-body font-light text-base whitespace-pre-line">
+                {cleanDescription || `Sepatu ${product.name} dari Ballqish dirancang dengan tingkat ketelitian tinggi. Model ${product.model} ini menghadirkan perpaduan material premium yang tahan lama, sangat nyaman digunakan untuk kegiatan sehari-hari maupun acara khusus.`}
               </div>
             </details>
             <details class="group py-5 border-t border-gray-200">

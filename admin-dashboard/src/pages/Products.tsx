@@ -154,14 +154,35 @@ export default function Products() {
     setCategory(product.category || 'Slip-on');
     setModelNumber(product.model ? product.model.replace(/[^0-9]/g, '') : '');
     setDisplayName(product.name || '');
-    setDescription(product.description || '');
+    
+    // Extract clean description and embedded gallery if present
+    const rawDesc = product.description || '';
+    const cleanDesc = rawDesc.replace(/<!--GALLERY:[\s\S]*?-->/g, '').trim();
+    setDescription(cleanDesc);
+
     setIsCustomNameEdited(true);
     setPrice((product.price || 85000).toString());
     setInitialStock((product.stock || 50).toString());
     setSelectedSizes(product.sizes && product.sizes.length > 0 ? product.sizes : [...availableSizes]);
     setImagePreview(product.image_url || '');
     setImageFile(null);
-    setGalleryPreviews([]);
+
+    // Extract promo gallery URLs from column OR embedded tag
+    let existingGallery: string[] = [];
+    if (product.gallery_urls && Array.isArray(product.gallery_urls)) {
+      existingGallery = product.gallery_urls;
+    } else if (rawDesc) {
+      const match = rawDesc.match(/<!--GALLERY:(.*?)-->/);
+      if (match && match[1]) {
+        try {
+          existingGallery = JSON.parse(match[1]);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    setGalleryPreviews(existingGallery);
     setGalleryFiles([]);
     setIsModalOpen(true);
   };
@@ -355,10 +376,15 @@ export default function Products() {
       }
     }
 
+    // Dual persistence: Embed gallery URLs tag in description so it persists even if SQL column is missing
+    const cleanDesc = description.replace(/<!--GALLERY:[\s\S]*?-->/g, '').trim();
+    const galleryTag = finalGalleryUrls.length > 0 ? `\n<!--GALLERY:${JSON.stringify(finalGalleryUrls)}-->` : '';
+    const finalDescription = `${cleanDesc}${galleryTag}`;
+
     // Build clean payload with columns that exist in Supabase table
     const payload: any = {
       name: finalName,
-      description: description.trim() || `Sepatu Ballqish model ${modelCode} warna hitam.`,
+      description: finalDescription,
       price: parseInt(price) || 0,
       category,
       model: modelCode,
@@ -377,7 +403,7 @@ export default function Products() {
     }
 
     // If gallery_urls column is missing from Supabase schema, retry without gallery_urls
-    if (error && error.message.includes("gallery_urls")) {
+    if (error && error.message && error.message.toLowerCase().includes("gallery_urls")) {
       delete payload.gallery_urls;
       if (editingProduct) {
         const res = await supabase.from('products').update(payload).eq('id', editingProduct.id);
