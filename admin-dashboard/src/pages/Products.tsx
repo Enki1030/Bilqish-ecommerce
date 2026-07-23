@@ -322,6 +322,39 @@ export default function Products() {
       finalImageUrl = urlData.publicUrl;
     }
 
+    // Upload Promo / Mockup Gallery Photos (Otomatis terkonversi ke WebP)
+    const finalGalleryUrls: string[] = [];
+    
+    // Maintain existing remote URLs in galleryPreviews
+    galleryPreviews.forEach(url => {
+      if (url.startsWith('http')) {
+        finalGalleryUrls.push(url);
+      }
+    });
+
+    for (let i = 0; i < galleryFiles.length; i++) {
+      const file = galleryFiles[i];
+      if (file) {
+        const webpFile = await convertToWebP(file);
+        const fileName = `${modelCode}-promo-${i + 1}-${Date.now()}.webp`;
+        const filePath = `products/${fileName}`;
+
+        const { error: uploadErr } = await supabase.storage
+          .from('product-image')
+          .upload(filePath, webpFile, {
+            contentType: 'image/webp',
+            upsert: true,
+          });
+
+        if (!uploadErr) {
+          const { data: urlData } = supabase.storage
+            .from('product-image')
+            .getPublicUrl(filePath);
+          finalGalleryUrls.push(urlData.publicUrl);
+        }
+      }
+    }
+
     // Build clean payload with columns that exist in Supabase table
     const payload: any = {
       name: finalName,
@@ -331,6 +364,7 @@ export default function Products() {
       model: modelCode,
       sizes: selectedSizes,
       image_url: finalImageUrl,
+      gallery_urls: finalGalleryUrls,
     };
 
     let error = null;
@@ -340,6 +374,18 @@ export default function Products() {
     } else {
       const res = await supabase.from('products').insert([payload]);
       error = res.error;
+    }
+
+    // If gallery_urls column is missing from Supabase schema, retry without gallery_urls
+    if (error && error.message.includes("gallery_urls")) {
+      delete payload.gallery_urls;
+      if (editingProduct) {
+        const res = await supabase.from('products').update(payload).eq('id', editingProduct.id);
+        error = res.error;
+      } else {
+        const res = await supabase.from('products').insert([payload]);
+        error = res.error;
+      }
     }
     
     setIsSubmitting(false);

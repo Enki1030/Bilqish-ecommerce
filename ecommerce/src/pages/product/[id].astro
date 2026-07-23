@@ -21,6 +21,11 @@ if (error || !product) {
 // Convert sizes array from JSON string if needed, or if it's already an array
 const sizes = Array.isArray(product.sizes) ? product.sizes : JSON.parse(product.sizes || '[]');
 
+// Extract all gallery / promo mockup photos safely
+const rawGallery = product.gallery_urls;
+const galleryList = Array.isArray(rawGallery) ? rawGallery : (typeof rawGallery === 'string' ? JSON.parse(rawGallery || '[]') : []);
+const allImages = [product.image_url, ...galleryList].filter(Boolean);
+
 ---
 
 <Layout title={`${product.name} - Ballqish Shoes`}>
@@ -40,22 +45,24 @@ const sizes = Array.isArray(product.sizes) ? product.sizes : JSON.parse(product.
         
         <!-- LEFT: Image Gallery -->
         <div class="w-full lg:w-1/2 flex flex-col-reverse md:flex-row gap-4 lg:sticky lg:top-32 lg:h-max">
-          <!-- Thumbnails (Mockup) -->
-          <div class="flex md:flex-col gap-4 overflow-x-auto md:overflow-visible hide-scrollbar w-full md:w-24 flex-shrink-0">
-            <button class="w-20 h-20 md:w-full md:h-28 bg-white border border-gray-900 flex-shrink-0 flex items-center justify-center">
-              <img src={product.image_url} alt="Thumbnail 1" class="w-full h-full object-cover mix-blend-multiply" />
-            </button>
-            <button class="w-20 h-20 md:w-full md:h-28 bg-white border border-transparent hover:border-gray-300 transition-colors flex-shrink-0 opacity-70 flex items-center justify-center">
-              <img src={product.image_url} alt="Thumbnail 2" class="w-full h-full object-cover mix-blend-multiply filter grayscale" />
-            </button>
-            <button class="w-20 h-20 md:w-full md:h-28 bg-white border border-transparent hover:border-gray-300 transition-colors flex-shrink-0 opacity-70 flex items-center justify-center">
-              <img src={product.image_url} alt="Thumbnail 3" class="w-full h-full object-cover mix-blend-multiply filter grayscale" />
-            </button>
+          <!-- Thumbnails (Main Photo & Promo Mockup Photos) -->
+          <div class="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible hide-scrollbar w-full md:w-24 flex-shrink-0">
+            {allImages.map((imgSrc, idx) => (
+              <button 
+                type="button"
+                data-img-src={imgSrc}
+                class={`thumbnail-btn w-20 h-20 md:w-full md:h-28 bg-white border flex-shrink-0 flex items-center justify-center transition-all cursor-pointer rounded-lg overflow-hidden ${
+                  idx === 0 ? 'border-gray-900 border-2' : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-400'
+                }`}
+              >
+                <img src={imgSrc} alt={`Tampilan ${idx + 1}`} class="w-full h-full object-cover mix-blend-multiply" />
+              </button>
+            ))}
           </div>
           
-          <!-- Main Image -->
-          <div class="flex-1 bg-white border border-gray-200 aspect-[4/5] flex items-center justify-center p-8 relative">
-            <img src={product.image_url} alt={product.name} class="w-full h-full object-cover mix-blend-multiply" />
+          <!-- Main Image Display -->
+          <div class="flex-1 bg-white border border-gray-200 aspect-[4/5] flex items-center justify-center p-8 relative rounded-xl overflow-hidden shadow-xs">
+            <img id="mainProductImage" src={product.image_url} alt={product.name} class="w-full h-full object-cover mix-blend-multiply transition-all duration-300" />
           </div>
         </div>
 
@@ -308,6 +315,27 @@ const sizes = Array.isArray(product.sizes) ? product.sizes : JSON.parse(product.
 
       btnAddToCart?.addEventListener('click', () => handleAddToCart(false));
       btnBuyNow?.addEventListener('click', () => handleAddToCart(true));
+
+      // Interactive Thumbnail Image Switcher
+      const mainImg = document.getElementById('mainProductImage') as HTMLImageElement;
+      const thumbnailButtons = document.querySelectorAll('.thumbnail-btn');
+
+      thumbnailButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const newSrc = btn.getAttribute('data-img-src');
+          if (mainImg && newSrc) {
+            mainImg.src = newSrc;
+          }
+
+          thumbnailButtons.forEach((b) => {
+            b.classList.remove('border-gray-900', 'border-2');
+            b.classList.add('border-gray-200', 'opacity-70');
+          });
+
+          btn.classList.remove('border-gray-200', 'opacity-70');
+          btn.classList.add('border-gray-900', 'border-2');
+        });
+      });
     });
   </script>
 </Layout>
