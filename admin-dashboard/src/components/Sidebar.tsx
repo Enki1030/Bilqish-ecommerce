@@ -50,19 +50,6 @@ export default function Sidebar() {
           <ShoppingCart size={18} />
           <span>Pesanan</span>
         </NavLink>
-
-        <NavLink 
-          to="/notifications"
-          className={({isActive}) => `flex items-center justify-between px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
-            isActive ? 'bg-[#5c1616] text-white shadow-xs' : 'text-[#333333] hover:bg-[#fdf5f5] hover:text-[#5c1616]'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <Bell size={18} />
-            <span>Notifikasi</span>
-          </div>
-          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-        </NavLink>
       </div>
 
       {/* Logout Footer */}

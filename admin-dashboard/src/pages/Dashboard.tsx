@@ -14,7 +14,8 @@ import {
   ArrowUpRight,
   Sparkles,
   RefreshCw,
-  Box
+  Box,
+  Bell
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -203,13 +204,15 @@ export default function Dashboard() {
           </h1>
           <p className="text-[12px] font-normal text-[#71717A] mt-1">Pantau metrik omset, performa sepatu terlaris, dan status operasional toko Anda.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={fetchDashboardData}
-            className="px-3.5 py-2 bg-white border border-[#E2E8F0] hover:border-slate-300 text-[#1A1A1A] text-[12px] font-medium rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+        <div className="flex items-center gap-3">
+          <a
+            href="/notifications"
+            className="w-10 h-10 bg-white border border-[#E2E8F0] hover:border-[#5c1616] hover:bg-[#fdf5f5] text-[#333333] hover:text-[#5c1616] rounded-lg flex items-center justify-center relative transition-all shadow-xs cursor-pointer"
+            title="Pusat Notifikasi Toko"
           >
-            <RefreshCw size={13} /> Refresh Data
-          </button>
+            <Bell size={18} />
+            <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-white animate-pulse"></span>
+          </a>
         </div>
       </div>
 
