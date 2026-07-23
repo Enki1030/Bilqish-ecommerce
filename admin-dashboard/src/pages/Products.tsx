@@ -121,12 +121,23 @@ export default function Products() {
       console.error('Error fetching products:', error);
       alert('Gagal mengambil data produk dari Supabase.');
     } else {
-      // Map fallback stock/sold if missing
-      const mapped = (data || []).map((p: any) => ({
-        ...p,
-        stock: p.stock !== undefined && p.stock !== null ? p.stock : 45,
-        sold: p.sold !== undefined && p.sold !== null ? p.sold : 0
-      }));
+      // Map fallback stock/sold if missing from SQL schema
+      const mapped = (data || []).map((p: any) => {
+        let stk = p.stock;
+        if (stk === undefined || stk === null) {
+          const stockMatch = (p.description || '').match(/<!--STOCK:(\d+)-->/);
+          if (stockMatch && stockMatch[1]) {
+            stk = parseInt(stockMatch[1]);
+          } else {
+            stk = 50;
+          }
+        }
+        return {
+          ...p,
+          stock: stk,
+          sold: p.sold !== undefined && p.sold !== null ? p.sold : 0
+        };
+      });
       setProducts(mapped);
     }
     setIsLoading(false);
@@ -155,14 +166,21 @@ export default function Products() {
     setModelNumber(product.model ? product.model.replace(/[^0-9]/g, '') : '');
     setDisplayName(product.name || '');
     
-    // Extract clean description and embedded gallery if present
+    // Extract clean description and embedded metadata if present
     const rawDesc = product.description || '';
-    const cleanDesc = rawDesc.replace(/<!--GALLERY:[\s\S]*?-->/g, '').trim();
+    const cleanDesc = rawDesc.replace(/<!--(GALLERY|STOCK):[\s\S]*?-->/g, '').trim();
     setDescription(cleanDesc);
+
+    // Extract stock from product object or embedded description tag
+    let stockVal = product.stock;
+    const stockMatch = rawDesc.match(/<!--STOCK:(\d+)-->/);
+    if (stockMatch && stockMatch[1]) {
+      stockVal = parseInt(stockMatch[1]);
+    }
 
     setIsCustomNameEdited(true);
     setPrice((product.price || 85000).toString());
-    setInitialStock((product.stock || 50).toString());
+    setInitialStock((stockVal || 50).toString());
     setSelectedSizes(product.sizes && product.sizes.length > 0 ? product.sizes : [...availableSizes]);
     setImagePreview(product.image_url || '');
     setImageFile(null);
@@ -376,10 +394,12 @@ export default function Products() {
       }
     }
 
-    // Dual persistence: Embed gallery URLs tag in description so it persists even if SQL column is missing
-    const cleanDesc = description.replace(/<!--GALLERY:[\s\S]*?-->/g, '').trim();
+    // Dual persistence: Embed stock & gallery URLs tags in description so they persist even if SQL columns are missing
+    const stockVal = parseInt(initialStock) || 50;
+    const cleanDesc = description.replace(/<!--(GALLERY|STOCK):[\s\S]*?-->/g, '').trim();
+    const stockTag = `\n<!--STOCK:${stockVal}-->`;
     const galleryTag = finalGalleryUrls.length > 0 ? `\n<!--GALLERY:${JSON.stringify(finalGalleryUrls)}-->` : '';
-    const finalDescription = `${cleanDesc}${galleryTag}`;
+    const finalDescription = `${cleanDesc}${stockTag}${galleryTag}`;
 
     // Build clean payload with columns that exist in Supabase table
     const payload: any = {

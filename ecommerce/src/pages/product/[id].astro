@@ -41,7 +41,7 @@ if (galleryList.length === 0 && product.description) {
 }
 
 const allImages = [product.image_url, ...galleryList].filter(Boolean);
-const cleanDescription = (product.description || '').replace(/<!--GALLERY:[\s\S]*?-->/g, '').trim();
+const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK):[\s\S]*?-->/g, '').trim();
 
 ---
 
@@ -332,25 +332,30 @@ const cleanDescription = (product.description || '').replace(/<!--GALLERY:[\s\S]
       btnBuyNow?.addEventListener('click', () => handleAddToCart(true));
 
       // Interactive Thumbnail Image Switcher
-      const mainImg = document.getElementById('mainProductImage') as HTMLImageElement;
-      const thumbnailButtons = document.querySelectorAll('.thumbnail-btn');
+      function bindThumbnails() {
+        const mainImg = document.getElementById('mainProductImage');
+        const thumbnailButtons = document.querySelectorAll('.thumbnail-btn');
 
-      thumbnailButtons.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const newSrc = btn.getAttribute('data-img-src');
-          if (mainImg && newSrc) {
-            mainImg.src = newSrc;
-          }
+        thumbnailButtons.forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const newSrc = btn.getAttribute('data-img-src');
+            if (mainImg && newSrc) {
+              mainImg.setAttribute('src', newSrc);
+            }
 
-          thumbnailButtons.forEach((b) => {
-            b.classList.remove('border-gray-900', 'border-2');
-            b.classList.add('border-gray-200', 'opacity-70');
+            thumbnailButtons.forEach((b) => {
+              b.classList.remove('border-gray-900', 'border-2');
+              b.classList.add('border-gray-200', 'opacity-70');
+            });
+
+            btn.classList.remove('border-gray-200', 'opacity-70');
+            btn.classList.add('border-gray-900', 'border-2');
           });
-
-          btn.classList.remove('border-gray-200', 'opacity-70');
-          btn.classList.add('border-gray-900', 'border-2');
         });
-      });
+      }
+
+      bindThumbnails();
     });
   </script>
 </Layout>
