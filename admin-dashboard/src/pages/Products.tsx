@@ -258,7 +258,8 @@ export default function Products() {
       finalImageUrl = urlData.publicUrl;
     }
 
-    const payload = {
+    // Build clean payload with columns that exist in Supabase table
+    const payload: any = {
       name: finalName,
       description: `Sepatu Ballqish model ${modelCode} warna hitam.`,
       price: parseInt(price) || 0,
@@ -266,7 +267,6 @@ export default function Products() {
       model: modelCode,
       sizes: selectedSizes,
       image_url: finalImageUrl,
-      stock: parseInt(initialStock) || 50,
     };
 
     let error = null;
@@ -274,7 +274,7 @@ export default function Products() {
       const res = await supabase.from('products').update(payload).eq('id', editingProduct.id);
       error = res.error;
     } else {
-      const res = await supabase.from('products').insert([{ ...payload, sold: 0 }]);
+      const res = await supabase.from('products').insert([payload]);
       error = res.error;
     }
     
