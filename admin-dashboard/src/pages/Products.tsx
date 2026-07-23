@@ -28,6 +28,7 @@ export default function Products() {
   const [category, setCategory] = useState('Slip-on');
   const [modelNumber, setModelNumber] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [description, setDescription] = useState('');
   const [isCustomNameEdited, setIsCustomNameEdited] = useState(false);
   const [price, setPrice] = useState('85000');
   const [initialStock, setInitialStock] = useState('50');
@@ -86,6 +87,7 @@ export default function Products() {
     setCategory('Slip-on');
     setModelNumber('');
     setDisplayName('');
+    setDescription('Sepatu Pantofel Ballqish kualitas tinggi, terbuat dari bahan sintetis premium lentur, nyaman dipakai seharian.');
     setIsCustomNameEdited(false);
     setPrice('85000');
     setInitialStock('50');
@@ -102,6 +104,7 @@ export default function Products() {
     setCategory(product.category || 'Slip-on');
     setModelNumber(product.model ? product.model.replace(/[^0-9]/g, '') : '');
     setDisplayName(product.name || '');
+    setDescription(product.description || '');
     setIsCustomNameEdited(true);
     setPrice((product.price || 85000).toString());
     setInitialStock((product.stock || 50).toString());
@@ -261,7 +264,7 @@ export default function Products() {
     // Build clean payload with columns that exist in Supabase table
     const payload: any = {
       name: finalName,
-      description: `Sepatu Ballqish model ${modelCode} warna hitam.`,
+      description: description.trim() || `Sepatu Ballqish model ${modelCode} warna hitam.`,
       price: parseInt(price) || 0,
       category,
       model: modelCode,
@@ -562,6 +565,26 @@ export default function Products() {
                       placeholder="Contoh: 50"
                     />
                   </div>
+                </div>
+
+                {/* Deskripsi Produk with Previous Description Hint */}
+                <div>
+                  <label className="block text-[14px] font-semibold text-[#333333] mb-2">Deskripsi Produk</label>
+                  {editingProduct && editingProduct.description && (
+                    <div className="bg-slate-100 border border-[#E2E8F0] rounded-lg px-3 py-1.5 mb-2 text-[12px] text-[#71717A]">
+                      Deskripsi sebelumnya: <span className="font-semibold text-[#1A1A1A]">{editingProduct.description}</span>
+                    </div>
+                  )}
+                  <textarea
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Tuliskan deskripsi produk, keunggulan bahan, sol, atau kenyamanan sepatu..."
+                    className="w-full border border-[#E2E8F0] rounded-lg px-4 py-2.5 text-[14px] font-medium text-[#1A1A1A] focus:border-[#5c1616] outline-none transition-colors resize-y min-h-[80px]"
+                  />
+                  <p className="text-[12px] font-normal text-[#71717A] mt-1.5">
+                    Deskripsi ini akan muncul di halaman detail produk e-commerce untuk menginformasikan spesifikasi dan keunggulan sepatu kepada pembeli.
+                  </p>
                 </div>
 
                 <div>
