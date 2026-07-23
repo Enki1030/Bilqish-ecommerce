@@ -220,8 +220,8 @@ export default function Dashboard() {
         <div className="lg:col-span-7 bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col justify-between space-y-3">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-[14px] font-semibold text-[#333333] flex items-center gap-1.5">
-                <DollarSign size={16} className="text-amber-600" /> Ringkasan Omset Toko
+              <span className="text-[19px] font-semibold text-[#1A1A1A] block">
+                Ringkasan Omset Toko
               </span>
               <p className="text-[12px] font-normal text-[#71717A] mt-0.5">Total pendapatan dari transaksi penjualan produk yang sah.</p>
             </div>
@@ -263,35 +263,35 @@ export default function Dashboard() {
         </div>
 
         {/* Right (40%): Sepatu Terlaris (Top 3 List) */}
-        <div className="lg:col-span-5 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between space-y-3">
-          <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-            <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
-              <Flame size={16} className="text-orange-500" /> Sepatu Terlaris (Top 3)
+        <div className="lg:col-span-5 bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col justify-between space-y-3">
+          <div className="flex justify-between items-center border-b border-[#E2E8F0] pb-3">
+            <span className="text-[19px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+              <Flame size={18} className="text-orange-500" /> Sepatu Terlaris (Top 3)
             </span>
-            <a href="/products" className="text-[11px] text-primary hover:underline font-medium flex items-center gap-1">
+            <a href="/products" className="text-[12px] text-[#5c1616] hover:underline font-medium flex items-center gap-1">
               Lihat Katalog <ChevronRight size={12} />
             </a>
           </div>
 
           <div className="space-y-2.5">
             {stats.top3Selling.length === 0 ? (
-              <p className="text-xs text-gray-400 py-4 text-center">Belum ada data penjualan.</p>
+              <p className="text-[12px] text-[#71717A] py-4 text-center">Belum ada data penjualan.</p>
             ) : (
               stats.top3Selling.map((shoe, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50/70 rounded-lg border border-gray-100">
+                <div key={idx} className="flex items-center gap-3 p-2 bg-slate-50/70 rounded-lg border border-[#E2E8F0]">
                   <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
-                    idx === 0 ? 'bg-amber-100 text-amber-800' : idx === 1 ? 'bg-gray-200 text-gray-700' : 'bg-orange-100 text-orange-800'
+                    idx === 0 ? 'bg-amber-100 text-amber-800' : idx === 1 ? 'bg-slate-200 text-slate-700' : 'bg-orange-100 text-orange-800'
                   }`}>
                     {idx + 1}
                   </span>
-                  <div className="w-9 h-9 bg-white rounded border border-gray-200 overflow-hidden flex-shrink-0">
+                  <div className="w-9 h-9 bg-white rounded border border-[#E2E8F0] overflow-hidden flex-shrink-0">
                     <img src={shoe.img} alt={shoe.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-xs truncate">{shoe.name}</p>
-                    <p className="text-[11px] text-gray-500 font-body">Rp {shoe.price?.toLocaleString('id-ID')}</p>
+                    <p className="font-medium text-[#1A1A1A] text-[12px] truncate">{shoe.name}</p>
+                    <p className="text-[11px] text-[#71717A] font-sans">Rp {shoe.price?.toLocaleString('id-ID')}</p>
                   </div>
-                  <span className="text-xs font-medium text-gray-900 font-body bg-white px-2 py-1 rounded border border-gray-200">
+                  <span className="text-[12px] font-medium text-[#1A1A1A] font-sans bg-white px-2 py-1 rounded border border-[#E2E8F0]">
                     {shoe.count} pasang
                   </span>
                 </div>
@@ -305,72 +305,72 @@ export default function Dashboard() {
       {/* 🔴 BARIS 2: 4 KARTU OPERASIONAL (Perlu Diproses, Pesanan Baru, Komplain Pelanggan, Pengiriman Gagal) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Perlu Diproses */}
-        <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-sm hover:border-rose-300 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-xs hover:border-rose-300 transition-all">
           <div>
-            <span className="text-xs font-medium text-rose-700 flex items-center gap-1.5">
-              <AlertTriangle size={14} /> Perlu Diproses
+            <span className="text-[14px] font-semibold text-rose-700 flex items-center gap-1.5">
+              <AlertTriangle size={15} /> Perlu Diproses
             </span>
-            <div className="text-xl font-medium text-gray-900 font-body mt-2">
-              {stats.urgentCount} <span className="text-xs font-normal text-gray-500">Pesanan</span>
+            <div className="text-xl font-semibold text-[#1A1A1A] font-sans mt-2">
+              {stats.urgentCount} <span className="text-[12px] font-normal text-[#71717A]">Pesanan</span>
             </div>
           </div>
           <a 
             href="/orders" 
-            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-rose-600 hover:text-rose-800 transition-colors"
+            className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-rose-600 hover:text-rose-800 transition-colors"
           >
             Periksa Pesanan <ChevronRight size={13} />
           </a>
         </div>
 
         {/* Card 2: Pesanan Baru */}
-        <div className="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm hover:border-emerald-300 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-emerald-200 shadow-xs hover:border-emerald-300 transition-all">
           <div>
-            <span className="text-xs font-medium text-emerald-700 flex items-center gap-1.5">
-              <ShoppingBag size={14} /> Pesanan Baru
+            <span className="text-[14px] font-semibold text-emerald-700 flex items-center gap-1.5">
+              <ShoppingBag size={15} /> Pesanan Baru
             </span>
-            <div className="text-xl font-medium text-gray-900 font-body mt-2">
-              {stats.newOrdersCount} <span className="text-xs font-normal text-gray-500">Transaksi Masuk</span>
+            <div className="text-xl font-semibold text-[#1A1A1A] font-sans mt-2">
+              {stats.newOrdersCount} <span className="text-[12px] font-normal text-[#71717A]">Transaksi Masuk</span>
             </div>
           </div>
           <a 
             href="/orders" 
-            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-800 transition-colors"
+            className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-emerald-600 hover:text-emerald-800 transition-colors"
           >
             Proses Pesanan Baru <ChevronRight size={13} />
           </a>
         </div>
 
         {/* Card 3: Komplain Pelanggan */}
-        <div className="bg-white p-5 rounded-xl border border-amber-200 shadow-sm hover:border-amber-300 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-amber-200 shadow-xs hover:border-amber-300 transition-all">
           <div>
-            <span className="text-xs font-medium text-amber-700 flex items-center gap-1.5">
-              <Clock size={14} /> Komplain Pelanggan
+            <span className="text-[14px] font-semibold text-amber-700 flex items-center gap-1.5">
+              <Clock size={15} /> Komplain Pelanggan
             </span>
-            <div className="text-xl font-medium text-gray-900 font-body mt-2">
-              {stats.complaintCount} <span className="text-xs font-normal text-gray-500">Klaim/Retur</span>
+            <div className="text-xl font-semibold text-[#1A1A1A] font-sans mt-2">
+              {stats.complaintCount} <span className="text-[12px] font-normal text-[#71717A]">Klaim/Retur</span>
             </div>
           </div>
           <a 
             href="/orders" 
-            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-amber-700 hover:text-amber-900 transition-colors"
+            className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-amber-700 hover:text-amber-900 transition-colors"
           >
             Tinjau Komplain <ChevronRight size={13} />
           </a>
         </div>
 
         {/* Card 4: Pengiriman Gagal */}
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-gray-300 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs hover:border-slate-300 transition-all">
           <div>
-            <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
-              <Package size={14} className="text-gray-500" /> Pengiriman Gagal
+            <span className="text-[14px] font-semibold text-[#333333] flex items-center gap-1.5">
+              <Package size={15} className="text-[#71717A]" /> Pengiriman Gagal
             </span>
-            <div className="text-xl font-medium text-gray-900 font-body mt-2">
-              {stats.failedShipmentCount} <span className="text-xs font-normal text-gray-500">Paket Kendall</span>
+            <div className="text-xl font-semibold text-[#1A1A1A] font-sans mt-2">
+              {stats.failedShipmentCount} <span className="text-[12px] font-normal text-[#71717A]">Paket Kendall</span>
             </div>
           </div>
           <a 
             href="/orders" 
-            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-[#71717A] hover:text-[#1A1A1A] transition-colors"
           >
             Cek Resi Pengiriman <ChevronRight size={13} />
           </a>
@@ -378,16 +378,16 @@ export default function Dashboard() {
       </div>
 
       {/* 🔥 JAKMALL-STYLE: TREND PEMBELIAN SECTION */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
+      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-6 space-y-6">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-gray-100 pb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-rose-50 rounded-lg border border-rose-100 flex items-center justify-center text-rose-500">
-              <Flame size={18} />
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-[#E2E8F0] pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-rose-50 rounded-lg border border-rose-100 flex items-center justify-center text-rose-500">
+              <Flame size={20} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-gray-900 font-heading">Trend Pembelian</h2>
-              <p className="text-xs text-gray-500">Pantau pertumbuhan tren transaksi dan pembelian produk toko secara riil.</p>
+              <h2 className="text-[19px] font-semibold text-[#1A1A1A]">Trend Pembelian</h2>
+              <p className="text-[12px] text-[#71717A] font-normal mt-0.5">Pantau pertumbuhan tren transaksi dan pembelian produk toko secara riil.</p>
             </div>
           </div>
 
@@ -395,7 +395,7 @@ export default function Dashboard() {
             <select
               value={trendComparison}
               onChange={(e) => setTrendComparison(e.target.value as any)}
-              className="bg-gray-50 border border-gray-300 text-gray-700 text-xs font-medium py-1.5 px-3 rounded-lg outline-none cursor-pointer hover:border-gray-400"
+              className="bg-slate-50 border border-[#E2E8F0] text-[#1A1A1A] text-[12px] font-medium py-1.5 px-3 rounded-lg outline-none cursor-pointer hover:border-slate-300"
             >
               <option value="7days">vs 7 Hari Terakhir</option>
               <option value="30days">vs 30 Hari Terakhir</option>
@@ -539,19 +539,19 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Column (60%): Top Product Performance */}
-        <div className="lg:col-span-7 bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
-          <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-            <h3 className="font-bold text-gray-900 text-sm font-heading flex items-center gap-2">
-              <Box size={16} className="text-primary" /> Top Performa Produk (Katalog)
+        <div className="lg:col-span-7 bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-6 space-y-4">
+          <div className="flex justify-between items-center border-b border-[#E2E8F0] pb-3">
+            <h3 className="text-[19px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+              <Box size={18} className="text-[#5c1616]" /> Top Performa Produk (Katalog)
             </h3>
-            <a href="/products" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+            <a href="/products" className="text-[12px] text-[#5c1616] font-medium hover:underline flex items-center gap-1">
               Kelola Produk <ArrowUpRight size={13} />
             </a>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-gray-700">
-              <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
+            <table className="w-full text-left text-[12px]">
+              <thead className="bg-slate-50 text-[#71717A] font-semibold border-b border-[#E2E8F0]">
                 <tr>
                   <th className="py-2.5 px-3">Produk</th>
                   <th className="py-2.5 px-3">Harga</th>
@@ -559,31 +559,31 @@ export default function Dashboard() {
                   <th className="py-2.5 px-3 text-right">Terjual</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-[#E2E8F0]">
                 {products.slice(0, 5).map(prod => {
                   const stk = prod.stock ?? 45;
                   return (
-                    <tr key={prod.id} className="hover:bg-gray-50/70 transition-colors">
+                    <tr key={prod.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 bg-gray-100 rounded border border-gray-200 overflow-hidden flex-shrink-0">
+                          <div className="w-9 h-9 bg-slate-100 rounded border border-[#E2E8F0] overflow-hidden flex-shrink-0">
                             <img src={prod.image_url} alt={prod.name} className="w-full h-full object-cover" />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900 line-clamp-1">{prod.name}</p>
-                            <span className="text-[10px] text-gray-400">{prod.category === 'Laced' ? 'Upper Tali' : 'Upper Non-Tali'}</span>
+                            <p className="font-medium text-[#1A1A1A] line-clamp-1">{prod.name}</p>
+                            <span className="text-[10px] text-[#71717A]">{prod.category === 'Laced' ? 'Upper Tali' : 'Upper Non-Tali'}</span>
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-3 font-normal text-gray-800 font-body">
+                      <td className="py-3 px-3 font-normal text-[#1A1A1A] font-sans">
                         Rp {prod.price?.toLocaleString('id-ID')}
                       </td>
-                      <td className="py-3 px-3 font-body">
-                        <span className={`text-xs font-medium ${stk === 0 ? 'text-rose-600' : stk < 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      <td className="py-3 px-3 font-sans">
+                        <span className={`text-[12px] font-semibold ${stk === 0 ? 'text-rose-600' : stk < 5 ? 'text-amber-600' : 'text-[#16A34A]'}`}>
                           {stk} pcs
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-right font-body font-medium text-gray-900">
+                      <td className="py-3 px-3 text-right font-sans font-medium text-[#1A1A1A]">
                         {prod.sold || 0} pcs
                       </td>
                     </tr>
@@ -595,11 +595,11 @@ export default function Dashboard() {
         </div>
 
         {/* Right Column (40%): Jakmall-Style Store Status Summary Widget */}
-        <div className="lg:col-span-5 bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-6 space-y-4 flex flex-col justify-between">
           <div>
-            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-              <h3 className="font-bold text-gray-900 text-sm font-heading flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-emerald-600" /> Ringkasan Kesehatan Toko
+            <div className="flex justify-between items-center border-b border-[#E2E8F0] pb-3">
+              <h3 className="text-[19px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+                <CheckCircle2 size={18} className="text-[#16A34A]" /> Ringkasan Kesehatan Toko
               </h3>
             </div>
 
