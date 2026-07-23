@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Login from './pages/Login';
 import Orders from './pages/Orders';
+import Notifications from './pages/Notifications';
 import { Loader2 } from 'lucide-react';
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
       </Routes>
     </Router>

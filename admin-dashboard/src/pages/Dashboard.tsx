@@ -258,7 +258,6 @@ export default function Dashboard() {
 
           <div className="pt-2.5 border-t border-[#E2E8F0] flex items-center justify-between text-[12px] text-[#71717A]">
             <span>Metrik omset diperbarui secara langsung</span>
-            <span className="text-[#16A34A] font-semibold flex items-center gap-1">● Akurat</span>
           </div>
         </div>
 

@@ -427,7 +427,7 @@ export default function Orders() {
                     {order.status === 'Menunggu Pembayaran' && (
                       <button
                         onClick={() => updateOrderStatus(order.id, 'Diproses')}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+                        className="w-full bg-[#16A34A] hover:bg-emerald-700 text-white text-[12px] font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                       >
                         <CheckCircle2 size={13} /> Verifikasi Bayar
                       </button>
@@ -436,7 +436,7 @@ export default function Orders() {
                     {['Diproses', 'Sedang Diproses', 'Pesanan Baru'].includes(order.status) && (
                       <button
                         onClick={() => updateOrderStatus(order.id, 'Dikirim')}
-                        className="w-full bg-primary hover:bg-primary-hover text-white text-xs font-medium py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+                        className="w-full bg-[#5c1616] hover:bg-[#400f0f] text-white text-[12px] font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                       >
                         <Truck size={13} /> Proses & Kirim
                       </button>
@@ -445,7 +445,7 @@ export default function Orders() {
                     {['Dikirim', 'Dalam Pengiriman', 'Siap Pickup'].includes(order.status) && (
                       <button
                         onClick={() => updateOrderStatus(order.id, 'Selesai')}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[12px] font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                       >
                         <CheckCircle2 size={13} /> Tandai Selesai
                       </button>
