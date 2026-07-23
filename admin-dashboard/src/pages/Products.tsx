@@ -16,6 +16,56 @@ interface Product {
   created_at?: string;
 }
 
+/**
+ * Konversi otomatis semua format gambar (JPG, PNG, JPEG, BMP) ke WebP ultra-ringan sebelum diunggah ke Supabase.
+ * Mengabaikan file SVG agar ketajaman vektor tidak berubah.
+ */
+async function convertToWebP(file: File, quality = 0.85): Promise<File> {
+  if (file.type === 'image/svg+xml' || file.type === 'image/webp') {
+    return file; // Skip SVG & WebP yang sudah teroptimasi
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      img.src = e.target?.result as string;
+    };
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const convertedName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+              const webpFile = new File([blob], convertedName, {
+                type: 'image/webp',
+                lastModified: Date.now(),
+              });
+              resolve(webpFile);
+            } else {
+              resolve(file);
+            }
+          },
+          'image/webp',
+          quality
+        );
+      } else {
+        resolve(file);
+      }
+    };
+
+    img.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -189,22 +239,30 @@ export default function Products() {
     }
   };
 
-  const handleGalleryAdd = (filesList: FileList | null) => {
+  const handleThumbnailSelect = async (file: File) => {
+    const webpFile = await convertToWebP(file);
+    setImageFile(webpFile);
+    setImagePreview(URL.createObjectURL(webpFile));
+  };
+
+  const handleGalleryAdd = async (filesList: FileList | null) => {
     if (!filesList) return;
-    const newFiles = Array.from(filesList);
-    const combined = [...galleryFiles, ...newFiles].slice(0, 6);
+    const rawFiles = Array.from(filesList);
+    const convertedFiles = await Promise.all(rawFiles.map(f => convertToWebP(f)));
+    const combined = [...galleryFiles, ...convertedFiles].slice(0, 6);
     setGalleryFiles(combined);
     const previews = combined.map(f => URL.createObjectURL(f));
     setGalleryPreviews(previews);
   };
 
-  const replaceGalleryImage = (index: number, file: File) => {
+  const replaceGalleryImage = async (index: number, file: File) => {
+    const webpFile = await convertToWebP(file);
     const updatedFiles = [...galleryFiles];
-    updatedFiles[index] = file;
+    updatedFiles[index] = webpFile;
     setGalleryFiles(updatedFiles);
 
     const updatedPreviews = [...galleryPreviews];
-    updatedPreviews[index] = URL.createObjectURL(file);
+    updatedPreviews[index] = URL.createObjectURL(webpFile);
     setGalleryPreviews(updatedPreviews);
   };
 
@@ -238,18 +296,21 @@ export default function Products() {
     
     let finalImageUrl = editingProduct ? editingProduct.image_url : '';
 
-    // If new thumbnail file is uploaded
+    // Upload Thumbnail (Otomatis terkonversi ke WebP)
     if (imageFile) {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${modelCode}-thumb-${Math.random()}.${fileExt}`;
+      const webpThumbnail = await convertToWebP(imageFile);
+      const fileName = `${modelCode}-thumb-${Date.now()}.webp`;
       const filePath = `products/${fileName}`;
       
       const { error: uploadError } = await supabase.storage
         .from('product-image')
-        .upload(filePath, imageFile);
+        .upload(filePath, webpThumbnail, {
+          contentType: 'image/webp',
+          upsert: true
+        });
         
       if (uploadError) {
-        alert('Gagal mengupload thumbnail: ' + uploadError.message);
+        alert('Gagal mengupload thumbnail WebP: ' + uploadError.message);
         setIsSubmitting(false);
         return;
       }
@@ -645,9 +706,7 @@ export default function Products() {
                             accept="image/*"
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
-                                const file = e.target.files[0];
-                                setImageFile(file);
-                                setImagePreview(URL.createObjectURL(file));
+                                handleThumbnailSelect(e.target.files[0]);
                               }
                             }}
                             className="hidden" 
@@ -671,16 +730,14 @@ export default function Products() {
                       <div className="text-center py-4">
                         <UploadCloud className="w-8 h-8 text-[#71717A] mx-auto mb-2" />
                         <p className="text-[14px] font-medium text-[#1A1A1A]">Klik untuk upload foto thumbnail utama</p>
-                        <p className="text-[12px] text-[#71717A] mt-1">JPG, PNG (Maks. 2MB)</p>
+                        <p className="text-[12px] text-[#71717A] mt-1">Otomatis terkonversi ke WebP (JPG, PNG, JPEG, dll)</p>
                       </div>
                       <input 
                         type="file" 
                         accept="image/*"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
-                            const file = e.target.files[0];
-                            setImageFile(file);
-                            setImagePreview(URL.createObjectURL(file));
+                            handleThumbnailSelect(e.target.files[0]);
                           }
                         }}
                         className="absolute inset-0 opacity-0 cursor-pointer" 
