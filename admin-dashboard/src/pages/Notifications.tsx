@@ -224,17 +224,30 @@ export default function Notifications() {
                   </div>
                 </div>
 
-                <a 
-                  href={item.link}
-                  className={`px-4 py-2 rounded-lg text-[12px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer flex-shrink-0 ${
-                    item.type === 'urgent' ? 'bg-rose-600 hover:bg-rose-700 text-white' :
-                    item.type === 'new_order' ? 'bg-[#5c1616] hover:bg-[#400f0f] text-white' :
-                    'bg-slate-900 hover:bg-black text-white'
-                  }`}
-                >
-                  <span>{item.actionText}</span>
-                  <ChevronRight size={14} />
-                </a>
+                <div className="flex flex-col sm:flex-row items-center gap-2 flex-shrink-0">
+                  {item.type === 'low_stock' && (
+                    <a
+                      href={`https://wa.me/6281234567890?text=${encodeURIComponent(`Halo Vendor Ballqish, saya ingin mendiskusikan pemesanan stok tambahan untuk produk: ${item.data?.name || 'Sepatu Ballqish'}.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <span>Hubungi Vendor</span>
+                    </a>
+                  )}
+
+                  <a 
+                    href={item.link}
+                    className={`px-4 py-2 rounded-lg text-[12px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                      item.type === 'urgent' ? 'bg-rose-600 hover:bg-rose-700 text-white' :
+                      item.type === 'new_order' ? 'bg-[#5c1616] hover:bg-[#400f0f] text-white' :
+                      'bg-slate-900 hover:bg-black text-white'
+                    }`}
+                  >
+                    <span>{item.actionText}</span>
+                    <ChevronRight size={14} />
+                  </a>
+                </div>
               </div>
             ))}
           </div>

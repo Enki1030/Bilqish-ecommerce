@@ -26,10 +26,14 @@ export default function Products() {
   // Form State
   const [category, setCategory] = useState('Slip-on');
   const [modelNumber, setModelNumber] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [isCustomNameEdited, setIsCustomNameEdited] = useState(false);
   const [price, setPrice] = useState('85000');
   const [initialStock, setInitialStock] = useState('50');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(['39', '40', '41', '42', '43']);
 
   // Filter & Search States
@@ -45,6 +49,14 @@ export default function Products() {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Sync display name automatically if admin has not custom-edited it
+  useEffect(() => {
+    if (!isCustomNameEdited) {
+      const prefix = category === 'Laced' ? 'T' : 'G';
+      setDisplayName(modelNumber ? `${prefix}${modelNumber} Hitam` : '');
+    }
+  }, [category, modelNumber, isCustomNameEdited]);
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -141,10 +153,26 @@ export default function Products() {
     }
   };
 
+  const handleGalleryAdd = (filesList: FileList | null) => {
+    if (!filesList) return;
+    const newFiles = Array.from(filesList);
+    const combined = [...galleryFiles, ...newFiles].slice(0, 6);
+    setGalleryFiles(combined);
+    const previews = combined.map(f => URL.createObjectURL(f));
+    setGalleryPreviews(previews);
+  };
+
+  const removeGalleryImage = (index: number) => {
+    const updatedFiles = galleryFiles.filter((_, i) => i !== index);
+    const updatedPreviews = galleryPreviews.filter((_, i) => i !== index);
+    setGalleryFiles(updatedFiles);
+    setGalleryPreviews(updatedPreviews);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!modelNumber || !imageFile) {
-      alert('Kode Model dan Gambar harus diisi!');
+      alert('Kode Model dan Foto Thumbnail Utama harus diisi!');
       return;
     }
     if (selectedSizes.length === 0) {
@@ -156,11 +184,11 @@ export default function Products() {
     
     const prefix = category === 'Laced' ? 'T' : 'G';
     const modelCode = `${prefix}${modelNumber}`;
-    const name = `${modelCode} Hitam`;
+    const finalName = displayName.trim() || `${modelCode} Hitam`;
     
-    // 1. Upload Gambar ke Supabase Storage
+    // 1. Upload Thumbnail Utama
     const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${modelCode}-${Math.random()}.${fileExt}`;
+    const fileName = `${modelCode}-thumb-${Math.random()}.${fileExt}`;
     const filePath = `products/${fileName}`;
     
     const { error: uploadError } = await supabase.storage
@@ -168,21 +196,20 @@ export default function Products() {
       .upload(filePath, imageFile);
       
     if (uploadError) {
-      alert('Gagal mengupload gambar: ' + uploadError.message);
+      alert('Gagal mengupload thumbnail: ' + uploadError.message);
       setIsSubmitting(false);
       return;
     }
     
-    // 2. Dapatkan Public URL
     const { data: urlData } = supabase.storage
       .from('product-image')
       .getPublicUrl(filePath);
       
     const finalImageUrl = urlData.publicUrl;
 
-    // 3. Simpan data ke Database
+    // 2. Simpan data ke Database
     const newProduct = {
-      name,
+      name: finalName,
       description: `Sepatu Ballqish model ${modelCode} warna hitam.`,
       price: parseInt(price) || 0,
       category,
@@ -203,21 +230,23 @@ export default function Products() {
       setIsModalOpen(false);
       // Reset form
       setModelNumber('');
+      setDisplayName('');
+      setIsCustomNameEdited(false);
       setImageFile(null);
       setImagePreview('');
+      setGalleryFiles([]);
+      setGalleryPreviews([]);
       setCategory('Slip-on');
       setPrice('85000');
       setInitialStock('50');
       setSelectedSizes([...availableSizes]);
       
-      // Refresh data
       fetchProducts();
     }
   };
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto font-sans pb-12">
-      {/* 1. Judul Utama (24px Bold #1A1A1A, 24px bottom margin to content) */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-[#E2E8F0] pb-4">
         <div>
           <h1 className="text-[24px] font-bold text-[#1A1A1A] tracking-tight">Manajemen Produk</h1>
@@ -232,49 +261,40 @@ export default function Products() {
         </button>
       </div>
 
-      {/* 2. TOP FULL-WIDTH FILTER TOOLBAR */}
       <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 space-y-4">
-        
-        {/* Row 1: Search Bar with Category Selector */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
-          {/* Sub-Judul / Label Panel: 14px Semi-Bold #333333 */}
           <div className="w-full sm:w-auto">
             <span className="text-[14px] font-semibold text-[#333333] block mb-1.5 sm:hidden">Kategori Cari</span>
             <select
               value={searchCategory}
               onChange={(e) => setSearchCategory(e.target.value as any)}
-              className="w-full sm:w-44 bg-slate-50 border border-[#E2E8F0] rounded-lg px-3 py-2 text-[14px] font-medium text-[#1A1A1A] outline-none focus:border-[#0F172A] cursor-pointer hover:bg-slate-100 transition-colors"
+              className="w-full sm:w-44 bg-slate-50 border border-[#E2E8F0] rounded-lg px-3 py-2 text-[14px] font-medium text-[#1A1A1A] outline-none focus:border-[#5c1616] cursor-pointer hover:bg-slate-100 transition-colors"
             >
               <option value="all">Semua Kategori</option>
               <option value="name">Cari Nama Produk</option>
               <option value="code">Cari Kode Produk</option>
             </select>
           </div>
-
-          {/* Search Input Field */}
           <div className="relative flex-1 w-full">
             <input 
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari berdasarkan nama atau kode sepatu (contoh: G21, Pantofel)..." 
-              className="w-full pl-9 pr-3 py-2 border border-[#E2E8F0] rounded-lg text-[14px] font-normal text-[#1A1A1A] outline-none focus:border-[#0F172A]"
+              className="w-full pl-9 pr-3 py-2 border border-[#E2E8F0] rounded-lg text-[14px] font-normal text-[#1A1A1A] outline-none focus:border-[#5c1616]"
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]" size={15} />
           </div>
         </div>
 
-        {/* Row 2: Filter Dropdowns (Capsule / Dropdown Controls) */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E2E8F0] pt-4">
           <div className="flex flex-wrap items-center gap-4">
-            
-            {/* Filter 1: Stock Dropdown */}
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-semibold text-[#333333]">Stok:</span>
               <select
                 value={stockFilter}
                 onChange={(e) => setStockFilter(e.target.value as any)}
-                className="bg-slate-50 border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[14px] font-medium text-[#1A1A1A] outline-none focus:border-[#0F172A] cursor-pointer hover:bg-slate-100 transition-colors"
+                className="bg-slate-50 border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[14px] font-medium text-[#1A1A1A] outline-none focus:border-[#5c1616] cursor-pointer hover:bg-slate-100 transition-colors"
               >
                 <option value="all">Semua Stok</option>
                 <option value="available">Tersedia (&gt;5 pcs)</option>
@@ -282,14 +302,12 @@ export default function Products() {
                 <option value="out">Habis (0 pcs)</option>
               </select>
             </div>
-
-            {/* Filter 2: Price Range Dropdown */}
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-semibold text-[#333333]">Harga:</span>
               <select
                 value={priceRange}
                 onChange={(e) => setPriceRange(e.target.value as any)}
-                className="bg-slate-50 border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[14px] font-medium text-[#1A1A1A] outline-none focus:border-[#0F172A] cursor-pointer hover:bg-slate-100 transition-colors"
+                className="bg-slate-50 border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[14px] font-medium text-[#1A1A1A] outline-none focus:border-[#5c1616] cursor-pointer hover:bg-slate-100 transition-colors"
               >
                 <option value="all">Semua Rentang Harga</option>
                 <option value="0-50k">Rp 0 - Rp 50.000</option>
@@ -299,14 +317,12 @@ export default function Products() {
                 <option value="200k+">&gt; Rp 200.000</option>
               </select>
             </div>
-
-            {/* Filter 3: Sort Dropdown */}
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-semibold text-[#333333]">Urutkan:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-slate-50 border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[14px] font-medium text-[#1A1A1A] outline-none focus:border-[#0F172A] cursor-pointer hover:bg-slate-100 transition-colors"
+                className="bg-slate-50 border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[14px] font-medium text-[#1A1A1A] outline-none focus:border-[#5c1616] cursor-pointer hover:bg-slate-100 transition-colors"
               >
                 <option value="newest">Terbaru (Default)</option>
                 <option value="sold_high">Penjualan Terbanyak</option>
@@ -316,12 +332,10 @@ export default function Products() {
               </select>
             </div>
           </div>
-
-          {/* Reset Filter Button */}
           {(searchQuery || searchCategory !== 'all' || stockFilter !== 'all' || priceRange !== 'all' || sortBy !== 'newest') && (
             <button
               onClick={resetFilters}
-              className="text-[12px] font-medium text-[#71717A] hover:text-[#0F172A] flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-[12px] font-medium text-[#71717A] hover:text-[#5c1616] flex items-center gap-1 transition-colors cursor-pointer"
             >
               <RefreshCw size={12} /> Reset Filter
             </button>
@@ -329,29 +343,24 @@ export default function Products() {
         </div>
       </div>
 
-      {/* 3. KUMPULAN PRODUK: FULL-WIDTH TABLE */}
       <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
-        {/* Table Header Controls */}
         <div className="px-8 py-3.5 border-b border-[#E2E8F0] bg-slate-50/50 flex justify-between items-center text-[12px] text-[#71717A]">
           <span>Menampilkan <strong className="text-[#1A1A1A] font-medium">{filteredProducts.length}</strong> dari {products.length} produk</span>
         </div>
-
-        {/* Table Body with 32px (px-8) Horizontal Spacing and 16px (py-4) Vertical Spacing */}
         <div className="overflow-x-auto min-h-[400px]">
           {isLoading ? (
             <div className="flex justify-center items-center h-48">
-              <Loader2 className="w-8 h-8 text-[#0F172A] animate-spin" />
+              <Loader2 className="w-8 h-8 text-[#5c1616] animate-spin" />
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-[#71717A]">
               <Box className="w-12 h-12 mb-3 text-slate-300" />
               <p className="text-[14px] font-semibold text-[#1A1A1A]">Tidak ada produk ditemukan</p>
               <p className="text-[12px] text-[#71717A] mt-1">Coba sesuaikan kata kunci atau reset filter Anda.</p>
-              <button onClick={resetFilters} className="mt-3 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-[#1A1A1A] text-[12px] font-medium rounded transition-colors">Reset Filter</button>
+              <button onClick={resetFilters} className="mt-3 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-[#1A1A1A] text-[12px] font-medium rounded transition-colors cursor-pointer">Reset Filter</button>
             </div>
           ) : (
             <table className="w-full text-left">
-              {/* Table Column Headers (14px Semi-Bold #333333) */}
               <thead className="bg-slate-50 text-[#333333] text-[14px] font-semibold border-b border-[#E2E8F0]">
                 <tr>
                   <th className="px-8 py-3.5">Produk</th>
@@ -366,10 +375,8 @@ export default function Products() {
                   const stk = product.stock ?? 0;
                   const isLow = stk > 0 && stk < 5;
                   const isOut = stk === 0;
-
                   return (
                     <tr key={product.id} className="hover:bg-slate-50/80 transition-colors">
-                      {/* Produk Column (Proximity: Name 14px Medium #1A1A1A, Code 12px Regular #71717A with 4px vertical distance) */}
                       <td className="px-8 py-4">
                         <div className="flex items-center gap-3.5">
                           <div className="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden border border-[#E2E8F0] flex-shrink-0">
@@ -377,7 +384,6 @@ export default function Products() {
                           </div>
                           <div>
                             <p className="text-[14px] font-medium text-[#1A1A1A] line-clamp-1">{product.name}</p>
-                            {/* 4px vertical gap to sub-label */}
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-[12px] font-normal text-[#71717A] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
                                 {product.model || product.name.split(' ')[0]}
@@ -389,44 +395,21 @@ export default function Products() {
                           </div>
                         </div>
                       </td>
-
-                      {/* Harga Column (14px Medium #1A1A1A) */}
                       <td className="px-8 py-4 text-[14px] font-medium text-[#1A1A1A]">
                         Rp {product.price?.toLocaleString('id-ID')}
                       </td>
-
-                      {/* Stok Column (Accent Color #16A34A for Available) */}
                       <td className="px-8 py-4">
-                        <span className={`text-[14px] font-semibold ${
-                          isOut ? 'text-rose-600' :
-                          isLow ? 'text-amber-600' :
-                          'text-[#16A34A]'
-                        }`}>
+                        <span className={`text-[14px] font-semibold ${isOut ? 'text-rose-600' : isLow ? 'text-amber-600' : 'text-[#16A34A]'}`}>
                           {stk} pcs
                         </span>
                       </td>
-
-                      {/* Penjualan Column (14px Regular #71717A) */}
                       <td className="px-8 py-4 text-[14px] font-normal text-[#71717A]">
                         {product.sold || 0} pcs
                       </td>
-
-                      {/* Aksi Column */}
                       <td className="px-8 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button 
-                            className="p-2 text-[#71717A] hover:text-[#0F172A] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                            title="Edit Produk"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button 
-                            onClick={() => handleDelete(product.id, product.name)} 
-                            className="p-2 text-[#71717A] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                            title="Hapus Produk"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <button className="p-2 text-[#71717A] hover:text-[#5c1616] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" title="Edit Produk"><Edit size={16} /></button>
+                          <button onClick={() => handleDelete(product.id, product.name)} className="p-2 text-[#71717A] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer" title="Hapus Produk"><Trash2 size={16} /></button>
                         </div>
                       </td>
                     </tr>
@@ -438,42 +421,38 @@ export default function Products() {
         </div>
       </div>
 
-
-
-      {/* Floating Modal Form */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => !isSubmitting && setIsModalOpen(false)}></div>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl relative z-10 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h2 className="text-xl font-bold text-gray-900 font-heading">Tambah Produk Baru</h2>
-              <button disabled={isSubmitting} onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 hover:bg-gray-200 p-2 rounded-xl transition-colors disabled:opacity-50">
+            <div className="p-6 border-b border-[#E2E8F0] flex justify-between items-center bg-slate-50/50">
+              <h2 className="text-[20px] font-bold text-[#1A1A1A]">Tambah Produk Baru</h2>
+              <button disabled={isSubmitting} onClick={() => setIsModalOpen(false)} className="text-[#71717A] hover:text-[#1A1A1A] hover:bg-slate-200 p-2 rounded-xl transition-colors disabled:opacity-50 cursor-pointer">
                 <X size={20} />
               </button>
             </div>
             
             <div className="p-6 overflow-y-auto flex-1">
-              <form id="addProductForm" onSubmit={handleSubmit} className="space-y-6 text-xs">
-                
+              <form id="addProductForm" onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-2">Kategori Sepatu</label>
+                    <label className="block text-[14px] font-semibold text-[#333333] mb-2">Kategori Sepatu</label>
                     <select 
                       value={category}
                       onChange={(e) => {
                         setCategory(e.target.value);
                         setModelNumber('');
                       }}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-red-100 focus:border-red-500 outline-none transition-colors"
+                      className="w-full border border-[#E2E8F0] rounded-lg px-4 py-2.5 text-[14px] font-medium text-[#1A1A1A] focus:border-[#5c1616] outline-none transition-colors cursor-pointer"
                     >
                       <option value="Slip-on">Upper Non-Tali (G)</option>
                       <option value="Laced">Upper Tali (T)</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-2">Kode Model</label>
+                    <label className="block text-[14px] font-semibold text-[#333333] mb-2">Kode Model</label>
                     <div className="relative flex items-center">
-                      <div className="absolute left-0 inset-y-0 flex items-center justify-center pl-4 w-10 border-r border-gray-200 bg-gray-50 rounded-l-xl font-bold text-gray-600">
+                      <div className="absolute left-0 inset-y-0 flex items-center justify-center pl-4 w-10 border-r border-[#E2E8F0] bg-slate-50 rounded-l-lg font-bold text-[#333333]">
                         {category === 'Laced' ? 'T' : 'G'}
                       </div>
                       <input 
@@ -482,40 +461,46 @@ export default function Products() {
                         placeholder="Contoh: 21" 
                         value={modelNumber}
                         onChange={(e) => setModelNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                        className="w-full border border-gray-200 rounded-xl pl-14 pr-4 py-2.5 text-xs focus:ring-2 focus:ring-red-100 focus:border-red-500 outline-none transition-colors font-medium" 
+                        className="w-full border border-[#E2E8F0] rounded-lg pl-14 pr-4 py-2.5 text-[14px] font-medium text-[#1A1A1A] focus:border-[#5c1616] outline-none transition-colors" 
                       />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-2">Nama Tampilan (Otomatis)</label>
+                  <label className="block text-[14px] font-semibold text-[#333333] mb-2">Nama Tampilan Produk</label>
                   <input 
                     type="text" 
-                    readOnly 
-                    value={modelNumber ? `${category === 'Laced' ? 'T' : 'G'}${modelNumber} Hitam` : ''} 
-                    placeholder="Kode Model Hitam" 
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xs bg-gray-50 text-gray-500 outline-none cursor-not-allowed font-medium" 
+                    value={displayName}
+                    onChange={(e) => {
+                      setDisplayName(e.target.value);
+                      setIsCustomNameEdited(true);
+                    }}
+                    placeholder="Contoh: G21 Pantofel Hitam Premium" 
+                    className="w-full border border-[#E2E8F0] rounded-lg px-4 py-2.5 text-[14px] font-medium text-[#1A1A1A] focus:border-[#5c1616] outline-none transition-colors" 
                   />
+                  <p className="text-[12px] font-normal text-[#71717A] mt-1.5">
+                    Nama ini akan menjadi nama resmi produk yang dilihat oleh pembeli. Anda dapat mengubahnya sesuai keinginan.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-2">Harga (Rp)</label>
+                    <label className="block text-[14px] font-semibold text-[#333333] mb-2">Harga (Rp)</label>
                     <input 
                       type="text" 
                       value={price}
                       onChange={(e) => setPrice(e.target.value.replace(/[^0-9]/g, ''))}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-red-100 focus:border-red-500 outline-none transition-colors font-medium" 
+                      className="w-full border border-[#E2E8F0] rounded-lg px-4 py-2.5 text-[14px] font-medium text-[#1A1A1A] focus:border-[#5c1616] outline-none transition-colors" 
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-2">Stok Awal (pcs)</label>
+                    <label className="block text-[14px] font-semibold text-[#333333] mb-2">Stok Awal (pcs)</label>
                     <input 
                       type="text" 
                       value={initialStock}
                       onChange={(e) => setInitialStock(e.target.value.replace(/[^0-9]/g, ''))}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-red-100 focus:border-red-500 outline-none transition-colors font-medium" 
+                      className="w-full border border-[#E2E8F0] rounded-lg px-4 py-2.5 text-[14px] font-medium text-[#1A1A1A] focus:border-[#5c1616] outline-none transition-colors" 
                       placeholder="Contoh: 50"
                     />
                   </div>
@@ -523,18 +508,18 @@ export default function Products() {
 
                 <div>
                   <div className="flex justify-between items-center mb-3">
-                    <label className="block text-xs font-bold text-gray-700">Ukuran Tersedia</label>
+                    <label className="block text-[14px] font-semibold text-[#333333]">Ukuran Tersedia</label>
                     <label className="flex items-center gap-2 cursor-pointer group">
                       <div className="relative flex items-center justify-center">
                         <input 
                           type="checkbox" 
                           checked={isAllSizesSelected}
                           onChange={handleSelectAllSizes}
-                          className="peer appearance-none w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-red-100 checked:bg-red-600 checked:border-red-600 cursor-pointer transition-colors" 
+                          className="peer appearance-none w-4 h-4 border border-[#E2E8F0] rounded focus:ring-1 focus:ring-[#5c1616] checked:bg-[#5c1616] checked:border-[#5c1616] cursor-pointer transition-colors" 
                         />
                         <Check className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" strokeWidth={3} />
                       </div>
-                      <span className="text-xs font-bold text-gray-500 group-hover:text-gray-900">Select All</span>
+                      <span className="text-[12px] font-semibold text-[#71717A] group-hover:text-[#1A1A1A]">Select All</span>
                     </label>
                   </div>
                   <div className="flex flex-wrap gap-4">
@@ -545,31 +530,31 @@ export default function Products() {
                             type="checkbox" 
                             checked={selectedSizes.includes(size)}
                             onChange={() => toggleSize(size)}
-                            className="peer appearance-none w-4 h-4 border border-gray-300 rounded-none focus:ring-2 focus:ring-primary-light checked:bg-primary checked:border-primary cursor-pointer transition-colors" 
+                            className="peer appearance-none w-4 h-4 border border-[#E2E8F0] rounded focus:ring-1 focus:ring-[#5c1616] checked:bg-[#5c1616] checked:border-[#5c1616] cursor-pointer transition-colors" 
                           />
                           <Check className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" strokeWidth={3} />
                         </div>
-                        <span className="text-xs font-medium text-gray-700 group-hover:text-gray-900">{size}</span>
+                        <span className="text-[14px] font-medium text-[#333333] group-hover:text-[#1A1A1A]">{size}</span>
                       </label>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-2">Foto Produk</label>
-                  <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group overflow-hidden">
+                  <label className="block text-[14px] font-semibold text-[#333333] mb-2">Foto Thumbnail Utama (Katalog)</label>
+                  <div className="relative border-2 border-dashed border-[#E2E8F0] hover:border-[#5c1616] rounded-xl p-4 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group overflow-hidden">
                     {imagePreview ? (
                       <div className="relative w-full flex justify-center">
                         <img src={imagePreview} alt="Preview" className="h-32 object-contain mix-blend-multiply" />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                          <span className="text-white text-xs font-medium">Ganti Gambar</span>
+                          <span className="text-white text-[12px] font-medium">Ganti Gambar</span>
                         </div>
                       </div>
                     ) : (
                       <div className="text-center py-4">
-                        <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-xs font-medium text-gray-600">Klik untuk upload gambar</p>
-                        <p className="text-[11px] text-gray-400 mt-1">JPG, PNG (Maks. 2MB)</p>
+                        <UploadCloud className="w-8 h-8 text-[#71717A] mx-auto mb-2" />
+                        <p className="text-[14px] font-medium text-[#1A1A1A]">Klik untuk upload foto thumbnail utama</p>
+                        <p className="text-[12px] text-[#71717A] mt-1">JPG, PNG (Maks. 2MB)</p>
                       </div>
                     )}
                     <input 
@@ -582,23 +567,75 @@ export default function Products() {
                           setImagePreview(URL.createObjectURL(file));
                         }
                       }}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                      className="absolute inset-0 opacity-0 cursor-pointer" 
                     />
                   </div>
+                  <p className="text-[12px] font-normal text-[#71717A] mt-1.5">
+                    Foto ini akan digunakan sebagai foto thumbnail utama yang akan muncul di bagian katalog awal.
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-[14px] font-semibold text-[#333333]">Foto Pendukung (Mockup / Promosi)</label>
+                    <span className="text-[12px] text-[#71717A] font-medium">{galleryFiles.length} / 6 Foto</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 mb-2">
+                    {galleryPreviews.map((src, idx) => (
+                      <div key={idx} className="relative h-24 rounded-lg overflow-hidden border border-[#E2E8F0] group bg-slate-100">
+                        <img src={src} alt={`Mockup ${idx+1}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeGalleryImage(idx)}
+                          className="absolute top-1 right-1 bg-rose-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    {galleryFiles.length < 6 && (
+                      <label className="h-24 border-2 border-dashed border-[#E2E8F0] hover:border-[#5c1616] rounded-lg flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
+                        <Plus size={20} className="text-[#71717A] mb-1" />
+                        <span className="text-[11px] font-medium text-[#71717A]">Tambah Foto</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => handleGalleryAdd(e.target.files)}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-[12px] font-normal text-[#71717A] mt-1.5 leading-relaxed">
+                    Foto pendukung untuk mockup / foto promosi (maksimal 6 foto). Foto-foto ini akan tampil saat produk diklik untuk memberikan opsi sudut tampilan yang memikat pelanggan.
+                  </p>
                 </div>
               </form>
             </div>
-            
-            <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
-              <button disabled={isSubmitting} onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50">Batal</button>
+            <div className="p-6 border-t border-[#E2E8F0] flex justify-end gap-3 bg-slate-50/50">
               <button 
-                form="addProductForm"
-                type="submit"
+                type="button"
                 disabled={isSubmitting}
-                className="px-5 py-2.5 text-xs font-medium bg-primary text-white rounded-xl hover:bg-primary-hover transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2.5 rounded-lg text-[14px] font-medium text-[#71717A] hover:bg-slate-200 transition-colors disabled:opacity-50 cursor-pointer"
               >
-                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isSubmitting ? 'Menyimpan...' : 'Simpan Produk'}
+                Batal
+              </button>
+              <button 
+                type="submit"
+                form="addProductForm"
+                disabled={isSubmitting}
+                className="bg-[#5c1616] hover:bg-[#400f0f] text-white px-6 py-2.5 rounded-lg text-[14px] font-semibold transition-colors shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <span>Simpan Produk</span>
+                )}
               </button>
             </div>
           </div>
@@ -607,4 +644,3 @@ export default function Products() {
     </div>
   );
 }
-
