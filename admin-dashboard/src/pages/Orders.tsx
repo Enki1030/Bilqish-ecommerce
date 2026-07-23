@@ -452,24 +452,30 @@ export default function Orders() {
                     )}
 
                     {/* Manual Status Override Select */}
-                    <div className="relative">
-                      <select
-                        value={order.status || 'Menunggu Pembayaran'}
-                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                        className="w-full bg-gray-50 border border-gray-300 hover:border-gray-400 text-gray-700 text-xs font-medium py-1.5 px-2 rounded cursor-pointer outline-none"
-                      >
-                        <option value="Menunggu Pembayaran">Ubah Status: Menunggu Pembayaran</option>
-                        <option value="Sedang Diverifikasi">Ubah Status: Sedang Diverifikasi</option>
-                        <option value="Diproses">Ubah Status: Diproses</option>
-                        <option value="Siap Pickup">Ubah Status: Siap Pickup</option>
-                        <option value="Dikirim">Ubah Status: Dikirim</option>
-                        <option value="Dalam Pengiriman">Ubah Status: Dalam Pengiriman</option>
-                        <option value="Tiba di Tujuan">Ubah Status: Tiba di Tujuan</option>
-                        <option value="Selesai">Ubah Status: Selesai</option>
-                        <option value="Komplain">Ubah Status: Komplain / Retur</option>
-                        <option value="Pengiriman Gagal">Ubah Status: Pengiriman Gagal</option>
-                        <option value="Dibatalkan">Ubah Status: Dibatalkan</option>
-                      </select>
+                    <div className="w-full">
+                      <label className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                        Ubah Status
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={order.status || 'Menunggu Pembayaran'}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                          className="w-full appearance-none bg-white border border-gray-300 hover:border-primary text-gray-800 font-semibold text-xs py-2 pl-3 pr-8 rounded-lg cursor-pointer outline-none shadow-sm transition-all focus:ring-1 focus:ring-primary focus:border-primary"
+                        >
+                          <option value="Menunggu Pembayaran">Menunggu Pembayaran</option>
+                          <option value="Sedang Diverifikasi">Sedang Diverifikasi</option>
+                          <option value="Diproses">Diproses</option>
+                          <option value="Siap Pickup">Siap Pickup</option>
+                          <option value="Dikirim">Dikirim</option>
+                          <option value="Dalam Pengiriman">Dalam Pengiriman</option>
+                          <option value="Tiba di Tujuan">Tiba di Tujuan</option>
+                          <option value="Selesai">Selesai</option>
+                          <option value="Komplain">Komplain / Retur</option>
+                          <option value="Pengiriman Gagal">Pengiriman Gagal</option>
+                          <option value="Dibatalkan">Dibatalkan</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
                 </div>
