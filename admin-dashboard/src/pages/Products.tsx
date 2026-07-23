@@ -349,31 +349,31 @@ export default function Products() {
                 </div>
               ) : (
                 <table className="w-full text-left text-xs text-gray-700">
-                  <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-200 uppercase tracking-wider">
+                  <thead className="bg-gray-50 text-gray-600 font-medium border-b border-gray-200">
                     <tr>
-                      <th className="px-5 py-3.5">Produk</th>
-                      <th className="px-5 py-3.5">Harga</th>
-                      <th className="px-5 py-3.5">Stok (Akurat)</th>
-                      <th className="px-5 py-3.5">Penjualan</th>
-                      <th className="px-5 py-3.5 text-right">Aksi</th>
+                      <th className="px-5 py-3">Produk</th>
+                      <th className="px-5 py-3">Harga</th>
+                      <th className="px-5 py-3">Stok</th>
+                      <th className="px-5 py-3">Penjualan</th>
+                      <th className="px-5 py-3 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {filteredProducts.map(product => {
                       const stk = product.stock ?? 0;
-                      const isLow = stk > 0 && stk <= 5;
+                      const isLow = stk > 0 && stk < 5;
                       const isOut = stk === 0;
 
                       return (
                         <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
                           {/* Produk Column */}
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-3.5">
                             <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                              <div className="w-11 h-11 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
                                 <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                               </div>
                               <div>
-                                <p className="font-bold text-gray-900 text-xs line-clamp-1">{product.name}</p>
+                                <p className="font-medium text-gray-900 text-xs line-clamp-1">{product.name}</p>
                                 <div className="flex items-center gap-2 mt-0.5">
                                   <span className="text-[11px] font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
                                     {product.model || product.name.split(' ')[0]}
@@ -387,30 +387,28 @@ export default function Products() {
                           </td>
 
                           {/* Harga Column */}
-                          <td className="px-5 py-4 font-bold text-gray-900 font-body text-xs">
+                          <td className="px-5 py-3.5 font-normal text-gray-800 font-body text-xs">
                             Rp {product.price?.toLocaleString('id-ID')}
                           </td>
 
-                          {/* Stok (Exact Numerical Count with Color Badge) */}
-                          <td className="px-5 py-4">
-                            <div className="flex items-center gap-2">
-                              <span className={`px-2.5 py-1 rounded text-xs font-bold font-body ${
-                                isOut ? 'bg-rose-100 text-rose-700 border border-rose-200' :
-                                isLow ? 'bg-amber-100 text-amber-800 border border-amber-200' :
-                                'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                              }`}>
-                                {isOut ? 'Habis (0 pcs)' : isLow ? `Sisa ${stk} pcs` : `Tersedia (${stk} pcs)`}
-                              </span>
-                            </div>
+                          {/* Stok Column (Clean Colored Number) */}
+                          <td className="px-5 py-3.5 font-body">
+                            <span className={`text-xs font-medium ${
+                              isOut ? 'text-rose-600' :
+                              isLow ? 'text-amber-600' :
+                              'text-emerald-600'
+                            }`}>
+                              {stk} pcs
+                            </span>
                           </td>
 
                           {/* Penjualan Column */}
-                          <td className="px-5 py-4 font-body font-bold text-gray-700 text-xs">
+                          <td className="px-5 py-3.5 font-body font-normal text-gray-700 text-xs">
                             {product.sold || 0} pcs
                           </td>
 
                           {/* Aksi Column */}
-                          <td className="px-5 py-4 text-right">
+                          <td className="px-5 py-3.5 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               <button 
                                 className="p-1.5 text-gray-400 hover:text-primary hover:bg-gray-100 rounded transition-colors"
