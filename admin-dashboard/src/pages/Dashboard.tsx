@@ -216,10 +216,10 @@ export default function Dashboard() {
         <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-sm hover:border-rose-300 transition-all relative overflow-hidden group">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1">
+              <span className="text-xs font-medium text-rose-700 flex items-center gap-1">
                 <AlertTriangle size={14} /> Perlu Tindakan Urgen
               </span>
-              <div className="text-2xl font-bold text-gray-900 font-body mt-2">
+              <div className="text-xl font-medium text-gray-900 font-body mt-2">
                 {stats.urgentCount} <span className="text-xs font-normal text-gray-500">Pesanan (&gt;24j)</span>
               </div>
             </div>
@@ -239,10 +239,10 @@ export default function Dashboard() {
         <div className="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm hover:border-emerald-300 transition-all group">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">
+              <span className="text-xs font-medium text-emerald-700 flex items-center gap-1">
                 <ShoppingBag size={14} /> Pesanan Baru
               </span>
-              <div className="text-2xl font-bold text-gray-900 font-body mt-2">
+              <div className="text-xl font-medium text-gray-900 font-body mt-2">
                 {stats.newOrdersCount} <span className="text-xs font-normal text-gray-500">Transaksi Masuk</span>
               </div>
             </div>
@@ -262,10 +262,10 @@ export default function Dashboard() {
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-gray-300 transition-all">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+              <span className="text-xs font-medium text-gray-600 flex items-center gap-1">
                 <DollarSign size={14} className="text-amber-600" /> Ringkasan Omset
               </span>
-              <div className="text-xl font-bold text-primary font-body mt-2">
+              <div className="text-lg font-medium text-primary font-body mt-2">
                 Rp {stats.revenue.toLocaleString('id-ID')}
               </div>
             </div>
@@ -276,19 +276,19 @@ export default function Dashboard() {
           <div className="mt-3 flex items-center gap-1 bg-gray-100 p-0.5 rounded-lg text-[11px] font-medium text-gray-600 w-fit">
             <button 
               onClick={() => setRevenuePeriod('week')}
-              className={`px-2 py-0.5 rounded transition-all ${revenuePeriod === 'week' ? 'bg-white text-gray-900 font-bold shadow-xs' : 'hover:text-gray-900'}`}
+              className={`px-2 py-0.5 rounded transition-all ${revenuePeriod === 'week' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
             >
               Minggu
             </button>
             <button 
               onClick={() => setRevenuePeriod('month')}
-              className={`px-2 py-0.5 rounded transition-all ${revenuePeriod === 'month' ? 'bg-white text-gray-900 font-bold shadow-xs' : 'hover:text-gray-900'}`}
+              className={`px-2 py-0.5 rounded transition-all ${revenuePeriod === 'month' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
             >
               Bulan
             </button>
             <button 
               onClick={() => setRevenuePeriod('year')}
-              className={`px-2 py-0.5 rounded transition-all ${revenuePeriod === 'year' ? 'bg-white text-gray-900 font-bold shadow-xs' : 'hover:text-gray-900'}`}
+              className={`px-2 py-0.5 rounded transition-all ${revenuePeriod === 'year' ? 'bg-white text-gray-900 font-medium shadow-xs' : 'hover:text-gray-900'}`}
             >
               Tahun
             </button>
@@ -299,10 +299,10 @@ export default function Dashboard() {
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-gray-300 transition-all">
           <div className="flex justify-between items-start">
             <div className="min-w-0 flex-1">
-              <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+              <span className="text-xs font-medium text-gray-600 flex items-center gap-1">
                 <Flame size={14} className="text-orange-500" /> Sepatu Terlaris
               </span>
-              <div className="text-sm font-bold text-gray-900 font-body mt-2 truncate">
+              <div className="text-xs font-medium text-gray-900 font-body mt-2 truncate">
                 {stats.topSelling.name}
               </div>
               <p className="text-xs text-gray-500 mt-0.5">{stats.topSelling.count} pasang terjual</p>
@@ -311,7 +311,7 @@ export default function Dashboard() {
               {stats.topSelling.img ? (
                 <img src={stats.topSelling.img} alt="Top" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold">👞</div>
+                <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">👞</div>
               )}
             </div>
           </div>
@@ -333,7 +333,7 @@ export default function Dashboard() {
               <Flame size={18} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900 font-heading">Trend Pembelian</h2>
+              <h2 className="text-sm font-bold text-gray-900 font-heading">Trend Pembelian</h2>
               <p className="text-xs text-gray-500">Pantau pertumbuhan tren transaksi dan pembelian produk toko secara riil.</p>
             </div>
           </div>
@@ -362,11 +362,11 @@ export default function Dashboard() {
             }`}
           >
             <span className="text-xs text-gray-500 font-medium block">Pesanan</span>
-            <div className="text-xl font-bold text-gray-900 font-body mt-1">
+            <div className="text-lg font-medium text-gray-900 font-body mt-1">
               {trendMetrics.orders.count}
             </div>
             <div className="flex items-center gap-1 text-[11px] mt-1">
-              <span className={`font-semibold ${trendMetrics.orders.growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`font-medium ${trendMetrics.orders.growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {trendMetrics.orders.growth >= 0 ? `+${trendMetrics.orders.growth}%` : `${trendMetrics.orders.growth}%`}
               </span>
               <span className="text-gray-400">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
@@ -384,11 +384,11 @@ export default function Dashboard() {
             }`}
           >
             <span className="text-xs text-gray-500 font-medium block">Produk Dibeli</span>
-            <div className="text-xl font-bold text-gray-900 font-body mt-1">
+            <div className="text-lg font-medium text-gray-900 font-body mt-1">
               {trendMetrics.items.count} <span className="text-xs font-normal text-gray-500">pcs</span>
             </div>
             <div className="flex items-center gap-1 text-[11px] mt-1">
-              <span className={`font-semibold ${trendMetrics.items.growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`font-medium ${trendMetrics.items.growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {trendMetrics.items.growth >= 0 ? `+${trendMetrics.items.growth}%` : `${trendMetrics.items.growth}%`}
               </span>
               <span className="text-gray-400">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
@@ -406,11 +406,11 @@ export default function Dashboard() {
             }`}
           >
             <span className="text-xs text-gray-500 font-medium block">Pesanan Dibatalkan</span>
-            <div className="text-xl font-bold text-gray-900 font-body mt-1">
+            <div className="text-lg font-medium text-gray-900 font-body mt-1">
               {trendMetrics.cancelled.count}
             </div>
             <div className="flex items-center gap-1 text-[11px] mt-1">
-              <span className={`font-semibold ${trendMetrics.cancelled.growth <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`font-medium ${trendMetrics.cancelled.growth <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {trendMetrics.cancelled.growth >= 0 ? `+${trendMetrics.cancelled.growth}%` : `${trendMetrics.cancelled.growth}%`}
               </span>
               <span className="text-gray-400">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
@@ -428,11 +428,11 @@ export default function Dashboard() {
             }`}
           >
             <span className="text-xs text-gray-500 font-medium block">Pembelian (Nominal)</span>
-            <div className="text-xl font-bold text-primary font-body mt-1">
+            <div className="text-lg font-medium text-primary font-body mt-1">
               Rp {trendMetrics.revenue.count.toLocaleString('id-ID')}
             </div>
             <div className="flex items-center gap-1 text-[11px] mt-1">
-              <span className={`font-semibold ${trendMetrics.revenue.growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`font-medium ${trendMetrics.revenue.growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {trendMetrics.revenue.growth >= 0 ? `+${trendMetrics.revenue.growth}%` : `${trendMetrics.revenue.growth}%`}
               </span>
               <span className="text-gray-400">vs {trendComparison === '7days' ? '7 Hari' : '30 Hari'}</span>
@@ -444,7 +444,7 @@ export default function Dashboard() {
         {/* Visual Daily Bar Chart Representation */}
         <div className="bg-gray-50/70 p-5 rounded-xl border border-gray-100 space-y-4">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-bold text-gray-700 uppercase tracking-wider">
+            <span className="font-medium text-gray-700">
               Grafik Harian: {
                 activeTrendTab === 'orders' ? 'Jumlah Pesanan' :
                 activeTrendTab === 'items' ? 'Jumlah Produk Dibeli' :
