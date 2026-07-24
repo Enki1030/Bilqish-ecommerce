@@ -34,6 +34,23 @@ export default function Orders() {
     setActiveSubTab('all');
   }, [activeMainTab]);
 
+  const getAdminSessionStartTime = () => {
+    const stored = localStorage.getItem('ballqish_admin_login_time');
+    const now = Date.now();
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+    if (!stored) {
+      localStorage.setItem('ballqish_admin_login_time', now.toString());
+      return now;
+    }
+    const loginTime = Number(stored);
+    if (now - loginTime >= TWENTY_FOUR_HOURS) {
+      localStorage.setItem('ballqish_admin_login_time', now.toString());
+      return now;
+    }
+    return loginTime;
+  };
+
   async function fetchOrders() {
     setLoading(true);
     const { data, error } = await supabase
@@ -45,12 +62,13 @@ export default function Orders() {
       console.error('Error fetching orders:', error);
     } else {
       const now = Date.now();
+      const sessionStartTime = getAdminSessionStartTime();
       const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+      const isSessionExpired = (now - sessionStartTime) >= TWENTY_FOUR_HOURS;
 
-      // Auto-transition orders >= 24h old from 'Pesanan Baru' / 'Belum Diproses' to 'Diproses' (Pesanan Aktif)
+      // If 24h have passed since Admin's login session started, unhandled 'Pesanan Baru' auto-transition to 'Diproses'
       const updatedData = await Promise.all((data || []).map(async (o: any) => {
-        const age = now - new Date(o.created_at).getTime();
-        if (age >= TWENTY_FOUR_HOURS && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
+        if (isSessionExpired && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
           await supabase.from('orders').update({ status: 'Diproses' }).eq('id', o.id);
           return { ...o, status: 'Diproses' };
         }
@@ -81,7 +99,7 @@ export default function Orders() {
     all: [
       { id: 'all', label: 'Semua Status' },
       { id: 'aktif', label: 'Pesanan Aktif' },
-      { id: 'baru', label: 'Pesanan Baru (<24j)', statuses: ['Pesanan Baru', 'Belum Diproses'] },
+      { id: 'baru', label: 'Pesanan Baru (<24j Login)', statuses: ['Pesanan Baru', 'Belum Diproses'] },
       { id: 'selesai', label: 'Pesanan Selesai', statuses: ['Selesai'] },
       { id: 'dibatalkan', label: 'Pesanan Dibatalkan', statuses: ['Dibatalkan'] },
       { id: 'dikembalikan', label: 'Pesanan Dikembalikan', statuses: ['Dikembalikan'] }
@@ -108,17 +126,18 @@ export default function Orders() {
     ]
   };
 
-  // Counting badges for Main Tabs (Fresh < 24h for Pesanan Baru)
+  // Counting badges for Main Tabs (Admin Login Session Timer)
   const counts = useMemo(() => {
     const res: Record<MainTab, number> = { all: orders.length, new: 0, processing: 0, shipping: 0, issues: 0 };
     const now = Date.now();
+    const sessionStartTime = getAdminSessionStartTime();
     const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+    const isFreshSession = (now - sessionStartTime) < TWENTY_FOUR_HOURS;
 
     orders.forEach(o => {
       const st = o.status || 'Diproses';
-      const age = now - new Date(o.created_at).getTime();
 
-      if (['Pesanan Baru', 'Belum Diproses'].includes(st) && age < TWENTY_FOUR_HOURS) res.new++;
+      if (['Pesanan Baru', 'Belum Diproses'].includes(st) && isFreshSession) res.new++;
       if (['Diproses', 'Siap Pickup', 'Gagal Pickup'].includes(st)) res.processing++;
       if (['Dikirim', 'Diterima Ekspedisi', 'Dalam Pengiriman', 'Tiba di Tujuan'].includes(st)) res.shipping++;
       if (['Pengiriman Gagal', 'Komplain / Retur', 'Komplain', 'Retur', 'Terkendala'].includes(st)) res.issues++;

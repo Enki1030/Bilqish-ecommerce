@@ -32,6 +32,23 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
+  const getAdminSessionStartTime = () => {
+    const stored = localStorage.getItem('ballqish_admin_login_time');
+    const now = Date.now();
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+    if (!stored) {
+      localStorage.setItem('ballqish_admin_login_time', now.toString());
+      return now;
+    }
+    const loginTime = Number(stored);
+    if (now - loginTime >= TWENTY_FOUR_HOURS) {
+      localStorage.setItem('ballqish_admin_login_time', now.toString());
+      return now;
+    }
+    return loginTime;
+  };
+
   const fetchDashboardData = async () => {
     setLoading(true);
     const { data: ordersData } = await supabase
@@ -44,12 +61,13 @@ export default function Dashboard() {
       .select('*');
 
     const now = Date.now();
+    const sessionStartTime = getAdminSessionStartTime();
     const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+    const isSessionExpired = (now - sessionStartTime) >= TWENTY_FOUR_HOURS;
 
-    // Auto-transition orders >= 24h old from 'Pesanan Baru' / 'Belum Diproses' to 'Diproses' (Pesanan Aktif)
+    // If 24h have passed since Admin's login session started, unhandled 'Pesanan Baru' auto-transition to 'Diproses'
     const updatedOrders = await Promise.all((ordersData || []).map(async (o: any) => {
-      const age = now - new Date(o.created_at).getTime();
-      if (age >= TWENTY_FOUR_HOURS && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
+      if (isSessionExpired && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
         await supabase.from('orders').update({ status: 'Diproses' }).eq('id', o.id);
         return { ...o, status: 'Diproses' };
       }
@@ -65,6 +83,9 @@ export default function Dashboard() {
   const stats = useMemo(() => {
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
+    const sessionStartTime = getAdminSessionStartTime();
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+    const isFreshSession = (now - sessionStartTime) < TWENTY_FOUR_HOURS;
 
     // Status 1: Pesanan Aktif (Orders in processing, shipping, ready pickup)
     const activeOrders = orders.filter(o => {
@@ -72,11 +93,10 @@ export default function Dashboard() {
       return ['Diproses', 'Siap Pickup', 'Gagal Pickup', 'Dikirim', 'Diterima Ekspedisi', 'Dalam Pengiriman', 'Tiba di Tujuan'].includes(st);
     });
 
-    // Status 2: Pesanan Baru (< 24 Jam)
+    // Status 2: Pesanan Baru (< 24 Jam Login)
     const newOrders = orders.filter(o => {
       const st = o.status || 'Diproses';
-      const age = now - new Date(o.created_at).getTime();
-      return ['Pesanan Baru', 'Belum Diproses'].includes(st) && age < oneDay;
+      return ['Pesanan Baru', 'Belum Diproses'].includes(st) && isFreshSession;
     });
 
     // Status 3: Komplain Pelanggan & Retur
