@@ -275,14 +275,14 @@ import Layout from '../layouts/Layout.astro';
         btnPayNow.setAttribute('disabled', 'true');
 
         try {
-          // CREATE ORDER (Status: Diproses because it's a dummy paid transaction)
+          // CREATE ORDER (Status: Pesanan Baru)
           const { data: order, error: orderError } = await supabase.from('orders').insert({
             user_id: session.user.id,
             customer_name: name,
             customer_phone: phone,
             customer_address: address,
             total_amount: finalTotal,
-            status: 'Diproses'
+            status: 'Pesanan Baru'
           }).select().single();
 
           if (orderError) throw orderError;
