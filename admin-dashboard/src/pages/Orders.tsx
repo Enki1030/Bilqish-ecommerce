@@ -44,7 +44,20 @@ export default function Orders() {
     if (error) {
       console.error('Error fetching orders:', error);
     } else {
-      setOrders(data || []);
+      const now = Date.now();
+      const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+      // Auto-transition orders >= 24h old from 'Pesanan Baru' / 'Belum Diproses' to 'Diproses' (Pesanan Aktif)
+      const updatedData = await Promise.all((data || []).map(async (o: any) => {
+        const age = now - new Date(o.created_at).getTime();
+        if (age >= TWENTY_FOUR_HOURS && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
+          await supabase.from('orders').update({ status: 'Diproses' }).eq('id', o.id);
+          return { ...o, status: 'Diproses' };
+        }
+        return o;
+      }));
+
+      setOrders(updatedData);
     }
     setLoading(false);
   }
@@ -68,7 +81,7 @@ export default function Orders() {
     all: [
       { id: 'all', label: 'Semua Status' },
       { id: 'aktif', label: 'Pesanan Aktif' },
-      { id: 'baru', label: 'Pesanan Baru', statuses: ['Pesanan Baru', 'Belum Diproses'] },
+      { id: 'baru', label: 'Pesanan Baru (<24j)', statuses: ['Pesanan Baru', 'Belum Diproses'] },
       { id: 'selesai', label: 'Pesanan Selesai', statuses: ['Selesai'] },
       { id: 'dibatalkan', label: 'Pesanan Dibatalkan', statuses: ['Dibatalkan'] },
       { id: 'dikembalikan', label: 'Pesanan Dikembalikan', statuses: ['Dikembalikan'] }
@@ -95,12 +108,17 @@ export default function Orders() {
     ]
   };
 
-  // Counting badges for Main Tabs
+  // Counting badges for Main Tabs (Fresh < 24h for Pesanan Baru)
   const counts = useMemo(() => {
     const res: Record<MainTab, number> = { all: orders.length, new: 0, processing: 0, shipping: 0, issues: 0 };
+    const now = Date.now();
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
     orders.forEach(o => {
       const st = o.status || 'Diproses';
-      if (['Pesanan Baru', 'Belum Diproses'].includes(st)) res.new++;
+      const age = now - new Date(o.created_at).getTime();
+
+      if (['Pesanan Baru', 'Belum Diproses'].includes(st) && age < TWENTY_FOUR_HOURS) res.new++;
       if (['Diproses', 'Siap Pickup', 'Gagal Pickup'].includes(st)) res.processing++;
       if (['Dikirim', 'Diterima Ekspedisi', 'Dalam Pengiriman', 'Tiba di Tujuan'].includes(st)) res.shipping++;
       if (['Pengiriman Gagal', 'Komplain / Retur', 'Komplain', 'Retur', 'Terkendala'].includes(st)) res.issues++;

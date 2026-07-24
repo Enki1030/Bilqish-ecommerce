@@ -43,7 +43,20 @@ export default function Dashboard() {
       .from('products')
       .select('*');
 
-    setOrders(ordersData || []);
+    const now = Date.now();
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+    // Auto-transition orders >= 24h old from 'Pesanan Baru' / 'Belum Diproses' to 'Diproses' (Pesanan Aktif)
+    const updatedOrders = await Promise.all((ordersData || []).map(async (o: any) => {
+      const age = now - new Date(o.created_at).getTime();
+      if (age >= TWENTY_FOUR_HOURS && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
+        await supabase.from('orders').update({ status: 'Diproses' }).eq('id', o.id);
+        return { ...o, status: 'Diproses' };
+      }
+      return o;
+    }));
+
+    setOrders(updatedOrders);
     setProducts(productsData || []);
     setLoading(false);
   };
@@ -52,25 +65,25 @@ export default function Dashboard() {
   const stats = useMemo(() => {
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
-    const todayStart = new Date().setHours(0, 0, 0, 0);
 
-    // Status 1: Perlu Diproses (Pending or unfulfilled > 24h or newly placed)
-    const urgentOrders = orders.filter(o => {
-      const isPending = ['Menunggu Pembayaran', 'Sedang Diverifikasi', 'Perlu Diproses', 'Pesanan Baru'].includes(o.status);
-      return isPending;
+    // Status 1: Pesanan Aktif (Orders in processing, shipping, ready pickup)
+    const activeOrders = orders.filter(o => {
+      const st = o.status || 'Diproses';
+      return ['Diproses', 'Siap Pickup', 'Gagal Pickup', 'Dikirim', 'Diterima Ekspedisi', 'Dalam Pengiriman', 'Tiba di Tujuan'].includes(st);
     });
 
-    // Status 2: Pesanan Baru (Today's orders)
+    // Status 2: Pesanan Baru (< 24 Jam)
     const newOrders = orders.filter(o => {
-      const orderTime = new Date(o.created_at).getTime();
-      return orderTime >= todayStart || o.status === 'Pesanan Baru';
+      const st = o.status || 'Diproses';
+      const age = now - new Date(o.created_at).getTime();
+      return ['Pesanan Baru', 'Belum Diproses'].includes(st) && age < oneDay;
     });
 
-    // Status 3: Komplain Pelanggan
-    const complaintOrders = orders.filter(o => ['Komplain', 'Retur', 'Terkendala'].includes(o.status));
+    // Status 3: Komplain Pelanggan & Retur
+    const complaintOrders = orders.filter(o => ['Komplain / Retur', 'Komplain', 'Retur', 'Dikembalikan'].includes(o.status));
 
     // Status 4: Pengiriman Gagal
-    const failedShipmentOrders = orders.filter(o => o.status === 'Pengiriman Gagal');
+    const failedShipmentOrders = orders.filter(o => ['Pengiriman Gagal', 'Terkendala'].includes(o.status));
 
     // Revenue Summary (Filtered by week, month, year)
     let filteredRevenueOrders = orders.filter(o => o.status !== 'Dibatalkan');
@@ -99,7 +112,7 @@ export default function Dashboard() {
     const top3Selling = sortedModels.slice(0, 3);
 
     return {
-      urgentCount: urgentOrders.length,
+      activeOrdersCount: activeOrders.length,
       newOrdersCount: newOrders.length,
       complaintCount: complaintOrders.length,
       failedShipmentCount: failedShipmentOrders.length,
@@ -304,34 +317,34 @@ export default function Dashboard() {
 
       </div>
 
-      {/* 🔴 BARIS 2: 4 KARTU OPERASIONAL (Perlu Diproses, Pesanan Baru, Komplain Pelanggan, Pengiriman Gagal) */}
+      {/* 🔴 BARIS 2: 4 KARTU OPERASIONAL (Pesanan Aktif, Pesanan Baru <24h, Komplain Pelanggan, Pengiriman Gagal) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Perlu Diproses */}
-        <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-xs hover:border-rose-300 transition-all">
+        {/* Card 1: Pesanan Aktif */}
+        <div className="bg-white p-5 rounded-xl border border-indigo-200 shadow-xs hover:border-indigo-300 transition-all">
           <div>
-            <span className="text-[14px] font-semibold text-rose-700 flex items-center gap-1.5">
-              <AlertTriangle size={15} /> Perlu Diproses
+            <span className="text-[14px] font-semibold text-indigo-700 flex items-center gap-1.5">
+              <Package size={15} /> Pesanan Aktif
             </span>
             <div className="text-xl font-semibold text-[#1A1A1A] font-sans mt-2">
-              {stats.urgentCount} <span className="text-[12px] font-normal text-[#71717A]">Pesanan</span>
+              {stats.activeOrdersCount} <span className="text-[12px] font-normal text-[#71717A]">Sedang Berjalan</span>
             </div>
           </div>
           <a 
             href="/orders" 
-            className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-rose-600 hover:text-rose-800 transition-colors"
+            className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
           >
-            Periksa Pesanan <ChevronRight size={13} />
+            Lihat Pesanan Aktif <ChevronRight size={13} />
           </a>
         </div>
 
-        {/* Card 2: Pesanan Baru */}
+        {/* Card 2: Pesanan Baru (<24 Jam) */}
         <div className="bg-white p-5 rounded-xl border border-emerald-200 shadow-xs hover:border-emerald-300 transition-all">
           <div>
             <span className="text-[14px] font-semibold text-emerald-700 flex items-center gap-1.5">
-              <ShoppingBag size={15} /> Pesanan Baru
+              <ShoppingBag size={15} /> Pesanan Baru (&lt;24j)
             </span>
             <div className="text-xl font-semibold text-[#1A1A1A] font-sans mt-2">
-              {stats.newOrdersCount} <span className="text-[12px] font-normal text-[#71717A]">Transaksi Masuk</span>
+              {stats.newOrdersCount} <span className="text-[12px] font-normal text-[#71717A]">Fresh Transaksi</span>
             </div>
           </div>
           <a 
