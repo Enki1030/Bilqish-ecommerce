@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Bell, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Bell, LogOut, Wrench } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function Sidebar() {
@@ -49,6 +49,16 @@ export default function Sidebar() {
         >
           <ShoppingCart size={18} />
           <span>Pesanan</span>
+        </NavLink>
+
+        <NavLink 
+          to="/craftsmen"
+          className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
+            isActive ? 'bg-[#5c1616] text-white shadow-xs' : 'text-[#333333] hover:bg-[#fdf5f5] hover:text-[#5c1616]'
+          }`}
+        >
+          <Wrench size={18} />
+          <span>Pengrajin & Bahan</span>
         </NavLink>
       </div>
 

@@ -115,8 +115,13 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           <!-- Title & Price -->
           <div class="mb-10 border-b border-gray-200 pb-8">
             <p class="text-xs font-heading font-medium text-gray-500 mb-3 tracking-[0.2em] uppercase">{product.category}</p>
-            <h1 class="text-3xl lg:text-4xl font-heading font-normal text-gray-900 tracking-wider uppercase leading-tight mb-4">{product.name}</h1>
             <p class="text-2xl font-body font-bold text-gray-900">Rp {product.price.toLocaleString('id-ID')}</p>
+            
+            <!-- Raw Material Craftsman Status PO Notice -->
+            <div id="craftsman-material-notice" class="hidden mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 font-sans flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span id="craftsman-notice-text">Estimasi Produksi Tambahan +2 Hari (Pasokan Bahan Pengrajin Terbatas/PO)</span>
+            </div>
           </div>
 
           <!-- Outsole Model Selection -->
@@ -410,6 +415,29 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       }
 
       bindThumbnails();
+
+      // Check Raw Material Supplier PO Status
+      async function checkMaterialStatus() {
+        try {
+          const { data: rawMats } = await supabase.from('raw_materials').select('*');
+          if (rawMats && rawMats.length > 0) {
+            const limitedOrOut = rawMats.find((m: any) => m.status === 'Terbatas' || m.status === 'Habis');
+            if (limitedOrOut) {
+              const noticeBox = document.getElementById('craftsman-material-notice');
+              const noticeText = document.getElementById('craftsman-notice-text');
+              if (noticeBox && noticeText) {
+                const delay = limitedOrOut.delay_days || 2;
+                noticeText.textContent = `Info Pasokan: ${limitedOrOut.name} berstatus ${limitedOrOut.status}. Estimasi tambahan waktu produksi +${delay} hari (PO).`;
+                noticeBox.classList.remove('hidden');
+              }
+            }
+          }
+        } catch (e) {
+          // Silent fallback
+        }
+      }
+
+      checkMaterialStatus();
     });
   </script>
 </Layout>
