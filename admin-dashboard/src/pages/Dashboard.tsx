@@ -15,9 +15,7 @@ import {
   Sparkles,
   RefreshCw,
   Box,
-  Bell,
-  FileSpreadsheet,
-  Download
+  Bell
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -29,6 +27,10 @@ export default function Dashboard() {
   const [revenuePeriod, setRevenuePeriod] = useState<'week' | 'month' | 'year'>('month');
   const [trendComparison, setTrendComparison] = useState<'7days' | '30days'>('7days');
   const [activeTrendTab, setActiveTrendTab] = useState<'orders' | 'items' | 'cancelled' | 'revenue'>('orders');
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   const getAdminSessionStartTime = () => {
     const stored = localStorage.getItem('ballqish_admin_login_time');
@@ -47,64 +49,34 @@ export default function Dashboard() {
     return loginTime;
   };
 
-  const [exporting, setExporting] = useState(false);
-
-  /* TEMPORARILY COMMENTED OUT FOR DIAGNOSTICS:
-  const handleExportExcel = async () => {
-    ...
-  };
-  */
-
   const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
-        .select('*, order_items(*)')
-        .order('created_at', { ascending: false });
+    setLoading(true);
+    const { data: ordersData } = await supabase
+      .from('orders')
+      .select('*, order_items(*)')
+      .order('created_at', { ascending: false });
 
-      if (ordersError) {
-        console.error('Error fetching orders for Dashboard:', ordersError);
+    const { data: productsData } = await supabase
+      .from('products')
+      .select('*');
+
+    const now = Date.now();
+    const sessionStartTime = getAdminSessionStartTime();
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+    const isSessionExpired = (now - sessionStartTime) >= TWENTY_FOUR_HOURS;
+
+    // If 24h have passed since Admin's login session started, unhandled 'Pesanan Baru' auto-transition to 'Diproses'
+    const updatedOrders = await Promise.all((ordersData || []).map(async (o: any) => {
+      if (isSessionExpired && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
+        await supabase.from('orders').update({ status: 'Diproses' }).eq('id', o.id);
+        return { ...o, status: 'Diproses' };
       }
+      return o;
+    }));
 
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*');
-
-      if (productsError) {
-        console.error('Error fetching products for Dashboard:', productsError);
-      }
-
-      const now = Date.now();
-      const sessionStartTime = getAdminSessionStartTime();
-      const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-      const isSessionExpired = (now - sessionStartTime) >= TWENTY_FOUR_HOURS;
-
-      const rawOrders = ordersData || [];
-      const updatedOrders = rawOrders.map((o: any) => {
-        if (isSessionExpired && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
-          // Update in background asynchronously without blocking UI render
-          supabase.from('orders').update({ status: 'Diproses' }).eq('id', o.id).then();
-          return { ...o, status: 'Diproses' };
-        }
-        return o;
-      });
-
-      setOrders(updatedOrders);
-      setProducts(productsData || []);
-    } catch (e) {
-      console.error('Unhandled error in fetchDashboardData:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Helper to safely get order_items array regardless of Supabase schema response
-  const getOrderItemsArray = (o: any): any[] => {
-    if (!o || !o.order_items) return [];
-    if (Array.isArray(o.order_items)) return o.order_items;
-    if (typeof o.order_items === 'object') return [o.order_items];
-    return [];
+    setOrders(updatedOrders);
+    setProducts(productsData || []);
+    setLoading(false);
   };
 
   // 1. Top Executive Stat Calculations
@@ -144,18 +116,18 @@ export default function Dashboard() {
     // Current Period Revenue
     const currentRevenueOrders = orders.filter(o => {
       if (o.status === 'Dibatalkan') return false;
-      const diff = now - new Date(o.created_at || Date.now()).getTime();
+      const diff = now - new Date(o.created_at).getTime();
       return diff <= limitMs;
     });
-    const totalRevenue = currentRevenueOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+    const totalRevenue = currentRevenueOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
 
     // Previous Period Revenue (e.g. 7-14 days ago for week, 30-60 days ago for month)
     const previousRevenueOrders = orders.filter(o => {
       if (o.status === 'Dibatalkan') return false;
-      const diff = now - new Date(o.created_at || Date.now()).getTime();
+      const diff = now - new Date(o.created_at).getTime();
       return diff > limitMs && diff <= (limitMs * 2);
     });
-    const previousRevenue = previousRevenueOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+    const previousRevenue = previousRevenueOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
 
     // Comparison Difference & Percentage Growth
     const revenueDiff = totalRevenue - previousRevenue;
@@ -167,13 +139,12 @@ export default function Dashboard() {
     const modelSalesCount: Record<string, { name: string; count: number; price: number; img: string }> = {};
     orders.forEach(o => {
       if (o.status === 'Dibatalkan') return;
-      const items = getOrderItemsArray(o);
-      items.forEach((item: any) => {
+      o.order_items?.forEach((item: any) => {
         const name = item.product_name || 'Sepatu Pantofel';
         if (!modelSalesCount[name]) {
-          modelSalesCount[name] = { name, count: 0, price: Number(item.price) || 85000, img: item.product_image };
+          modelSalesCount[name] = { name, count: 0, price: item.price || 85000, img: item.product_image };
         }
-        modelSalesCount[name].count += Number(item.quantity) || 1;
+        modelSalesCount[name].count += item.quantity || 1;
       });
     });
     const sortedModels = Object.values(modelSalesCount).sort((a, b) => b.count - a.count);
@@ -198,9 +169,9 @@ export default function Dashboard() {
     const daysLimit = trendComparison === '7days' ? 7 : 30;
     const limitMs = daysLimit * 24 * 60 * 60 * 1000;
 
-    const currentPeriodOrders = orders.filter(o => (now - new Date(o.created_at || Date.now()).getTime()) <= limitMs);
+    const currentPeriodOrders = orders.filter(o => (now - new Date(o.created_at).getTime()) <= limitMs);
     const previousPeriodOrders = orders.filter(o => {
-      const diff = now - new Date(o.created_at || Date.now()).getTime();
+      const diff = now - new Date(o.created_at).getTime();
       return diff > limitMs && diff <= (limitMs * 2);
     });
 
@@ -208,25 +179,16 @@ export default function Dashboard() {
     const totalOrdersPrev = previousPeriodOrders.length;
     const ordersGrowth = totalOrdersPrev === 0 ? 100 : Math.round(((totalOrdersCurr - totalOrdersPrev) / totalOrdersPrev) * 100);
 
-    const itemsCurr = currentPeriodOrders.reduce((s, o) => {
-      const items = getOrderItemsArray(o);
-      const c = items.reduce((is: number, i: any) => is + (Number(i.quantity) || 1), 0);
-      return s + (c || 1);
-    }, 0);
-
-    const itemsPrev = previousPeriodOrders.reduce((s, o) => {
-      const items = getOrderItemsArray(o);
-      const c = items.reduce((is: number, i: any) => is + (Number(i.quantity) || 1), 0);
-      return s + (c || 1);
-    }, 0);
+    const itemsCurr = currentPeriodOrders.reduce((s, o) => s + (o.order_items?.reduce((is: number, i: any) => is + (i.quantity || 1), 0) || 1), 0);
+    const itemsPrev = previousPeriodOrders.reduce((s, o) => s + (o.order_items?.reduce((is: number, i: any) => is + (i.quantity || 1), 0) || 1), 0);
     const itemsGrowth = itemsPrev === 0 ? 100 : Math.round(((itemsCurr - itemsPrev) / itemsPrev) * 100);
 
     const cancelledCurr = currentPeriodOrders.filter(o => o.status === 'Dibatalkan').length;
     const cancelledPrev = previousPeriodOrders.filter(o => o.status === 'Dibatalkan').length;
     const cancelledGrowth = cancelledPrev === 0 ? 0 : Math.round(((cancelledCurr - cancelledPrev) / cancelledPrev) * 100);
 
-    const revCurr = currentPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
-    const revPrev = previousPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
+    const revCurr = currentPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (o.total_amount || 0), 0);
+    const revPrev = previousPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (o.total_amount || 0), 0);
     const revGrowth = revPrev === 0 ? 100 : Math.round(((revCurr - revPrev) / revPrev) * 100);
 
     return {
@@ -251,18 +213,14 @@ export default function Dashboard() {
       const dayEnd = new Date(d.setHours(23, 59, 59, 999)).getTime();
 
       const dayOrders = orders.filter(o => {
-        const t = new Date(o.created_at || Date.now()).getTime();
+        const t = new Date(o.created_at).getTime();
         return t >= dayStart && t <= dayEnd;
       });
 
       const orderCount = dayOrders.length;
-      const itemsCount = dayOrders.reduce((s, o) => {
-        const items = getOrderItemsArray(o);
-        const c = items.reduce((is: number, item: any) => is + (Number(item.quantity) || 1), 0);
-        return s + (c || 1);
-      }, 0);
+      const itemsCount = dayOrders.reduce((s, o) => s + (o.order_items?.reduce((is: number, item: any) => is + (item.quantity || 1), 0) || 1), 0);
       const cancelledCount = dayOrders.filter(o => o.status === 'Dibatalkan').length;
-      const revTotal = dayOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
+      const revTotal = dayOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (o.total_amount || 0), 0);
 
       result.push({
         date: dateStr,
@@ -304,7 +262,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <a
             href="/notifications"
-            className="w-10 h-10 bg-[#FAF9F6] border border-[#E2E8F0] hover:border-[#5c1616] hover:bg-[#fdf5f5] text-[#333333] hover:text-[#5c1616] rounded-lg flex items-center justify-center relative transition-all shadow-2xs cursor-pointer"
+            className="w-10 h-10 bg-white border border-[#E2E8F0] hover:border-[#5c1616] hover:bg-[#fdf5f5] text-[#333333] hover:text-[#5c1616] rounded-lg flex items-center justify-center relative transition-all shadow-xs cursor-pointer"
             title="Pusat Notifikasi Toko"
           >
             <Bell size={18} />
