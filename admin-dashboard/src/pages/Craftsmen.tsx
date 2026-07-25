@@ -379,7 +379,7 @@ export default function Craftsmen() {
                 return (
                   <div 
                     key={c.id} 
-                    className="bg-white p-4.5 rounded-[18px] border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans space-y-4"
+                    className="bg-white p-4.5 rounded-[18px] border border-[#E2E8F0] shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between text-left font-sans space-y-4"
                   >
                     <div>
                       {/* HEADER SECTION */}
@@ -497,7 +497,7 @@ export default function Craftsmen() {
                 return (
                   <div 
                     key={m.id} 
-                    className="bg-white p-4.5 rounded-[18px] border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans space-y-4"
+                    className="bg-white p-4.5 rounded-[18px] border border-[#E2E8F0] shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between text-left font-sans space-y-4"
                   >
                     <div>
                       {/* HEADER SECTION */}
