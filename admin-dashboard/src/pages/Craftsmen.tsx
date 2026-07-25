@@ -110,45 +110,15 @@ export default function Craftsmen() {
         .select('*')
         .order('checked_at', { ascending: false });
 
-      if (cData && cData.length > 0) setCraftsmen(cData);
-      else setCraftsmen(getInitialCraftsmen());
-
-      if (mData && mData.length > 0) setMaterials(mData);
-      else setMaterials(getInitialMaterials());
-
-      if (lData && lData.length > 0) setLogs(lData);
-      else setLogs(getInitialLogs());
-
+      setCraftsmen(cData || []);
+      setMaterials(mData || []);
+      setLogs(lData || []);
     } catch (err) {
-      console.warn('Using fallback data for Craftsmen system:', err);
-      setCraftsmen(getInitialCraftsmen());
-      setMaterials(getInitialMaterials());
-      setLogs(getInitialLogs());
+      console.error('Error fetching craftsmen data:', err);
+      setCraftsmen([]);
+      setMaterials([]);
+      setLogs([]);
     }
-  }
-
-  // Fallback initial demo data
-  function getInitialCraftsmen(): Craftsman[] {
-    return [
-      { id: 'c1', name: 'Pak Herman (Bengkel Sol Cibaduyut)', phone: '081234567890', material_type: 'Sol Rubber & TPR', address: 'Jl. Cibaduyut Raya No. 45, Bandung', check_interval_days: 3, last_checked_at: new Date(Date.now() - 4 * 86400000).toISOString() },
-      { id: 'c2', name: 'Pak Samsul (Penyamakan Kulit Asli)', phone: '081987654321', material_type: 'Kulit Upper Sapi & Lining', address: 'Jl. Magetan Industri No. 12', check_interval_days: 7, last_checked_at: new Date(Date.now() - 1 * 86400000).toISOString() },
-      { id: 'c3', name: 'Ibu Ningsih (Pemasok Tali & Aksesoris)', phone: '085211223344', material_type: 'Tali Sepatu & Eyelet', address: 'Kawasan Tanggulangin Sidoarjo', check_interval_days: 14, last_checked_at: new Date(Date.now() - 2 * 86400000).toISOString() }
-    ];
-  }
-
-  function getInitialMaterials(): RawMaterial[] {
-    return [
-      { id: 'm1', craftsman_id: 'c1', name: 'Sol Model 1 (Rubber High Quality)', category: 'Outsole', status: 'Tersedia', delay_days: 0, notes: 'Stok sol aman untuk 200 pasang', linked_models: ['Model 1'], last_checked_at: new Date(Date.now() - 4 * 86400000).toISOString() },
-      { id: 'm2', craftsman_id: 'c1', name: 'Sol Model 2 (Microtech Light)', category: 'Outsole', status: 'Terbatas', delay_days: 2, notes: 'Sisa 20 pasang, restok hari Jumat', linked_models: ['Model 2'], last_checked_at: new Date(Date.now() - 1 * 86400000).toISOString() },
-      { id: 'm3', craftsman_id: 'c2', name: 'Upper Leather Hitam Premium', category: 'Upper', status: 'Tersedia', delay_days: 0, notes: 'Pasokan kulit lembaran lancar', linked_models: ['Model 1', 'Model 2'], last_checked_at: new Date(Date.now() - 1 * 86400000).toISOString() }
-    ];
-  }
-
-  function getInitialLogs(): MaterialLog[] {
-    return [
-      { id: 'l1', material_id: 'm2', craftsman_id: 'c1', craftsman_name: 'Pak Herman (Bengkel Sol Cibaduyut)', material_name: 'Sol Model 2 (Microtech Light)', status: 'Terbatas', notes: 'Dikonfirmasi via WA. Sisa 20 pasang, pengiriman sol baru estimasi +2 hari.', checked_at: new Date(Date.now() - 1 * 86400000).toISOString() },
-      { id: 'l2', material_id: 'm1', craftsman_id: 'c1', craftsman_name: 'Pak Herman (Bengkel Sol Cibaduyut)', material_name: 'Sol Model 1 (Rubber High Quality)', status: 'Tersedia', notes: 'Stok di bengkel siap 200 pasang.', checked_at: new Date(Date.now() - 4 * 86400000).toISOString() }
-    ];
   }
 
   // Format WhatsApp Link with Pre-filled Check Message
@@ -382,154 +352,190 @@ export default function Craftsmen() {
       {/* TAB 1: DAFTAR PENGRAJIN */}
       {activeTab === 'craftsmen' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {craftsmen.map((c) => {
-              const lastCheckDate = new Date(c.last_checked_at || c.created_at || Date.now());
-              const diffDays = Math.floor((Date.now() - lastCheckDate.getTime()) / (1000 * 60 * 60 * 24));
-              const isDue = diffDays >= c.check_interval_days;
+          {craftsmen.length === 0 ? (
+            <div className="bg-white p-12 rounded-xl border border-[#E2E8F0] shadow-xs text-center space-y-3">
+              <div className="w-12 h-12 bg-rose-50 text-[#5c1616] rounded-full flex items-center justify-center mx-auto">
+                <Users size={24} />
+              </div>
+              <h3 className="text-base font-bold text-[#1A1A1A]">Belum Ada Data Pengrajin</h3>
+              <p className="text-xs text-[#71717A] max-w-sm mx-auto">
+                Silakan klik tombol **"Tambah Pengrajin"** di kanan atas untuk memasukkan data tukang/pemasok bahan baku pertama Anda.
+              </p>
+              <button
+                onClick={() => { resetCraftsmanForm(); setShowCraftsmanModal(true); }}
+                className="mt-2 inline-flex items-center gap-2 bg-[#5c1616] hover:bg-[#4a1212] text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
+              >
+                <Plus size={16} /> Tambah Pengrajin Pertama
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {craftsmen.map((c) => {
+                const lastCheckDate = new Date(c.last_checked_at || c.created_at || Date.now());
+                const diffDays = Math.floor((Date.now() - lastCheckDate.getTime()) / (1000 * 60 * 60 * 24));
+                const isDue = diffDays >= c.check_interval_days;
 
-              return (
-                <div key={c.id} className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-[#71717A]">
-                          {c.material_type}
+                return (
+                  <div key={c.id} className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-[#71717A]">
+                            {c.material_type}
+                          </span>
+                          <h3 className="text-base font-semibold text-[#1A1A1A] mt-1.5">{c.name}</h3>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          isDue ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                        }`}>
+                          {isDue ? 'Perlu Cek' : 'Aman'}
                         </span>
-                        <h3 className="text-base font-semibold text-[#1A1A1A] mt-1.5">{c.name}</h3>
                       </div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        isDue ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                      }`}>
-                        {isDue ? 'Perlu Cek' : 'Aman'}
-                      </span>
+
+                      <div className="mt-3 space-y-1.5 text-xs text-[#71717A]">
+                        <p className="flex items-center gap-1.5">
+                          <Phone size={13} className="text-slate-400" /> {c.phone}
+                        </p>
+                        <p className="flex items-center gap-1.5">
+                          <Clock size={13} className="text-slate-400" /> Interval: Setiap {c.check_interval_days} hari
+                        </p>
+                        <p className="flex items-center gap-1.5">
+                          <Calendar size={13} className="text-slate-400" /> Cek Terakhir: {lastCheckDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} ({diffDays} hr lalu)
+                        </p>
+                        {c.address && (
+                          <p className="text-[11px] text-slate-500 italic mt-1">{c.address}</p>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="mt-3 space-y-1.5 text-xs text-[#71717A]">
-                      <p className="flex items-center gap-1.5">
-                        <Phone size={13} className="text-slate-400" /> {c.phone}
-                      </p>
-                      <p className="flex items-center gap-1.5">
-                        <Clock size={13} className="text-slate-400" /> Interval: Setiap {c.check_interval_days} hari
-                      </p>
-                      <p className="flex items-center gap-1.5">
-                        <Calendar size={13} className="text-slate-400" /> Cek Terakhir: {lastCheckDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} ({diffDays} hr lalu)
-                      </p>
-                      {c.address && (
-                        <p className="text-[11px] text-slate-500 italic mt-1">{c.address}</p>
-                      )}
+                    <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2">
+                      <a
+                        href={getWaLink(c.phone, c.name, c.material_type)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                      >
+                        <MessageSquare size={14} /> Hubungi via WA
+                      </a>
+                      <button
+                        onClick={() => {
+                          setEditingCraftsman(c);
+                          setCName(c.name);
+                          setCPhone(c.phone);
+                          setCType(c.material_type);
+                          setCAddress(c.address || '');
+                          setCInterval(c.check_interval_days);
+                          setShowCraftsmanModal(true);
+                        }}
+                        className="p-2 text-slate-500 hover:text-[#5c1616] hover:bg-slate-100 rounded-lg transition-colors"
+                        title="Edit Pengrajin"
+                      >
+                        <Edit size={16} />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2">
-                    <a
-                      href={getWaLink(c.phone, c.name, c.material_type)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-                    >
-                      <MessageSquare size={14} /> Hubungi via WA
-                    </a>
-                    <button
-                      onClick={() => {
-                        setEditingCraftsman(c);
-                        setCName(c.name);
-                        setCPhone(c.phone);
-                        setCType(c.material_type);
-                        setCAddress(c.address || '');
-                        setCInterval(c.check_interval_days);
-                        setShowCraftsmanModal(true);
-                      }}
-                      className="p-2 text-slate-500 hover:text-[#5c1616] hover:bg-slate-100 rounded-lg transition-colors"
-                      title="Edit Pengrajin"
-                    >
-                      <Edit size={16} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
       {/* TAB 2: BAHAN BAKU & KETERHUBUNGAN VARIAN */}
       {activeTab === 'materials' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {materials.map((m) => {
-              const matchedCraftsman = craftsmen.find(c => c.id === m.craftsman_id);
-              const cName = matchedCraftsman ? matchedCraftsman.name : (m.craftsmen?.name || 'Pengrajin Terkait');
+          {materials.length === 0 ? (
+            <div className="bg-white p-12 rounded-xl border border-[#E2E8F0] shadow-xs text-center space-y-3">
+              <div className="w-12 h-12 bg-rose-50 text-[#5c1616] rounded-full flex items-center justify-center mx-auto">
+                <Wrench size={24} />
+              </div>
+              <h3 className="text-base font-bold text-[#1A1A1A]">Belum Ada Data Bahan Baku</h3>
+              <p className="text-xs text-[#71717A] max-w-sm mx-auto">
+                Silakan klik tombol **"Tambah Bahan Baku"** di kanan atas untuk mendaftarkan pasokan bahan baku dari pengrajin.
+              </p>
+              <button
+                onClick={() => { resetMaterialForm(); setShowMaterialModal(true); }}
+                className="mt-2 inline-flex items-center gap-2 bg-[#5c1616] hover:bg-[#4a1212] text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
+              >
+                <Plus size={16} /> Tambah Bahan Baku Pertama
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {materials.map((m) => {
+                const matchedCraftsman = craftsmen.find(c => c.id === m.craftsman_id);
+                const cName = matchedCraftsman ? matchedCraftsman.name : (m.craftsmen?.name || 'Pengrajin Terkait');
 
-              return (
-                <div key={m.id} className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="flex justify-between items-start">
-                      <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-[#71717A]">
-                        {m.category}
-                      </span>
-                      <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                        m.status === 'Tersedia' ? 'bg-emerald-100 text-emerald-800' :
-                        m.status === 'Terbatas' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
-                      }`}>
-                        {m.status} {m.delay_days > 0 ? `(+${m.delay_days} Hr PO)` : ''}
-                      </span>
-                    </div>
-
-                    <h3 className="text-base font-semibold text-[#1A1A1A] mt-2">{m.name}</h3>
-                    <p className="text-xs text-[#71717A] mt-0.5">Pemasok: <span className="font-medium text-[#1A1A1A]">{cName}</span></p>
-
-                    {m.notes && (
-                      <div className="mt-3 p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-xs text-[#333333]">
-                        <span className="font-semibold block text-[11px] text-slate-500">Catatan Stok:</span>
-                        {m.notes}
-                      </div>
-                    )}
-
-                    <div className="mt-3 flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] font-medium text-slate-400">Varian Terpengaruh:</span>
-                      {(m.linked_models || ['Model 1']).map((mod, idx) => (
-                        <span key={idx} className="text-[10px] font-bold px-2 py-0.5 bg-slate-200 text-slate-700 rounded">
-                          {mod}
+                return (
+                  <div key={m.id} className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-[#71717A]">
+                          {m.category}
                         </span>
-                      ))}
+                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                          m.status === 'Tersedia' ? 'bg-emerald-100 text-emerald-800' :
+                          m.status === 'Terbatas' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                        }`}>
+                          {m.status} {m.delay_days > 0 ? `(+${m.delay_days} Hr PO)` : ''}
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-semibold text-[#1A1A1A] mt-2">{m.name}</h3>
+                      <p className="text-xs text-[#71717A] mt-0.5">Pemasok: <span className="font-medium text-[#1A1A1A]">{cName}</span></p>
+
+                      {m.notes && (
+                        <div className="mt-3 p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-xs text-[#333333]">
+                          <span className="font-semibold block text-[11px] text-slate-500">Catatan Stok:</span>
+                          {m.notes}
+                        </div>
+                      )}
+
+                      <div className="mt-3 flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-medium text-slate-400">Varian Terpengaruh:</span>
+                        {(m.linked_models || ['Model 1']).map((mod, idx) => (
+                          <span key={idx} className="text-[10px] font-bold px-2 py-0.5 bg-slate-200 text-slate-700 rounded">
+                            {mod}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedMaterialForLog(m);
+                          setLogStatus(m.status);
+                          setLogDelay(m.delay_days);
+                          setLogNotes(m.notes || '');
+                          setShowLogModal(true);
+                        }}
+                        className="flex-1 bg-[#5c1616] hover:bg-[#4a1212] text-white text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                      >
+                        <CheckCircle2 size={14} /> Input Hasil Cek WA
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingMaterial(m);
+                          setMName(m.name);
+                          setMCraftsmanId(m.craftsman_id);
+                          setMCategory(m.category);
+                          setMStatus(m.status);
+                          setMDelay(m.delay_days);
+                          setMNotes(m.notes || '');
+                          setShowMaterialModal(true);
+                        }}
+                        className="p-2 text-slate-500 hover:text-[#5c1616] hover:bg-slate-100 rounded-lg transition-colors"
+                        title="Edit Bahan"
+                      >
+                        <Edit size={16} />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedMaterialForLog(m);
-                        setLogStatus(m.status);
-                        setLogDelay(m.delay_days);
-                        setLogNotes(m.notes || '');
-                        setShowLogModal(true);
-                      }}
-                      className="flex-1 bg-[#5c1616] hover:bg-[#4a1212] text-white text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
-                    >
-                      <CheckCircle2 size={14} /> Input Hasil Cek WA
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingMaterial(m);
-                        setMName(m.name);
-                        setMCraftsmanId(m.craftsman_id);
-                        setMCategory(m.category);
-                        setMStatus(m.status);
-                        setMDelay(m.delay_days);
-                        setMNotes(m.notes || '');
-                        setShowMaterialModal(true);
-                      }}
-                      className="p-2 text-slate-500 hover:text-[#5c1616] hover:bg-slate-100 rounded-lg transition-colors"
-                      title="Edit Bahan"
-                    >
-                      <Edit size={16} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
