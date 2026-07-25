@@ -105,16 +105,35 @@ export default function Dashboard() {
     // Status 4: Pengiriman Gagal
     const failedShipmentOrders = orders.filter(o => ['Pengiriman Gagal', 'Terkendala'].includes(o.status));
 
-    // Revenue Summary (Filtered by week, month, year)
-    let filteredRevenueOrders = orders.filter(o => o.status !== 'Dibatalkan');
-    if (revenuePeriod === 'week') {
-      filteredRevenueOrders = filteredRevenueOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 7 * oneDay);
-    } else if (revenuePeriod === 'month') {
-      filteredRevenueOrders = filteredRevenueOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 30 * oneDay);
-    } else if (revenuePeriod === 'year') {
-      filteredRevenueOrders = filteredRevenueOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 365 * oneDay);
-    }
-    const totalRevenue = filteredRevenueOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    // Revenue Summary & Dynamic Previous Period Comparison
+    let limitDays = 30;
+    if (revenuePeriod === 'week') limitDays = 7;
+    if (revenuePeriod === 'month') limitDays = 30;
+    if (revenuePeriod === 'year') limitDays = 365;
+
+    const limitMs = limitDays * oneDay;
+
+    // Current Period Revenue
+    const currentRevenueOrders = orders.filter(o => {
+      if (o.status === 'Dibatalkan') return false;
+      const diff = now - new Date(o.created_at).getTime();
+      return diff <= limitMs;
+    });
+    const totalRevenue = currentRevenueOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+
+    // Previous Period Revenue (e.g. 7-14 days ago for week, 30-60 days ago for month)
+    const previousRevenueOrders = orders.filter(o => {
+      if (o.status === 'Dibatalkan') return false;
+      const diff = now - new Date(o.created_at).getTime();
+      return diff > limitMs && diff <= (limitMs * 2);
+    });
+    const previousRevenue = previousRevenueOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+
+    // Comparison Difference & Percentage Growth
+    const revenueDiff = totalRevenue - previousRevenue;
+    const revenueGrowthPercent = previousRevenue === 0 
+      ? (totalRevenue > 0 ? 100 : 0) 
+      : Math.round((revenueDiff / previousRevenue) * 100);
 
     // Top 3 Selling Shoe Models
     const modelSalesCount: Record<string, { name: string; count: number; price: number; img: string }> = {};
@@ -137,6 +156,9 @@ export default function Dashboard() {
       complaintCount: complaintOrders.length,
       failedShipmentCount: failedShipmentOrders.length,
       revenue: totalRevenue,
+      previousRevenue,
+      revenueDiff,
+      revenueGrowthPercent,
       top3Selling
     };
   }, [orders, revenuePeriod]);
@@ -283,13 +305,46 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Hero Revenue Display (Pitch Black #111111, 48px Bold) */}
-          <div className="my-auto py-2 text-left">
-            <div className="text-[40px] sm:text-[46px] font-bold text-[#111111] leading-none tracking-tight font-sans">
-              Rp {stats.revenue.toLocaleString('id-ID')}
+          {/* Hero Revenue Display with Dynamic Comparison Badges (Matching Reference Image 2) */}
+          <div className="my-auto py-2 text-left space-y-2">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              <span className="text-[36px] sm:text-[44px] font-bold text-[#111111] leading-none tracking-tight font-sans">
+                Rp {stats.revenue.toLocaleString('id-ID')}
+              </span>
+
+              {/* Dynamic Comparison Pill Badges (Green for +, Red for -, Gray for 0) */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {/* 1. Percentage Pill Badge */}
+                <span className={`text-[12px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 font-sans border ${
+                  stats.revenueDiff > 0 
+                    ? 'bg-[#E6F9F0] text-[#00B060] border-[#B3F2D4]' 
+                    : stats.revenueDiff < 0 
+                      ? 'bg-rose-50 text-rose-700 border-rose-200' 
+                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                }`}>
+                  {stats.revenueDiff > 0 ? '▲ +' : stats.revenueDiff < 0 ? '▼ ' : ''}{stats.revenueGrowthPercent}%
+                </span>
+
+                {/* 2. Nominal Difference Pill Badge */}
+                <span className={`text-[12px] font-semibold px-2.5 py-1 rounded-full font-sans border ${
+                  stats.revenueDiff > 0 
+                    ? 'bg-[#E6F9F0] text-[#00B060] border-[#B3F2D4]' 
+                    : stats.revenueDiff < 0 
+                      ? 'bg-rose-50 text-rose-700 border-rose-200' 
+                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                }`}>
+                  {stats.revenueDiff > 0 
+                    ? `+Rp ${stats.revenueDiff.toLocaleString('id-ID')}` 
+                    : stats.revenueDiff < 0 
+                      ? `-Rp ${Math.abs(stats.revenueDiff).toLocaleString('id-ID')}` 
+                      : 'Rp 0'}
+                </span>
+              </div>
             </div>
-            <p className="text-[15px] font-medium text-gray-500 mt-2.5">
-              Pendapatan {revenuePeriod === 'week' ? 'minggu ini' : revenuePeriod === 'month' ? 'bulan ini' : 'tahun ini'}
+
+            {/* Comparison Subtitle vs Previous Period */}
+            <p className="text-[13px] font-medium text-gray-500 font-sans">
+              vs {revenuePeriod === 'week' ? 'minggu lalu' : revenuePeriod === 'month' ? 'bulan lalu' : 'tahun lalu'} (Rp {stats.previousRevenue.toLocaleString('id-ID')})
             </p>
           </div>
         </div>
