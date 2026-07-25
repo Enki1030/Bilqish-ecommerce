@@ -184,6 +184,14 @@ export default function Dashboard() {
     }
   };
 
+  // Helper to safely get order_items array regardless of Supabase schema response
+  const getOrderItemsArray = (o: any): any[] => {
+    if (!o || !o.order_items) return [];
+    if (Array.isArray(o.order_items)) return o.order_items;
+    if (typeof o.order_items === 'object') return [o.order_items];
+    return [];
+  };
+
   // 1. Top Executive Stat Calculations
   const stats = useMemo(() => {
     const now = Date.now();
@@ -221,18 +229,18 @@ export default function Dashboard() {
     // Current Period Revenue
     const currentRevenueOrders = orders.filter(o => {
       if (o.status === 'Dibatalkan') return false;
-      const diff = now - new Date(o.created_at).getTime();
+      const diff = now - new Date(o.created_at || Date.now()).getTime();
       return diff <= limitMs;
     });
-    const totalRevenue = currentRevenueOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    const totalRevenue = currentRevenueOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
 
     // Previous Period Revenue (e.g. 7-14 days ago for week, 30-60 days ago for month)
     const previousRevenueOrders = orders.filter(o => {
       if (o.status === 'Dibatalkan') return false;
-      const diff = now - new Date(o.created_at).getTime();
+      const diff = now - new Date(o.created_at || Date.now()).getTime();
       return diff > limitMs && diff <= (limitMs * 2);
     });
-    const previousRevenue = previousRevenueOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    const previousRevenue = previousRevenueOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
 
     // Comparison Difference & Percentage Growth
     const revenueDiff = totalRevenue - previousRevenue;
@@ -244,12 +252,13 @@ export default function Dashboard() {
     const modelSalesCount: Record<string, { name: string; count: number; price: number; img: string }> = {};
     orders.forEach(o => {
       if (o.status === 'Dibatalkan') return;
-      o.order_items?.forEach((item: any) => {
+      const items = getOrderItemsArray(o);
+      items.forEach((item: any) => {
         const name = item.product_name || 'Sepatu Pantofel';
         if (!modelSalesCount[name]) {
-          modelSalesCount[name] = { name, count: 0, price: item.price || 85000, img: item.product_image };
+          modelSalesCount[name] = { name, count: 0, price: Number(item.price) || 85000, img: item.product_image };
         }
-        modelSalesCount[name].count += item.quantity || 1;
+        modelSalesCount[name].count += Number(item.quantity) || 1;
       });
     });
     const sortedModels = Object.values(modelSalesCount).sort((a, b) => b.count - a.count);
@@ -274,9 +283,9 @@ export default function Dashboard() {
     const daysLimit = trendComparison === '7days' ? 7 : 30;
     const limitMs = daysLimit * 24 * 60 * 60 * 1000;
 
-    const currentPeriodOrders = orders.filter(o => (now - new Date(o.created_at).getTime()) <= limitMs);
+    const currentPeriodOrders = orders.filter(o => (now - new Date(o.created_at || Date.now()).getTime()) <= limitMs);
     const previousPeriodOrders = orders.filter(o => {
-      const diff = now - new Date(o.created_at).getTime();
+      const diff = now - new Date(o.created_at || Date.now()).getTime();
       return diff > limitMs && diff <= (limitMs * 2);
     });
 
@@ -284,16 +293,25 @@ export default function Dashboard() {
     const totalOrdersPrev = previousPeriodOrders.length;
     const ordersGrowth = totalOrdersPrev === 0 ? 100 : Math.round(((totalOrdersCurr - totalOrdersPrev) / totalOrdersPrev) * 100);
 
-    const itemsCurr = currentPeriodOrders.reduce((s, o) => s + (o.order_items?.reduce((is: number, i: any) => is + (i.quantity || 1), 0) || 1), 0);
-    const itemsPrev = previousPeriodOrders.reduce((s, o) => s + (o.order_items?.reduce((is: number, i: any) => is + (i.quantity || 1), 0) || 1), 0);
+    const itemsCurr = currentPeriodOrders.reduce((s, o) => {
+      const items = getOrderItemsArray(o);
+      const c = items.reduce((is: number, i: any) => is + (Number(i.quantity) || 1), 0);
+      return s + (c || 1);
+    }, 0);
+
+    const itemsPrev = previousPeriodOrders.reduce((s, o) => {
+      const items = getOrderItemsArray(o);
+      const c = items.reduce((is: number, i: any) => is + (Number(i.quantity) || 1), 0);
+      return s + (c || 1);
+    }, 0);
     const itemsGrowth = itemsPrev === 0 ? 100 : Math.round(((itemsCurr - itemsPrev) / itemsPrev) * 100);
 
     const cancelledCurr = currentPeriodOrders.filter(o => o.status === 'Dibatalkan').length;
     const cancelledPrev = previousPeriodOrders.filter(o => o.status === 'Dibatalkan').length;
     const cancelledGrowth = cancelledPrev === 0 ? 0 : Math.round(((cancelledCurr - cancelledPrev) / cancelledPrev) * 100);
 
-    const revCurr = currentPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (o.total_amount || 0), 0);
-    const revPrev = previousPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (o.total_amount || 0), 0);
+    const revCurr = currentPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
+    const revPrev = previousPeriodOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
     const revGrowth = revPrev === 0 ? 100 : Math.round(((revCurr - revPrev) / revPrev) * 100);
 
     return {
@@ -318,14 +336,18 @@ export default function Dashboard() {
       const dayEnd = new Date(d.setHours(23, 59, 59, 999)).getTime();
 
       const dayOrders = orders.filter(o => {
-        const t = new Date(o.created_at).getTime();
+        const t = new Date(o.created_at || Date.now()).getTime();
         return t >= dayStart && t <= dayEnd;
       });
 
       const orderCount = dayOrders.length;
-      const itemsCount = dayOrders.reduce((s, o) => s + (o.order_items?.reduce((is: number, item: any) => is + (item.quantity || 1), 0) || 1), 0);
+      const itemsCount = dayOrders.reduce((s, o) => {
+        const items = getOrderItemsArray(o);
+        const c = items.reduce((is: number, item: any) => is + (Number(item.quantity) || 1), 0);
+        return s + (c || 1);
+      }, 0);
       const cancelledCount = dayOrders.filter(o => o.status === 'Dibatalkan').length;
-      const revTotal = dayOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (o.total_amount || 0), 0);
+      const revTotal = dayOrders.filter(o => o.status !== 'Dibatalkan').reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
 
       result.push({
         date: dateStr,
