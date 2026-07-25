@@ -418,17 +418,26 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 
       // Check Raw Material Supplier PO Status
       async function checkMaterialStatus() {
+        if (!supabaseUrl || !supabaseKey) return;
         try {
-          const { data: rawMats } = await supabase.from('raw_materials').select('*');
-          if (rawMats && rawMats.length > 0) {
-            const limitedOrOut = rawMats.find((m: any) => m.status === 'Terbatas' || m.status === 'Habis');
-            if (limitedOrOut) {
-              const noticeBox = document.getElementById('craftsman-material-notice');
-              const noticeText = document.getElementById('craftsman-notice-text');
-              if (noticeBox && noticeText) {
-                const delay = limitedOrOut.delay_days || 2;
-                noticeText.textContent = `Info Pasokan: ${limitedOrOut.name} berstatus ${limitedOrOut.status}. Estimasi tambahan waktu produksi +${delay} hari (PO).`;
-                noticeBox.classList.remove('hidden');
+          const res = await fetch(`${supabaseUrl}/rest/v1/raw_materials?select=*`, {
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`
+            }
+          });
+          if (res.ok) {
+            const rawMats = await res.json();
+            if (rawMats && rawMats.length > 0) {
+              const limitedOrOut = rawMats.find(m => m.status === 'Terbatas' || m.status === 'Habis');
+              if (limitedOrOut) {
+                const noticeBox = document.getElementById('craftsman-material-notice');
+                const noticeText = document.getElementById('craftsman-notice-text');
+                if (noticeBox && noticeText) {
+                  const delay = limitedOrOut.delay_days || 2;
+                  noticeText.textContent = `Info Pasokan: ${limitedOrOut.name} berstatus ${limitedOrOut.status}. Estimasi tambahan waktu produksi +${delay} hari (PO).`;
+                  noticeBox.classList.remove('hidden');
+                }
               }
             }
           }
