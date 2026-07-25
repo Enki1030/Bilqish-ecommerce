@@ -274,8 +274,8 @@ export default function Dashboard() {
       {/* 🌟 BARIS 1: HERO SECTION (Ringkasan Omset 7 cols & Top 3 Sepatu Terlaris 5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         
-        {/* Left (7 cols): Ringkasan Omset Executive Card */}
-        <div className="lg:col-span-7 bg-white p-7 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex flex-col justify-between font-sans min-h-[220px]">
+        {/* Left (7 cols): Ringkasan Omset Executive Card (Border-Only Consistent Card) */}
+        <div className="lg:col-span-7 bg-white p-7 rounded-[20px] border border-[#E2E8F0] shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between font-sans min-h-[220px]">
           {/* Header & Segmented Period Control */}
           <div className="flex justify-between items-center">
             <h2 className="text-[22px] font-semibold text-gray-900 tracking-tight">
@@ -349,8 +349,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right (5 cols): Sepatu Terlaris (Top 3 List - Compact Square Mini-Cards) */}
-        <div className="lg:col-span-5 bg-white p-6 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex flex-col justify-between space-y-3 font-sans min-h-[220px]">
+        {/* Right (5 cols): Sepatu Terlaris (Border-Only Consistent Card) */}
+        <div className="lg:col-span-5 bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-3 font-sans min-h-[220px]">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <span className="text-[18px] font-semibold text-gray-900 flex items-center gap-2">
               <Flame size={18} className="text-orange-500" /> Sepatu Terlaris (Top 3)
