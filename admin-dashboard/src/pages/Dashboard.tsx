@@ -15,7 +15,8 @@ import {
   Sparkles,
   RefreshCw,
   Box,
-  Bell
+  Bell,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -47,6 +48,134 @@ export default function Dashboard() {
       return now;
     }
     return loginTime;
+  };
+
+  const [exporting, setExporting] = useState(false);
+
+  // Ultra-Lightweight Native Multi-Sheet Excel Export (Zero External Packages)
+  const handleExportNativeExcel = async () => {
+    setExporting(true);
+    try {
+      // 1. Fetch raw_materials and craftsmen for Sheet 4
+      const { data: rawMats } = await supabase.from('raw_materials').select('*');
+      const { data: craftsmenData } = await supabase.from('craftsmen').select('*');
+
+      const craftsmanMap = new Map();
+      (craftsmenData || []).forEach(c => craftsmanMap.set(c.id, c.name));
+
+      const periodLabel = revenuePeriod === 'week' ? 'Mingguan' : revenuePeriod === 'month' ? 'Bulanan' : 'Tahunan';
+      const periodText = revenuePeriod === 'week' ? 'Mingguan (7 Hari Terakhir)' : revenuePeriod === 'month' ? 'Bulanan (30 Hari Terakhir)' : 'Tahunan (365 Hari Terakhir)';
+      const dateStr = new Date().toISOString().split('T')[0];
+      const generatedAt = new Date().toLocaleString('id-ID');
+
+      const escapeXml = (str: any) => {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+      };
+
+      const makeRow = (cells: (string | number)[]) => {
+        return `<Row>${cells.map(c => typeof c === 'number' ? `<Cell><Data ss:Type="Number">${c}</Data></Cell>` : `<Cell><Data ss:Type="String">${escapeXml(c)}</Data></Cell>`).join('')}</Row>`;
+      };
+
+      // SHEET 1: Ringkasan Metrik
+      const sheet1Rows = [
+        makeRow(['Parameter', 'Nilai']),
+        makeRow(['Periode Laporan', periodText]),
+        makeRow(['Waktu Diunduh', generatedAt]),
+        makeRow(['Total Omset Toko (Rp)', stats.revenue || 0]),
+        makeRow(['Pesanan Aktif', stats.activeOrdersCount || 0]),
+        makeRow(['Pesanan Baru (<24 Jam)', stats.newOrdersCount || 0]),
+        makeRow(['Komplain Pelanggan', stats.complaintCount || 0]),
+        makeRow(['Pengiriman Gagal', stats.failedShipmentCount || 0]),
+      ].join('');
+
+      // SHEET 2: Sepatu Terlaris
+      const sheet2Rows = [
+        makeRow(['Peringkat', 'Nama Sepatu', 'Jumlah Terjual (Pasang)', 'Harga Satuan (Rp)', 'Total Kontribusi Omset (Rp)']),
+        ...(stats.top3Selling || []).map((shoe: any, idx: number) => 
+          makeRow([`#${idx + 1}`, shoe.name || 'Sepatu', shoe.count || 0, shoe.price || 0, (shoe.count || 0) * (shoe.price || 0)])
+        )
+      ].join('');
+
+      // SHEET 3: Transaksi Penjualan
+      let filteredOrders = orders.filter(o => o.status !== 'Dibatalkan');
+      const limitDays = revenuePeriod === 'week' ? 7 : revenuePeriod === 'month' ? 30 : 365;
+      const limitMs = limitDays * 24 * 60 * 60 * 1000;
+      filteredOrders = filteredOrders.filter(o => (Date.now() - new Date(o.created_at || Date.now()).getTime()) <= limitMs);
+
+      const sheet3Rows = [
+        makeRow(['ID Pesanan', 'Tanggal Transaksi', 'Nama Pelanggan', 'No. Telepon', 'Item Sepatu & Size', 'Total Bayar (Rp)', 'Status Pembayaran', 'Status Pengiriman']),
+        ...filteredOrders.map(o => {
+          const items = Array.isArray(o.order_items) ? o.order_items : (o.order_items ? [o.order_items] : []);
+          const itemDesc = items.map((i: any) => `${i.product_name || 'Sepatu'} (Sz ${i.size || '39'}) x${i.quantity || 1}`).join('; ') || 'Sepatu Pantofel';
+          return makeRow([
+            o.id,
+            new Date(o.created_at || Date.now()).toLocaleDateString('id-ID'),
+            o.customer_name || 'Pelanggan Toko',
+            o.customer_phone || '-',
+            itemDesc,
+            Number(o.total_amount) || 0,
+            o.payment_status || 'Lunas',
+            o.status || 'Diproses'
+          ]);
+        })
+      ].join('');
+
+      // SHEET 4: Pasokan Pengrajin & Bahan Baku
+      const sheet4Rows = [
+        makeRow(['Nama Bahan Baku', 'Kategori Bahan', 'Pengrajin Pemasok', 'Status Ketersediaan', 'Estimasi PO (Hari)', 'Catatan Pasokan', 'Tanggal Cek Terakhir']),
+        ...(rawMats || []).map(m => makeRow([
+          m.name || 'Bahan Baku',
+          m.category || '-',
+          craftsmanMap.get(m.craftsman_id) || m.craftsman_id || 'Pengrajin Terkait',
+          m.status || 'Tersedia',
+          Number(m.delay_days) || 0,
+          m.notes || '-',
+          new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID')
+        ]))
+      ].join('');
+
+      const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Worksheet ss:Name="Ringkasan Metrik">
+  <Table>${sheet1Rows}</Table>
+ </Worksheet>
+ <Worksheet ss:Name="Sepatu Terlaris">
+  <Table>${sheet2Rows}</Table>
+ </Worksheet>
+ <Worksheet ss:Name="Transaksi Penjualan">
+  <Table>${sheet3Rows}</Table>
+ </Worksheet>
+ <Worksheet ss:Name="Pasokan Pengrajin">
+  <Table>${sheet4Rows}</Table>
+ </Worksheet>
+</Workbook>`;
+
+      const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Laporan_Eksekutif_Bilqish_${periodLabel}_${dateStr}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Error exporting native Excel:', e);
+      alert('Gagal mendownload laporan Excel. Silakan coba lagi.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const fetchDashboardData = async () => {
@@ -260,6 +389,16 @@ export default function Dashboard() {
           <p className="text-[12px] font-normal text-[#71717A] mt-1">Pantau metrik omset, performa sepatu terlaris, dan status operasional toko Anda.</p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleExportNativeExcel}
+            disabled={exporting}
+            className="bg-[#5c1616] hover:bg-[#4a1212] text-white font-semibold text-[13px] px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+            title="Download Laporan Eksekutif Multi-Sheet Excel (.xls)"
+          >
+            <FileSpreadsheet size={16} />
+            <span>{exporting ? 'Menyiapkan Excel...' : 'Download Laporan Excel (.xlsx)'}</span>
+          </button>
+
           <a
             href="/notifications"
             className="w-10 h-10 bg-white border border-[#E2E8F0] hover:border-[#5c1616] hover:bg-[#fdf5f5] text-[#333333] hover:text-[#5c1616] rounded-lg flex items-center justify-center relative transition-all shadow-xs cursor-pointer"
