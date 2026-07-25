@@ -11,7 +11,8 @@ import {
   Clock, 
   Edit, 
   MessageSquare,
-  Calendar
+  Calendar,
+  MapPin
 } from 'lucide-react';
 
 interface Craftsman {
@@ -369,65 +370,74 @@ export default function Craftsmen() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {craftsmen.map((c) => {
                 const lastCheckDate = new Date(c.last_checked_at || c.created_at || Date.now());
                 const diffDays = Math.floor((Date.now() - lastCheckDate.getTime()) / (1000 * 60 * 60 * 24));
                 const isDue = diffDays >= c.check_interval_days;
 
                 return (
-                  <div key={c.id} className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
-                    {/* Top Header: Avatar + Large Name + Material Subtitle + Subtle Status */}
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[#5c1616] font-bold text-sm flex-shrink-0">
-                          {c.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <h3 className="text-[17px] font-semibold text-[#1A1A1A] leading-snug">{c.name}</h3>
-                          <p className="text-[13px] text-[#71717A] font-normal mt-0.5">{c.material_type}</p>
-                        </div>
+                  <div 
+                    key={c.id} 
+                    className="bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans"
+                  >
+                    <div>
+                      {/* 1. HEADER SECTION */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-[13px] font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-[0.5px]">
+                          {c.material_type}
+                        </span>
+                        <span className={`text-[13px] font-semibold px-3.5 py-1 rounded-full ${
+                          isDue ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}>
+                          {isDue ? 'Perlu Cek' : 'Aman'}
+                        </span>
                       </div>
 
-                      <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${
-                        isDue ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      }`}>
-                        {isDue ? 'Perlu Cek' : 'Aman'}
-                      </span>
+                      {/* Nama Pengrajin (Visual Weight #1) */}
+                      <h3 className="text-[22px] font-bold text-[#1A1A1A] leading-[130%] tracking-tight mt-4">
+                        {c.name}
+                      </h3>
+
+                      {/* 2. CONTACT SECTION (Spacing 20px) */}
+                      <div className="mt-5 space-y-2">
+                        {/* Nomor Telepon (Visual Weight #4) */}
+                        <div className="text-[17px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+                          <Phone size={16} className="text-slate-500 shrink-0" />
+                          <span>{c.phone}</span>
+                        </div>
+
+                        {/* Alamat (Visual Weight #7) */}
+                        {c.address && (
+                          <div className="text-[15px] font-normal text-slate-500 flex items-start gap-2 line-clamp-2 leading-relaxed mt-1">
+                            <MapPin size={16} className="text-slate-400 shrink-0 mt-0.5" />
+                            <span>{c.address}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 3. MONITORING SECTION (Spacing 20px - Secondary Soft Box) */}
+                      <div className="mt-5 bg-[#F8F9FA] p-4 rounded-xl space-y-2 border border-slate-100 text-[15px] text-slate-600 font-normal">
+                        <div className="flex items-center gap-2">
+                          <Clock size={16} className="text-slate-400 shrink-0" />
+                          <span>Interval: Setiap {c.check_interval_days} hari</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar size={16} className="text-slate-400 shrink-0" />
+                          <span>Terakhir dicek: {diffDays === 0 ? 'Hari ini' : `${diffDays} hari lalu`}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Middle Grid Stats (Matching Reference Image Layout) */}
-                    <div className="grid grid-cols-3 gap-2 py-3 border-y border-[#E2E8F0] text-left">
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#1A1A1A] block font-sans truncate">{c.phone}</span>
-                        <span className="text-[11px] font-normal text-[#71717A]">No. WhatsApp</span>
-                      </div>
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#1A1A1A] block font-sans">Setiap {c.check_interval_days}hr</span>
-                        <span className="text-[11px] font-normal text-[#71717A]">Interval Cek</span>
-                      </div>
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#1A1A1A] block font-sans">{diffDays} hr lalu</span>
-                        <span className="text-[11px] font-normal text-[#71717A]">Cek Terakhir</span>
-                      </div>
-                    </div>
-
-                    {/* Address Tag if exists */}
-                    {c.address && (
-                      <p className="text-[12px] text-[#71717A] font-normal truncate">
-                        📍 {c.address}
-                      </p>
-                    )}
-
-                    {/* Bottom Action Footer */}
-                    <div className="pt-2 flex items-center justify-between gap-2">
+                    {/* 4. ACTION SECTION (Spacing 24px - Visual Weight #2 for WA Button) */}
+                    <div className="mt-6 pt-2 flex items-center gap-3">
                       <a
                         href={getWaLink(c.phone, c.name, c.material_type)}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                        className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white text-[15px] font-semibold py-3 px-4 rounded-[12px] flex items-center justify-center gap-2.5 shadow-xs transition-all cursor-pointer"
                       >
-                        <MessageSquare size={14} /> Hubungi via WA
+                        <MessageSquare size={18} /> Hubungi via WhatsApp
                       </a>
                       <button
                         onClick={() => {
@@ -439,10 +449,10 @@ export default function Craftsmen() {
                           setCInterval(c.check_interval_days);
                           setShowCraftsmanModal(true);
                         }}
-                        className="p-2.5 text-slate-500 hover:text-[#5c1616] hover:bg-slate-100 rounded-xl transition-colors border border-[#E2E8F0]"
+                        className="p-3 text-slate-400 hover:text-[#5c1616] hover:bg-slate-100 rounded-[12px] border border-slate-200 transition-colors flex items-center justify-center cursor-pointer"
                         title="Edit Pengrajin"
                       >
-                        <Edit size={16} />
+                        <Edit size={18} />
                       </button>
                     </div>
                   </div>
@@ -457,7 +467,7 @@ export default function Craftsmen() {
       {activeTab === 'materials' && (
         <div className="space-y-4">
           {materials.length === 0 ? (
-            <div className="bg-white p-12 rounded-xl border border-[#E2E8F0] shadow-xs text-center space-y-3">
+            <div className="bg-white p-12 rounded-[20px] border border-[#E2E8F0] shadow-xs text-center space-y-3">
               <div className="w-12 h-12 bg-rose-50 text-[#5c1616] rounded-full flex items-center justify-center mx-auto">
                 <Wrench size={24} />
               </div>
@@ -473,60 +483,63 @@ export default function Craftsmen() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {materials.map((m) => {
                 const matchedCraftsman = craftsmen.find(c => c.id === m.craftsman_id);
                 const cName = matchedCraftsman ? matchedCraftsman.name : (m.craftsmen?.name || 'Pengrajin Terkait');
 
                 return (
-                  <div key={m.id} className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
-                    {/* Top Header */}
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700 font-bold text-sm flex-shrink-0">
-                          <Wrench size={18} />
-                        </div>
-                        <div>
-                          <h3 className="text-[17px] font-semibold text-[#1A1A1A] leading-snug">{m.name}</h3>
-                          <p className="text-[13px] text-[#71717A] font-normal mt-0.5">Pemasok: {cName}</p>
-                        </div>
-                      </div>
-
-                      <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${
-                        m.status === 'Tersedia' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                        m.status === 'Terbatas' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
-                      }`}>
-                        {m.status} {m.delay_days > 0 ? `(+${m.delay_days}h PO)` : ''}
-                      </span>
-                    </div>
-
-                    {/* Middle Grid Stats */}
-                    <div className="grid grid-cols-3 gap-2 py-3 border-y border-[#E2E8F0] text-left">
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#1A1A1A] block font-sans">{m.category}</span>
-                        <span className="text-[11px] font-normal text-[#71717A]">Kategori</span>
-                      </div>
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#1A1A1A] block font-sans">{m.delay_days} Hari</span>
-                        <span className="text-[11px] font-normal text-[#71717A]">Waktu PO</span>
-                      </div>
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#1A1A1A] block font-sans">
-                          {new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                  <div 
+                    key={m.id} 
+                    className="bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans"
+                  >
+                    <div>
+                      {/* 1. HEADER SECTION */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-[13px] font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-[0.5px]">
+                          {m.category}
                         </span>
-                        <span className="text-[11px] font-normal text-[#71717A]">Tgl Cek</span>
+                        <span className={`text-[13px] font-semibold px-3.5 py-1 rounded-full ${
+                          m.status === 'Tersedia' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                          m.status === 'Terbatas' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                        }`}>
+                          {m.status} {m.delay_days > 0 ? `(+${m.delay_days}h PO)` : ''}
+                        </span>
+                      </div>
+
+                      {/* Nama Bahan Baku (Visual Weight #1) */}
+                      <h3 className="text-[22px] font-bold text-[#1A1A1A] leading-[130%] tracking-tight mt-4">
+                        {m.name}
+                      </h3>
+
+                      {/* 2. CONTACT / SUPPLIER SECTION (Spacing 20px) */}
+                      <div className="mt-5 space-y-2">
+                        <div className="text-[17px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+                          <Users size={16} className="text-slate-500 shrink-0" />
+                          <span>{cName}</span>
+                        </div>
+                        {m.notes && (
+                          <p className="text-[15px] font-normal text-slate-500 line-clamp-2 leading-relaxed">
+                            Catatan: {m.notes}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* 3. MONITORING SECTION (Spacing 20px - Secondary Soft Box) */}
+                      <div className="mt-5 bg-[#F8F9FA] p-4 rounded-xl space-y-2 border border-slate-100 text-[15px] text-slate-600 font-normal">
+                        <div className="flex items-center gap-2">
+                          <Clock size={16} className="text-slate-400 shrink-0" />
+                          <span>Estimasi PO: +{m.delay_days} Hari Production</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar size={16} className="text-slate-400 shrink-0" />
+                          <span>Terakhir dicek: {new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Notes if available */}
-                    {m.notes && (
-                      <div className="text-[12px] text-[#71717A] font-normal bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <span className="font-semibold text-slate-700">Catatan:</span> {m.notes}
-                      </div>
-                    )}
-
-                    {/* Bottom Action Footer */}
-                    <div className="pt-2 flex items-center justify-between gap-2">
+                    {/* 4. ACTION SECTION (Spacing 24px) */}
+                    <div className="mt-6 pt-2 flex items-center gap-3">
                       <button
                         onClick={() => {
                           setSelectedMaterialForLog(m);
@@ -535,9 +548,9 @@ export default function Craftsmen() {
                           setLogNotes(m.notes || '');
                           setShowLogModal(true);
                         }}
-                        className="flex-1 bg-[#5c1616] hover:bg-[#4a1212] text-white text-xs font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                        className="flex-1 bg-[#5c1616] hover:bg-[#4a1212] text-white text-[15px] font-semibold py-3 px-4 rounded-[12px] flex items-center justify-center gap-2.5 shadow-xs transition-all cursor-pointer"
                       >
-                        <CheckCircle2 size={14} /> Input Cek WA
+                        <CheckCircle2 size={18} /> Input Cek WA
                       </button>
                       <button
                         onClick={() => {
@@ -550,10 +563,10 @@ export default function Craftsmen() {
                           setMNotes(m.notes || '');
                           setShowMaterialModal(true);
                         }}
-                        className="p-2.5 text-slate-500 hover:text-[#5c1616] hover:bg-slate-100 rounded-xl transition-colors border border-[#E2E8F0]"
+                        className="p-3 text-slate-400 hover:text-[#5c1616] hover:bg-slate-100 rounded-[12px] border border-slate-200 transition-colors flex items-center justify-center cursor-pointer"
                         title="Edit Bahan"
                       >
-                        <Edit size={16} />
+                        <Edit size={18} />
                       </button>
                     </div>
                   </div>
