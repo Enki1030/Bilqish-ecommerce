@@ -139,33 +139,47 @@ export default function Dashboard() {
   };
 
   const fetchDashboardData = async () => {
-    setLoading(true);
-    const { data: ordersData } = await supabase
-      .from('orders')
-      .select('*, order_items(*)')
-      .order('created_at', { ascending: false });
+    try {
+      setLoading(true);
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select('*, order_items(*)')
+        .order('created_at', { ascending: false });
 
-    const { data: productsData } = await supabase
-      .from('products')
-      .select('*');
-
-    const now = Date.now();
-    const sessionStartTime = getAdminSessionStartTime();
-    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-    const isSessionExpired = (now - sessionStartTime) >= TWENTY_FOUR_HOURS;
-
-    // If 24h have passed since Admin's login session started, unhandled 'Pesanan Baru' auto-transition to 'Diproses'
-    const updatedOrders = await Promise.all((ordersData || []).map(async (o: any) => {
-      if (isSessionExpired && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
-        await supabase.from('orders').update({ status: 'Diproses' }).eq('id', o.id);
-        return { ...o, status: 'Diproses' };
+      if (ordersError) {
+        console.error('Error fetching orders for Dashboard:', ordersError);
       }
-      return o;
-    }));
 
-    setOrders(updatedOrders);
-    setProducts(productsData || []);
-    setLoading(false);
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('*');
+
+      if (productsError) {
+        console.error('Error fetching products for Dashboard:', productsError);
+      }
+
+      const now = Date.now();
+      const sessionStartTime = getAdminSessionStartTime();
+      const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+      const isSessionExpired = (now - sessionStartTime) >= TWENTY_FOUR_HOURS;
+
+      const rawOrders = ordersData || [];
+      const updatedOrders = rawOrders.map((o: any) => {
+        if (isSessionExpired && ['Pesanan Baru', 'Belum Diproses'].includes(o.status)) {
+          // Update in background asynchronously without blocking UI render
+          supabase.from('orders').update({ status: 'Diproses' }).eq('id', o.id).then();
+          return { ...o, status: 'Diproses' };
+        }
+        return o;
+      });
+
+      setOrders(updatedOrders);
+      setProducts(productsData || []);
+    } catch (e) {
+      console.error('Unhandled error in fetchDashboardData:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 1. Top Executive Stat Calculations
