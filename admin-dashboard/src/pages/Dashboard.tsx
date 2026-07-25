@@ -249,11 +249,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 🌟 BARIS 1: HERO SECTION (Ringkasan Omset & Top 3 Sepatu Terlaris - Perfectly Balanced Height & Horizontal Layout) */}
+      {/* 🌟 BARIS 1: HERO SECTION (Ringkasan Omset 7 cols & Top 3 Sepatu Terlaris 5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         
-        {/* Left (5 cols): Ringkasan Omset Executive Card */}
-        <div className="lg:col-span-5 bg-white p-7 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex flex-col justify-between font-sans min-h-[220px]">
+        {/* Left (7 cols): Ringkasan Omset Executive Card */}
+        <div className="lg:col-span-7 bg-white p-7 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex flex-col justify-between font-sans min-h-[220px]">
           {/* Header & Segmented Period Control */}
           <div className="flex justify-between items-center">
             <h2 className="text-[22px] font-semibold text-gray-900 tracking-tight">
@@ -294,42 +294,47 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right (7 cols): Sepatu Terlaris (Top 3 List - 3 Horizontal Mini-Cards Menyamping) */}
-        <div className="lg:col-span-7 bg-white p-7 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex flex-col justify-between space-y-4 font-sans min-h-[220px]">
+        {/* Right (5 cols): Sepatu Terlaris (Top 3 List - Compact Square Mini-Cards) */}
+        <div className="lg:col-span-5 bg-white p-6 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex flex-col justify-between space-y-3 font-sans min-h-[220px]">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-            <span className="text-[20px] font-semibold text-gray-900 flex items-center gap-2">
-              <Flame size={20} className="text-orange-500" /> Sepatu Terlaris (Top 3)
+            <span className="text-[18px] font-semibold text-gray-900 flex items-center gap-2">
+              <Flame size={18} className="text-orange-500" /> Sepatu Terlaris (Top 3)
             </span>
-            <a href="/products" className="text-[13px] text-[#5c1616] hover:underline font-semibold flex items-center gap-1">
-              Lihat Katalog <ChevronRight size={14} />
+            <a href="/products" className="text-[12px] text-[#5c1616] hover:underline font-semibold flex items-center gap-1">
+              Lihat Katalog <ChevronRight size={13} />
             </a>
           </div>
 
-          {/* 3 Horizontal Cards Menyamping */}
+          {/* 3 Compact Mini Cards with Square Images */}
           {stats.top3Selling.length === 0 ? (
             <p className="text-[13px] text-gray-500 py-6 text-center my-auto">Belum ada data penjualan.</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-auto">
+            <div className="grid grid-cols-3 gap-2.5 my-auto">
               {stats.top3Selling.map((shoe, idx) => (
-                <div key={idx} className="bg-slate-50/70 p-3 rounded-xl border border-slate-100 flex flex-col justify-between space-y-2 text-left">
-                  <div className="flex items-center justify-between">
-                    <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${
-                      idx === 0 ? 'bg-amber-100 text-amber-800' : idx === 1 ? 'bg-slate-200 text-slate-700' : 'bg-orange-100 text-orange-800'
-                    }`}>
-                      #{idx + 1}
-                    </span>
-                    <span className="text-[11px] font-semibold text-gray-900 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                      {shoe.count} pasang
-                    </span>
-                  </div>
-                  
-                  <div className="w-full h-16 bg-white rounded-lg border border-slate-200 overflow-hidden my-0.5">
+                <div key={idx} className="bg-slate-50/80 p-2 rounded-xl border border-slate-100 flex flex-col space-y-1.5 text-left relative">
+                  {/* Rank Badge overlay */}
+                  <span className={`absolute top-3 left-3 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shadow-xs z-10 ${
+                    idx === 0 ? 'bg-amber-400 text-slate-900' : idx === 1 ? 'bg-slate-300 text-slate-800' : 'bg-orange-300 text-slate-900'
+                  }`}>
+                    #{idx + 1}
+                  </span>
+
+                  {/* Gambar Persegi (Aspect Square) */}
+                  <div className="w-full aspect-square bg-white rounded-lg border border-slate-200 overflow-hidden">
                     <img src={shoe.img} alt={shoe.name} className="w-full h-full object-cover" />
                   </div>
-                  
-                  <div>
-                    <p className="font-semibold text-gray-900 text-[12px] truncate">{shoe.name}</p>
-                    <p className="text-[11px] text-gray-500 font-sans">Rp {shoe.price?.toLocaleString('id-ID')}</p>
+
+                  {/* Structure: Nama -> X Pasang -> Rp Price */}
+                  <div className="space-y-0.5 pt-0.5">
+                    <p className="font-semibold text-gray-900 text-[12px] truncate leading-snug" title={shoe.name}>
+                      {shoe.name}
+                    </p>
+                    <p className="text-[11px] font-semibold text-emerald-700 font-sans">
+                      {shoe.count} Pasang
+                    </p>
+                    <p className="text-[11px] font-bold text-gray-900 font-sans">
+                      Rp {shoe.price?.toLocaleString('id-ID')}
+                    </p>
                   </div>
                 </div>
               ))}
