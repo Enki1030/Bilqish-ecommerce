@@ -370,7 +370,7 @@ export default function Craftsmen() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {craftsmen.map((c) => {
                 const lastCheckDate = new Date(c.last_checked_at || c.created_at || Date.now());
                 const diffDays = Math.floor((Date.now() - lastCheckDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -379,62 +379,65 @@ export default function Craftsmen() {
                 return (
                   <div 
                     key={c.id} 
-                    className="bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans space-y-4"
+                    className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans"
                   >
                     <div>
-                      {/* 1. HEADER SECTION (No avatar circle) */}
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-[20px] font-bold text-[#1A1A1A] leading-snug">{c.name}</h3>
-                          <p className="text-[13.5px] text-[#71717A] font-normal mt-0.5">{c.material_type}</p>
-                        </div>
-
-                        <span className={`text-[12px] font-medium px-3 py-1 rounded-full shrink-0 ${
+                      {/* 1. HEADER SECTION */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full uppercase tracking-[0.5px]">
+                          {c.material_type}
+                        </span>
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
                           isDue ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}>
                           {isDue ? 'Perlu Cek' : 'Aman'}
                         </span>
                       </div>
 
-                      {/* 2. CONTACT GROUP (Full line Phone Number + Address) */}
-                      <div className="mt-4 space-y-1.5">
-                        {/* Full row Phone Number - Never Truncated! */}
-                        <div className="text-[16px] font-semibold text-[#1A1A1A] flex items-center gap-2">
-                          <Phone size={15} className="text-slate-400 shrink-0" />
+                      {/* Nama Pengrajin (Scaled to 16px - Visual Weight #1) */}
+                      <h3 className="text-[16px] font-bold text-[#1A1A1A] leading-snug tracking-tight mt-2.5">
+                        {c.name}
+                      </h3>
+
+                      {/* 2. CONTACT SECTION (Scaled to 13px & 12px) */}
+                      <div className="mt-3.5 space-y-1.5">
+                        {/* Nomor Telepon (Scaled to 13px) */}
+                        <div className="text-[13px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+                          <Phone size={14} className="text-slate-400 shrink-0" />
                           <span>{c.phone}</span>
                         </div>
 
-                        {/* Address under Phone Number */}
+                        {/* Alamat (Scaled to 12px) */}
                         {c.address && (
-                          <div className="text-[13.5px] font-normal text-[#71717A] flex items-start gap-2 leading-relaxed">
-                            <MapPin size={15} className="text-slate-400 shrink-0 mt-0.5" />
-                            <span className="line-clamp-2">{c.address}</span>
+                          <div className="text-[12px] font-normal text-slate-500 flex items-start gap-1.5 line-clamp-2 leading-relaxed">
+                            <MapPin size={14} className="text-slate-400 shrink-0 mt-0.5" />
+                            <span>{c.address}</span>
                           </div>
                         )}
                       </div>
 
-                      {/* 3. MONITORING SECTION (2 Columns stats - Whitespace separated, no inner boxes/lines) */}
-                      <div className="mt-5 grid grid-cols-2 gap-4 text-left pt-1">
-                        <div>
-                          <span className="text-[16px] font-semibold text-[#1A1A1A] block font-sans">Setiap {c.check_interval_days} hr</span>
-                          <span className="text-[12px] font-normal text-[#71717A]">Interval Cek</span>
+                      {/* 3. MONITORING SECTION (Scaled to 12px - Soft Secondary Box) */}
+                      <div className="mt-3.5 bg-[#F8F9FA] p-3 rounded-xl space-y-1.5 border border-slate-100 text-[12px] text-slate-600 font-normal">
+                        <div className="flex items-center gap-2">
+                          <Clock size={14} className="text-slate-400 shrink-0" />
+                          <span>Interval: Setiap {c.check_interval_days} hari</span>
                         </div>
-                        <div>
-                          <span className="text-[16px] font-semibold text-[#1A1A1A] block font-sans">{diffDays === 0 ? 'Hari Ini' : `${diffDays} hr lalu`}</span>
-                          <span className="text-[12px] font-normal text-[#71717A]">Cek Terakhir</span>
+                        <div className="flex items-center gap-2">
+                          <Calendar size={14} className="text-slate-400 shrink-0" />
+                          <span>Terakhir dicek: {diffDays === 0 ? 'Hari ini' : `${diffDays} hari lalu`}</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* 4. ACTION SECTION */}
-                    <div className="pt-2 flex items-center gap-3">
+                    {/* 4. ACTION SECTION (Scaled Button Font & Padding) */}
+                    <div className="mt-4 pt-2 flex items-center gap-2">
                       <a
                         href={getWaLink(c.phone, c.name, c.material_type)}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white text-[14px] font-semibold py-3 px-4 rounded-[12px] flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                        className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white text-[13px] font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer"
                       >
-                        <MessageSquare size={16} /> Hubungi via WA
+                        <MessageSquare size={15} /> Hubungi via WhatsApp
                       </a>
                       <button
                         onClick={() => {
@@ -446,10 +449,10 @@ export default function Craftsmen() {
                           setCInterval(c.check_interval_days);
                           setShowCraftsmanModal(true);
                         }}
-                        className="p-3 text-slate-400 hover:text-[#5c1616] hover:bg-slate-100 rounded-[12px] border border-slate-200 transition-colors flex items-center justify-center cursor-pointer"
+                        className="p-2.5 text-slate-400 hover:text-[#5c1616] hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors flex items-center justify-center cursor-pointer"
                         title="Edit Pengrajin"
                       >
-                        <Edit size={16} />
+                        <Edit size={15} />
                       </button>
                     </div>
                   </div>
@@ -464,7 +467,7 @@ export default function Craftsmen() {
       {activeTab === 'materials' && (
         <div className="space-y-4">
           {materials.length === 0 ? (
-            <div className="bg-white p-12 rounded-[20px] border border-[#E2E8F0] shadow-xs text-center space-y-3">
+            <div className="bg-white p-12 rounded-2xl border border-[#E2E8F0] shadow-xs text-center space-y-3">
               <div className="w-12 h-12 bg-rose-50 text-[#5c1616] rounded-full flex items-center justify-center mx-auto">
                 <Wrench size={24} />
               </div>
@@ -480,7 +483,7 @@ export default function Craftsmen() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {materials.map((m) => {
                 const matchedCraftsman = craftsmen.find(c => c.id === m.craftsman_id);
                 const cName = matchedCraftsman ? matchedCraftsman.name : (m.craftsmen?.name || 'Pengrajin Terkait');
@@ -488,17 +491,15 @@ export default function Craftsmen() {
                 return (
                   <div 
                     key={m.id} 
-                    className="bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans space-y-4"
+                    className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans"
                   >
                     <div>
                       {/* 1. HEADER SECTION */}
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-[20px] font-bold text-[#1A1A1A] leading-snug">{m.name}</h3>
-                          <p className="text-[13.5px] text-[#71717A] font-normal mt-0.5">Pemasok: {cName}</p>
-                        </div>
-
-                        <span className={`text-[12px] font-medium px-3 py-1 rounded-full shrink-0 ${
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full uppercase tracking-[0.5px]">
+                          {m.category}
+                        </span>
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
                           m.status === 'Tersedia' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                           m.status === 'Terbatas' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
                         }`}>
@@ -506,37 +507,39 @@ export default function Craftsmen() {
                         </span>
                       </div>
 
-                      {/* 2. CATEGORY & NOTES GROUP */}
-                      <div className="mt-4 space-y-1.5">
-                        <div className="text-[16px] font-semibold text-[#1A1A1A] flex items-center gap-2">
-                          <Wrench size={15} className="text-slate-400 shrink-0" />
-                          <span>Kategori: {m.category}</span>
-                        </div>
+                      {/* Nama Bahan Baku (Scaled to 16px) */}
+                      <h3 className="text-[16px] font-bold text-[#1A1A1A] leading-snug tracking-tight mt-2.5">
+                        {m.name}
+                      </h3>
 
+                      {/* 2. CONTACT / SUPPLIER SECTION (Scaled to 13px & 12px) */}
+                      <div className="mt-3.5 space-y-1.5">
+                        <div className="text-[13px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+                          <Users size={14} className="text-slate-400 shrink-0" />
+                          <span>{cName}</span>
+                        </div>
                         {m.notes && (
-                          <div className="text-[13.5px] font-normal text-[#71717A] line-clamp-2 leading-relaxed">
+                          <p className="text-[12px] font-normal text-slate-500 line-clamp-2 leading-relaxed">
                             Catatan: {m.notes}
-                          </div>
+                          </p>
                         )}
                       </div>
 
-                      {/* 3. MONITORING SECTION (2 Columns stats) */}
-                      <div className="mt-5 grid grid-cols-2 gap-4 text-left pt-1">
-                        <div>
-                          <span className="text-[16px] font-semibold text-[#1A1A1A] block font-sans">+{m.delay_days} Hari PO</span>
-                          <span className="text-[12px] font-normal text-[#71717A]">Estimasi Indent</span>
+                      {/* 3. MONITORING SECTION (Scaled to 12px) */}
+                      <div className="mt-3.5 bg-[#F8F9FA] p-3 rounded-xl space-y-1.5 border border-slate-100 text-[12px] text-slate-600 font-normal">
+                        <div className="flex items-center gap-2">
+                          <Clock size={14} className="text-slate-400 shrink-0" />
+                          <span>Estimasi PO: +{m.delay_days} Hari Production</span>
                         </div>
-                        <div>
-                          <span className="text-[16px] font-semibold text-[#1A1A1A] block font-sans">
-                            {new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                          </span>
-                          <span className="text-[12px] font-normal text-[#71717A]">Cek Terakhir</span>
+                        <div className="flex items-center gap-2">
+                          <Calendar size={14} className="text-slate-400 shrink-0" />
+                          <span>Terakhir dicek: {new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* 4. ACTION SECTION */}
-                    <div className="pt-2 flex items-center gap-3">
+                    <div className="mt-4 pt-2 flex items-center gap-2">
                       <button
                         onClick={() => {
                           setSelectedMaterialForLog(m);
@@ -545,9 +548,9 @@ export default function Craftsmen() {
                           setLogNotes(m.notes || '');
                           setShowLogModal(true);
                         }}
-                        className="flex-1 bg-[#5c1616] hover:bg-[#4a1212] text-white text-[14px] font-semibold py-3 px-4 rounded-[12px] flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                        className="flex-1 bg-[#5c1616] hover:bg-[#4a1212] text-white text-[13px] font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer"
                       >
-                        <CheckCircle2 size={16} /> Input Cek WA
+                        <CheckCircle2 size={15} /> Input Cek WA
                       </button>
                       <button
                         onClick={() => {
@@ -560,10 +563,10 @@ export default function Craftsmen() {
                           setMNotes(m.notes || '');
                           setShowMaterialModal(true);
                         }}
-                        className="p-3 text-slate-400 hover:text-[#5c1616] hover:bg-slate-100 rounded-[12px] border border-slate-200 transition-colors flex items-center justify-center cursor-pointer"
+                        className="p-2.5 text-slate-400 hover:text-[#5c1616] hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors flex items-center justify-center cursor-pointer"
                         title="Edit Bahan"
                       >
-                        <Edit size={16} />
+                        <Edit size={15} />
                       </button>
                     </div>
                   </div>
