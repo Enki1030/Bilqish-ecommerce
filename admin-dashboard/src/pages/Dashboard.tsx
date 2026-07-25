@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import * as XLSX from 'xlsx';
 import { 
   AlertTriangle, 
   ShoppingBag, 
@@ -54,6 +53,9 @@ export default function Dashboard() {
   const handleExportExcel = async () => {
     setExporting(true);
     try {
+      // Dynamic Lazy Load XLSX only on demand when user clicks download
+      const XLSX = await import('xlsx');
+
       // 1. Fetch raw_materials and craftsmen for Sheet 4
       const { data: rawMats } = await supabase.from('raw_materials').select('*');
       const { data: craftsmenData } = await supabase.from('craftsmen').select('*');
