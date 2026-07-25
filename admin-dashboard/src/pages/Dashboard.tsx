@@ -249,84 +249,81 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 🌟 BARIS 1: 60/40 HERO SECTION (Ringkasan Omset 60% + Top 3 Sepatu Terlaris 40%) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      {/* 🌟 BARIS 1: HERO SECTION (Ringkasan Omset + Top 3 Sepatu Terlaris) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         
-        {/* Left (60%): Ringkasan Omset Hero Display (Compact & Bold Display) */}
-        <div className="lg:col-span-7 bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col justify-between space-y-3">
-          <div className="flex justify-between items-start">
-            <div>
-              <span className="text-[19px] font-semibold text-[#1A1A1A] block">
-                Ringkasan Omset Toko
-              </span>
-              <p className="text-[12px] font-normal text-[#71717A] mt-0.5">Total pendapatan dari transaksi penjualan produk yang sah.</p>
-            </div>
+        {/* Left: Ringkasan Omset Executive Hero Card (Hug Content Height, Pitch Black 56px Number, 26px Title) */}
+        <div className="lg:col-span-7 bg-white p-8 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] h-auto flex flex-col justify-between font-sans">
+          {/* Header & Segmented Period Control */}
+          <div className="flex justify-between items-center">
+            <h2 className="text-[26px] font-semibold text-gray-900 tracking-tight">
+              Ringkasan Omset
+            </h2>
             
-            {/* Periode Filter Dropdown / Buttons */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-[12px] font-medium text-[#71717A]">
+            {/* Compact Segmented Control (Tinggi ~36px) */}
+            <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl text-[12px] font-medium text-gray-500">
               <button 
                 onClick={() => setRevenuePeriod('week')}
-                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${revenuePeriod === 'week' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-[#1A1A1A]'}`}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${revenuePeriod === 'week' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-gray-900'}`}
               >
                 Minggu
               </button>
               <button 
                 onClick={() => setRevenuePeriod('month')}
-                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${revenuePeriod === 'month' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-[#1A1A1A]'}`}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${revenuePeriod === 'month' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-gray-900'}`}
               >
                 Bulan
               </button>
               <button 
                 onClick={() => setRevenuePeriod('year')}
-                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${revenuePeriod === 'year' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-[#1A1A1A]'}`}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${revenuePeriod === 'year' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-gray-900'}`}
               >
                 Tahun
               </button>
             </div>
           </div>
 
-          <div className="my-1">
-            <span className="text-[12px] text-[#71717A] font-medium block">Total Pendapatan ({revenuePeriod === 'week' ? 'Minggu Ini' : revenuePeriod === 'month' ? 'Bulan Ini' : 'Tahun Ini'})</span>
-            <div className="text-3xl sm:text-4xl font-bold text-[#5c1616] mt-0.5 tracking-tight font-sans">
+          {/* Hero Revenue Display (PITCH BLACK #111111, 56px Bold) */}
+          <div className="mt-8 mb-2 text-left">
+            <div className="text-[44px] sm:text-[56px] font-bold text-[#111111] leading-none tracking-tight font-sans">
               Rp {stats.revenue.toLocaleString('id-ID')}
             </div>
-          </div>
-
-          <div className="pt-2.5 border-t border-[#E2E8F0] flex items-center justify-between text-[12px] text-[#71717A]">
-            <span>Metrik omset diperbarui secara langsung</span>
+            <p className="text-[16px] font-medium text-gray-500 mt-3">
+              Pendapatan {revenuePeriod === 'week' ? 'minggu ini' : revenuePeriod === 'month' ? 'bulan ini' : 'tahun ini'}
+            </p>
           </div>
         </div>
 
-        {/* Right (40%): Sepatu Terlaris (Top 3 List) */}
-        <div className="lg:col-span-5 bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col justify-between space-y-3">
-          <div className="flex justify-between items-center border-b border-[#E2E8F0] pb-3">
-            <span className="text-[19px] font-semibold text-[#1A1A1A] flex items-center gap-2">
-              <Flame size={18} className="text-orange-500" /> Sepatu Terlaris (Top 3)
+        {/* Right: Sepatu Terlaris (Top 3 List - Matching Executive Card Styling) */}
+        <div className="lg:col-span-5 bg-white p-7 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] h-auto flex flex-col justify-between space-y-4 font-sans">
+          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+            <span className="text-[20px] font-semibold text-gray-900 flex items-center gap-2">
+              <Flame size={20} className="text-orange-500" /> Sepatu Terlaris (Top 3)
             </span>
-            <a href="/products" className="text-[12px] text-[#5c1616] hover:underline font-medium flex items-center gap-1">
-              Lihat Katalog <ChevronRight size={12} />
+            <a href="/products" className="text-[13px] text-[#5c1616] hover:underline font-semibold flex items-center gap-1">
+              Lihat Katalog <ChevronRight size={14} />
             </a>
           </div>
 
           <div className="space-y-2.5">
             {stats.top3Selling.length === 0 ? (
-              <p className="text-[12px] text-[#71717A] py-4 text-center">Belum ada data penjualan.</p>
+              <p className="text-[13px] text-gray-500 py-6 text-center">Belum ada data penjualan.</p>
             ) : (
               stats.top3Selling.map((shoe, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2 bg-slate-50/70 rounded-lg border border-[#E2E8F0]">
-                  <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                <div key={idx} className="flex items-center gap-3 p-2.5 bg-slate-50/70 rounded-xl border border-slate-100">
+                  <span className={`w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 ${
                     idx === 0 ? 'bg-amber-100 text-amber-800' : idx === 1 ? 'bg-slate-200 text-slate-700' : 'bg-orange-100 text-orange-800'
                   }`}>
                     {idx + 1}
                   </span>
-                  <div className="w-9 h-9 bg-white rounded border border-[#E2E8F0] overflow-hidden flex-shrink-0">
+                  <div className="w-10 h-10 bg-white rounded-lg border border-slate-200 overflow-hidden flex-shrink-0">
                     <img src={shoe.img} alt={shoe.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-[#1A1A1A] text-[12px] truncate">{shoe.name}</p>
-                    <p className="text-[11px] text-[#71717A] font-sans">Rp {shoe.price?.toLocaleString('id-ID')}</p>
+                    <p className="font-semibold text-gray-900 text-[13px] truncate">{shoe.name}</p>
+                    <p className="text-[12px] text-gray-500 font-sans">Rp {shoe.price?.toLocaleString('id-ID')}</p>
                   </div>
-                  <span className="text-[12px] font-medium text-[#1A1A1A] font-sans bg-white px-2 py-1 rounded border border-[#E2E8F0]">
+                  <span className="text-[12px] font-semibold text-gray-900 font-sans bg-white px-2.5 py-1 rounded-lg border border-slate-200 shrink-0">
                     {shoe.count} pasang
                   </span>
                 </div>
