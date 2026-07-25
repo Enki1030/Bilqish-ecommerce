@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
+import * as XLSX from 'xlsx';
 import { 
   AlertTriangle, 
   ShoppingBag, 
@@ -15,7 +16,9 @@ import {
   Sparkles,
   RefreshCw,
   Box,
-  Bell
+  Bell,
+  FileSpreadsheet,
+  Download
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -27,10 +30,6 @@ export default function Dashboard() {
   const [revenuePeriod, setRevenuePeriod] = useState<'week' | 'month' | 'year'>('month');
   const [trendComparison, setTrendComparison] = useState<'7days' | '30days'>('7days');
   const [activeTrendTab, setActiveTrendTab] = useState<'orders' | 'items' | 'cancelled' | 'revenue'>('orders');
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
 
   const getAdminSessionStartTime = () => {
     const stored = localStorage.getItem('ballqish_admin_login_time');
@@ -47,6 +46,96 @@ export default function Dashboard() {
       return now;
     }
     return loginTime;
+  };
+
+  const [exporting, setExporting] = useState(false);
+
+  // Multi-Sheet Excel (.xlsx) Export Handler
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      // 1. Fetch raw_materials and craftsmen for Sheet 4
+      const { data: rawMats } = await supabase.from('raw_materials').select('*');
+      const { data: craftsmenData } = await supabase.from('craftsmen').select('*');
+
+      const craftsmanMap = new Map();
+      (craftsmenData || []).forEach(c => craftsmanMap.set(c.id, c.name));
+
+      const periodText = revenuePeriod === 'week' ? 'Mingguan (7 Hari Terakhir)' : revenuePeriod === 'month' ? 'Bulanan (30 Hari Terakhir)' : 'Tahunan (365 Hari Terakhir)';
+      const generatedAt = new Date().toLocaleString('id-ID');
+
+      // SHEET 1: Ringkasan Metrik & Omset
+      const sheet1Data = [
+        { Parameter: 'Periode Laporan', Nilai: periodText },
+        { Parameter: 'Waktu Diunduh', Nilai: generatedAt },
+        { Parameter: 'Total Omset Toko (Rp)', Nilai: stats.revenue },
+        { Parameter: 'Omset Periode Sebelumnya (Rp)', Nilai: stats.previousRevenue },
+        { Parameter: 'Selisih Omset (Rp)', Nilai: stats.revenueDiff },
+        { Parameter: 'Persentase Pertumbuhan (%)', Nilai: `${stats.revenueGrowthPercent}%` },
+        { Parameter: 'Pesanan Aktif', Nilai: stats.activeOrdersCount },
+        { Parameter: 'Pesanan Baru (<24 Jam)', Nilai: stats.newOrdersCount },
+        { Parameter: 'Komplain Pelanggan', Nilai: stats.complaintCount },
+        { Parameter: 'Pengiriman Gagal', Nilai: stats.failedShipmentCount },
+      ];
+      const sheet1 = XLSX.utils.json_to_sheet(sheet1Data);
+
+      // SHEET 2: Performa Sepatu Terlaris
+      const sheet2Data = stats.top3Selling.map((shoe, idx) => ({
+        Peringkat: `#${idx + 1}`,
+        'Nama Sepatu': shoe.name,
+        'Jumlah Terjual (Pasang)': shoe.count,
+        'Harga Satuan (Rp)': shoe.price,
+        'Total Kontribusi Omset (Rp)': shoe.count * shoe.price
+      }));
+      const sheet2 = XLSX.utils.json_to_sheet(sheet2Data.length > 0 ? sheet2Data : [{ Peringkat: '-', 'Nama Sepatu': 'Belum ada data', 'Jumlah Terjual (Pasang)': 0, 'Harga Satuan (Rp)': 0, 'Total Kontribusi Omset (Rp)': 0 }]);
+
+      // SHEET 3: Rincian Transaksi Penjualan
+      let filteredOrders = orders.filter(o => o.status !== 'Dibatalkan');
+      const limitDays = revenuePeriod === 'week' ? 7 : revenuePeriod === 'month' ? 30 : 365;
+      const limitMs = limitDays * 24 * 60 * 60 * 1000;
+      filteredOrders = filteredOrders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= limitMs);
+
+      const sheet3Data = filteredOrders.map(o => ({
+        'ID Pesanan': o.id,
+        'Tanggal Transaksi': new Date(o.created_at).toLocaleDateString('id-ID'),
+        'Nama Pelanggan': o.customer_name || 'Pelanggan Toko',
+        'No. Telepon': o.customer_phone || '-',
+        'Item Sepatu & Size': o.order_items?.map((i: any) => `${i.product_name} (Sz ${i.size}) x${i.quantity}`).join('; ') || 'Sepatu Pantofel',
+        'Total Bayar (Rp)': o.total_amount || 0,
+        'Status Pembayaran': o.payment_status || 'Lunas',
+        'Status Pengiriman': o.status || 'Diproses'
+      }));
+      const sheet3 = XLSX.utils.json_to_sheet(sheet3Data.length > 0 ? sheet3Data : [{ 'ID Pesanan': '-', 'Tanggal Transaksi': '-', 'Nama Pelanggan': 'Belum ada transaksi', 'No. Telepon': '-', 'Item Sepatu & Size': '-', 'Total Bayar (Rp)': 0, 'Status Pembayaran': '-', 'Status Pengiriman': '-' }]);
+
+      // SHEET 4: Pasokan Pengrajin & Bahan Baku
+      const sheet4Data = (rawMats || []).map(m => ({
+        'Nama Bahan Baku': m.name,
+        'Kategori Bahan': m.category,
+        'Pengrajin Pemasok': craftsmanMap.get(m.craftsman_id) || m.craftsman_id || 'Pengrajin Terkait',
+        'Status Ketersediaan': m.status,
+        'Estimasi PO (Hari)': m.delay_days,
+        'Catatan Pasokan': m.notes || '-',
+        'Tanggal Cek Terakhir': new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID')
+      }));
+      const sheet4 = XLSX.utils.json_to_sheet(sheet4Data.length > 0 ? sheet4Data : [{ 'Nama Bahan Baku': '-', 'Kategori Bahan': '-', 'Pengrajin Pemasok': '-', 'Status Ketersediaan': '-', 'Estimasi PO (Hari)': 0, 'Catatan Pasokan': '-', 'Tanggal Cek Terakhir': '-' }]);
+
+      // Create Workbook and append 4 sheets
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, sheet1, 'Ringkasan Metrik');
+      XLSX.utils.book_append_sheet(wb, sheet2, 'Sepatu Terlaris');
+      XLSX.utils.book_append_sheet(wb, sheet3, 'Transaksi Penjualan');
+      XLSX.utils.book_append_sheet(wb, sheet4, 'Pasokan Pengrajin');
+
+      // Trigger Download
+      const periodLabel = revenuePeriod === 'week' ? 'Mingguan' : revenuePeriod === 'month' ? 'Bulanan' : 'Tahunan';
+      const fileName = `Laporan_Eksekutif_Bilqish_${periodLabel}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    } catch (e) {
+      console.error('Error exporting Excel report:', e);
+      alert('Gagal mendownload laporan Excel. Silakan coba lagi.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const fetchDashboardData = async () => {
@@ -260,6 +349,16 @@ export default function Dashboard() {
           <p className="text-[12px] font-normal text-[#71717A] mt-1">Pantau metrik omset, performa sepatu terlaris, dan status operasional toko Anda.</p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleExportExcel}
+            disabled={exporting}
+            className="bg-[#5c1616] hover:bg-[#4a1212] text-white font-semibold text-[13px] px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+            title="Download Laporan Eksekutif Multi-Sheet Excel (.xlsx)"
+          >
+            <FileSpreadsheet size={16} />
+            <span>{exporting ? 'Menyiapkan Excel...' : 'Download Laporan Excel (.xlsx)'}</span>
+          </button>
+
           <a
             href="/notifications"
             className="w-10 h-10 bg-white border border-[#E2E8F0] hover:border-[#5c1616] hover:bg-[#fdf5f5] text-[#333333] hover:text-[#5c1616] rounded-lg flex items-center justify-center relative transition-all shadow-xs cursor-pointer"
