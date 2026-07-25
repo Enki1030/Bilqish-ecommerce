@@ -370,7 +370,7 @@ export default function Craftsmen() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {craftsmen.map((c) => {
                 const lastCheckDate = new Date(c.last_checked_at || c.created_at || Date.now());
                 const diffDays = Math.floor((Date.now() - lastCheckDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -379,24 +379,24 @@ export default function Craftsmen() {
                 return (
                   <div 
                     key={c.id} 
-                    className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans"
+                    className="bg-white p-4.5 rounded-[18px] border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans space-y-4"
                   >
                     <div>
                       {/* HEADER SECTION */}
                       <div className="flex justify-between items-start">
                         <div>
-                          {/* Nama Pengrajin (Large Bold Title) */}
-                          <h3 className="text-[22px] font-bold text-[#1A1A1A] leading-tight">
+                          {/* Nama Pengrajin (Compact 15px Bold Title) */}
+                          <h3 className="text-[15px] font-bold text-[#1A1A1A] leading-snug">
                             {c.name}
                           </h3>
-                          {/* Sub-judul Jenis Bahan (Regular Font Below Name) */}
-                          <p className="text-[14px] font-normal text-slate-400 mt-1">
+                          {/* Sub-judul Jenis Bahan (Compact 12px Regular) */}
+                          <p className="text-[12px] font-normal text-slate-400 mt-0.5">
                             {c.material_type}
                           </p>
                         </div>
 
-                        {/* Status Badge Pill Top Right */}
-                        <span className={`text-[13px] font-medium px-3.5 py-1 rounded-full border ${
+                        {/* Status Badge Pill Top Right (Compact 11px) */}
+                        <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${
                           isDue 
                             ? 'bg-amber-50 text-amber-700 border-amber-200' 
                             : 'bg-[#E6F9F0] text-[#00B060] border-[#B3F2D4]'
@@ -406,44 +406,44 @@ export default function Craftsmen() {
                       </div>
 
                       {/* CONTACT SECTION */}
-                      <div className="mt-5 space-y-1.5">
-                        {/* Nomor Telepon */}
-                        <div className="text-[16px] font-bold text-[#1A1A1A] flex items-center gap-2">
-                          <Phone size={16} className="text-slate-400 shrink-0" />
+                      <div className="mt-3.5 space-y-1">
+                        {/* Nomor Telepon (Compact 13px) */}
+                        <div className="text-[13px] font-bold text-[#1A1A1A] flex items-center gap-1.5">
+                          <Phone size={13} className="text-slate-400 shrink-0" />
                           <span>{c.phone}</span>
                         </div>
 
-                        {/* Alamat */}
+                        {/* Alamat (Compact 11px) */}
                         {c.address && (
-                          <div className="text-[14px] font-normal text-slate-400 flex items-start gap-2 line-clamp-2 leading-relaxed mt-1">
-                            <MapPin size={16} className="text-slate-400 shrink-0 mt-0.5" />
+                          <div className="text-[11px] font-normal text-slate-400 flex items-start gap-1.5 line-clamp-2 leading-relaxed mt-0.5">
+                            <MapPin size={13} className="text-slate-400 shrink-0 mt-0.5" />
                             <span>{c.address}</span>
                           </div>
                         )}
                       </div>
 
                       {/* MONITORING SECTION (2 Columns Grid Layout) */}
-                      <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-slate-100 text-left">
+                      <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-100 text-left">
                         <div>
-                          <span className="text-[16px] font-bold text-[#1A1A1A] block font-sans">Setiap {c.check_interval_days} hr</span>
-                          <span className="text-[13px] font-normal text-slate-400 mt-0.5 block font-sans">Interval Cek</span>
+                          <span className="text-[13px] font-bold text-[#1A1A1A] block font-sans">Setiap {c.check_interval_days} hr</span>
+                          <span className="text-[10px] font-normal text-slate-400 mt-0.5 block font-sans">Interval Cek</span>
                         </div>
                         <div>
-                          <span className="text-[16px] font-bold text-[#1A1A1A] block font-sans">{diffDays === 0 ? 'Hari Ini' : `${diffDays} hr lalu`}</span>
-                          <span className="text-[13px] font-normal text-slate-400 mt-0.5 block font-sans">Cek Terakhir</span>
+                          <span className="text-[13px] font-bold text-[#1A1A1A] block font-sans">{diffDays === 0 ? 'Hari Ini' : `${diffDays} hr lalu`}</span>
+                          <span className="text-[10px] font-normal text-slate-400 mt-0.5 block font-sans">Cek Terakhir</span>
                         </div>
                       </div>
                     </div>
 
                     {/* ACTION SECTION (WA Pill Button & Edit Icon) */}
-                    <div className="mt-6 flex items-center gap-3">
+                    <div className="pt-1 flex items-center gap-2">
                       <a
                         href={getWaLink(c.phone, c.name, c.material_type)}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 bg-[#10D061] hover:bg-[#0ebf57] text-white font-semibold text-[14px] py-3.5 px-5 rounded-[16px] flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                        className="flex-1 bg-[#10D061] hover:bg-[#0ebf57] text-white font-semibold text-[12px] py-2.5 px-4 rounded-[12px] flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                       >
-                        <MessageSquare size={18} /> Hubungi via WA
+                        <MessageSquare size={14} /> Hubungi via WA
                       </a>
                       <button
                         onClick={() => {
@@ -455,10 +455,10 @@ export default function Craftsmen() {
                           setCInterval(c.check_interval_days);
                           setShowCraftsmanModal(true);
                         }}
-                        className="w-12 h-12 rounded-[16px] border border-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
+                        className="w-9 h-9 rounded-[12px] border border-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
                         title="Edit Pengrajin"
                       >
-                        <Edit size={18} />
+                        <Edit size={14} />
                       </button>
                     </div>
                   </div>
@@ -473,7 +473,7 @@ export default function Craftsmen() {
       {activeTab === 'materials' && (
         <div className="space-y-4">
           {materials.length === 0 ? (
-            <div className="bg-white p-12 rounded-[24px] border border-slate-100 shadow-xs text-center space-y-3">
+            <div className="bg-white p-12 rounded-[18px] border border-slate-100 shadow-xs text-center space-y-3">
               <div className="w-12 h-12 bg-rose-50 text-[#5c1616] rounded-full flex items-center justify-center mx-auto">
                 <Wrench size={24} />
               </div>
@@ -489,7 +489,7 @@ export default function Craftsmen() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {materials.map((m) => {
                 const matchedCraftsman = craftsmen.find(c => c.id === m.craftsman_id);
                 const cName = matchedCraftsman ? matchedCraftsman.name : (m.craftsmen?.name || 'Pengrajin Terkait');
@@ -497,21 +497,21 @@ export default function Craftsmen() {
                 return (
                   <div 
                     key={m.id} 
-                    className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans"
+                    className="bg-white p-4.5 rounded-[18px] border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans space-y-4"
                   >
                     <div>
                       {/* HEADER SECTION */}
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-[22px] font-bold text-[#1A1A1A] leading-tight">
+                          <h3 className="text-[15px] font-bold text-[#1A1A1A] leading-snug">
                             {m.name}
                           </h3>
-                          <p className="text-[14px] font-normal text-slate-400 mt-1">
+                          <p className="text-[12px] font-normal text-slate-400 mt-0.5">
                             Pemasok: {cName}
                           </p>
                         </div>
 
-                        <span className={`text-[13px] font-medium px-3.5 py-1 rounded-full border ${
+                        <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${
                           m.status === 'Tersedia' ? 'bg-[#E6F9F0] text-[#00B060] border-[#B3F2D4]' :
                           m.status === 'Terbatas' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'
                         }`}>
@@ -520,35 +520,35 @@ export default function Craftsmen() {
                       </div>
 
                       {/* CONTACT / CATEGORY SECTION */}
-                      <div className="mt-5 space-y-1.5">
-                        <div className="text-[16px] font-bold text-[#1A1A1A] flex items-center gap-2">
-                          <Users size={16} className="text-slate-400 shrink-0" />
+                      <div className="mt-3.5 space-y-1">
+                        <div className="text-[13px] font-bold text-[#1A1A1A] flex items-center gap-1.5">
+                          <Users size={13} className="text-slate-400 shrink-0" />
                           <span>{m.category}</span>
                         </div>
                         {m.notes && (
-                          <div className="text-[14px] font-normal text-slate-400 leading-relaxed mt-1">
+                          <div className="text-[11px] font-normal text-slate-400 leading-relaxed mt-0.5">
                             Catatan: {m.notes}
                           </div>
                         )}
                       </div>
 
                       {/* MONITORING SECTION (2 Columns Grid) */}
-                      <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-slate-100 text-left">
+                      <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-100 text-left">
                         <div>
-                          <span className="text-[16px] font-bold text-[#1A1A1A] block font-sans">+{m.delay_days} Hari</span>
-                          <span className="text-[13px] font-normal text-slate-400 mt-0.5 block font-sans">Estimasi PO</span>
+                          <span className="text-[13px] font-bold text-[#1A1A1A] block font-sans">+{m.delay_days} Hari</span>
+                          <span className="text-[10px] font-normal text-slate-400 mt-0.5 block font-sans">Estimasi PO</span>
                         </div>
                         <div>
-                          <span className="text-[16px] font-bold text-[#1A1A1A] block font-sans">
+                          <span className="text-[13px] font-bold text-[#1A1A1A] block font-sans">
                             {new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
                           </span>
-                          <span className="text-[13px] font-normal text-slate-400 mt-0.5 block font-sans">Cek Terakhir</span>
+                          <span className="text-[10px] font-normal text-slate-400 mt-0.5 block font-sans">Cek Terakhir</span>
                         </div>
                       </div>
                     </div>
 
                     {/* ACTION SECTION */}
-                    <div className="mt-6 flex items-center gap-3">
+                    <div className="pt-1 flex items-center gap-2">
                       <button
                         onClick={() => {
                           setSelectedMaterialForLog(m);
@@ -557,9 +557,9 @@ export default function Craftsmen() {
                           setLogNotes(m.notes || '');
                           setShowLogModal(true);
                         }}
-                        className="flex-1 bg-[#10D061] hover:bg-[#0ebf57] text-white font-semibold text-[14px] py-3.5 px-5 rounded-[16px] flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                        className="flex-1 bg-[#10D061] hover:bg-[#0ebf57] text-white font-semibold text-[12px] py-2.5 px-4 rounded-[12px] flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                       >
-                        <CheckCircle2 size={18} /> Input Cek WA
+                        <CheckCircle2 size={14} /> Input Cek WA
                       </button>
                       <button
                         onClick={() => {
@@ -572,10 +572,10 @@ export default function Craftsmen() {
                           setMNotes(m.notes || '');
                           setShowMaterialModal(true);
                         }}
-                        className="w-12 h-12 rounded-[16px] border border-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
+                        className="w-9 h-9 rounded-[12px] border border-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
                         title="Edit Bahan"
                       >
-                        <Edit size={18} />
+                        <Edit size={14} />
                       </button>
                     </div>
                   </div>
