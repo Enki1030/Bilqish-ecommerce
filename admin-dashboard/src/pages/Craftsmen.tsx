@@ -379,65 +379,62 @@ export default function Craftsmen() {
                 return (
                   <div 
                     key={c.id} 
-                    className="bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans"
+                    className="bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans space-y-4"
                   >
                     <div>
-                      {/* 1. HEADER SECTION */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-[13px] font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-[0.5px]">
-                          {c.material_type}
-                        </span>
-                        <span className={`text-[13px] font-semibold px-3.5 py-1 rounded-full ${
+                      {/* 1. HEADER SECTION (No avatar circle) */}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-[20px] font-bold text-[#1A1A1A] leading-snug">{c.name}</h3>
+                          <p className="text-[13.5px] text-[#71717A] font-normal mt-0.5">{c.material_type}</p>
+                        </div>
+
+                        <span className={`text-[12px] font-medium px-3 py-1 rounded-full shrink-0 ${
                           isDue ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}>
                           {isDue ? 'Perlu Cek' : 'Aman'}
                         </span>
                       </div>
 
-                      {/* Nama Pengrajin (Visual Weight #1) */}
-                      <h3 className="text-[22px] font-bold text-[#1A1A1A] leading-[130%] tracking-tight mt-4">
-                        {c.name}
-                      </h3>
-
-                      {/* 2. CONTACT SECTION (Spacing 20px) */}
-                      <div className="mt-5 space-y-2">
-                        {/* Nomor Telepon (Visual Weight #4) */}
-                        <div className="text-[17px] font-semibold text-[#1A1A1A] flex items-center gap-2">
-                          <Phone size={16} className="text-slate-500 shrink-0" />
+                      {/* 2. CONTACT GROUP (Full line Phone Number + Address) */}
+                      <div className="mt-4 space-y-1.5">
+                        {/* Full row Phone Number - Never Truncated! */}
+                        <div className="text-[16px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+                          <Phone size={15} className="text-slate-400 shrink-0" />
                           <span>{c.phone}</span>
                         </div>
 
-                        {/* Alamat (Visual Weight #7) */}
+                        {/* Address under Phone Number */}
                         {c.address && (
-                          <div className="text-[15px] font-normal text-slate-500 flex items-start gap-2 line-clamp-2 leading-relaxed mt-1">
-                            <MapPin size={16} className="text-slate-400 shrink-0 mt-0.5" />
-                            <span>{c.address}</span>
+                          <div className="text-[13.5px] font-normal text-[#71717A] flex items-start gap-2 leading-relaxed">
+                            <MapPin size={15} className="text-slate-400 shrink-0 mt-0.5" />
+                            <span className="line-clamp-2">{c.address}</span>
                           </div>
                         )}
                       </div>
 
-                      {/* 3. MONITORING SECTION (Spacing 20px - Secondary Soft Box) */}
-                      <div className="mt-5 bg-[#F8F9FA] p-4 rounded-xl space-y-2 border border-slate-100 text-[15px] text-slate-600 font-normal">
-                        <div className="flex items-center gap-2">
-                          <Clock size={16} className="text-slate-400 shrink-0" />
-                          <span>Interval: Setiap {c.check_interval_days} hari</span>
+                      {/* 3. MONITORING SECTION (2 Columns stats - Whitespace separated, no inner boxes/lines) */}
+                      <div className="mt-5 grid grid-cols-2 gap-4 text-left pt-1">
+                        <div>
+                          <span className="text-[16px] font-semibold text-[#1A1A1A] block font-sans">Setiap {c.check_interval_days} hr</span>
+                          <span className="text-[12px] font-normal text-[#71717A]">Interval Cek</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar size={16} className="text-slate-400 shrink-0" />
-                          <span>Terakhir dicek: {diffDays === 0 ? 'Hari ini' : `${diffDays} hari lalu`}</span>
+                        <div>
+                          <span className="text-[16px] font-semibold text-[#1A1A1A] block font-sans">{diffDays === 0 ? 'Hari Ini' : `${diffDays} hr lalu`}</span>
+                          <span className="text-[12px] font-normal text-[#71717A]">Cek Terakhir</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* 4. ACTION SECTION (Spacing 24px - Visual Weight #2 for WA Button) */}
-                    <div className="mt-6 pt-2 flex items-center gap-3">
+                    {/* 4. ACTION SECTION */}
+                    <div className="pt-2 flex items-center gap-3">
                       <a
                         href={getWaLink(c.phone, c.name, c.material_type)}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white text-[15px] font-semibold py-3 px-4 rounded-[12px] flex items-center justify-center gap-2.5 shadow-xs transition-all cursor-pointer"
+                        className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white text-[14px] font-semibold py-3 px-4 rounded-[12px] flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                       >
-                        <MessageSquare size={18} /> Hubungi via WhatsApp
+                        <MessageSquare size={16} /> Hubungi via WA
                       </a>
                       <button
                         onClick={() => {
@@ -452,7 +449,7 @@ export default function Craftsmen() {
                         className="p-3 text-slate-400 hover:text-[#5c1616] hover:bg-slate-100 rounded-[12px] border border-slate-200 transition-colors flex items-center justify-center cursor-pointer"
                         title="Edit Pengrajin"
                       >
-                        <Edit size={18} />
+                        <Edit size={16} />
                       </button>
                     </div>
                   </div>
@@ -491,15 +488,17 @@ export default function Craftsmen() {
                 return (
                   <div 
                     key={m.id} 
-                    className="bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans"
+                    className="bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex flex-col justify-between text-left font-sans space-y-4"
                   >
                     <div>
                       {/* 1. HEADER SECTION */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-[13px] font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-[0.5px]">
-                          {m.category}
-                        </span>
-                        <span className={`text-[13px] font-semibold px-3.5 py-1 rounded-full ${
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-[20px] font-bold text-[#1A1A1A] leading-snug">{m.name}</h3>
+                          <p className="text-[13.5px] text-[#71717A] font-normal mt-0.5">Pemasok: {cName}</p>
+                        </div>
+
+                        <span className={`text-[12px] font-medium px-3 py-1 rounded-full shrink-0 ${
                           m.status === 'Tersedia' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                           m.status === 'Terbatas' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
                         }`}>
@@ -507,39 +506,37 @@ export default function Craftsmen() {
                         </span>
                       </div>
 
-                      {/* Nama Bahan Baku (Visual Weight #1) */}
-                      <h3 className="text-[22px] font-bold text-[#1A1A1A] leading-[130%] tracking-tight mt-4">
-                        {m.name}
-                      </h3>
-
-                      {/* 2. CONTACT / SUPPLIER SECTION (Spacing 20px) */}
-                      <div className="mt-5 space-y-2">
-                        <div className="text-[17px] font-semibold text-[#1A1A1A] flex items-center gap-2">
-                          <Users size={16} className="text-slate-500 shrink-0" />
-                          <span>{cName}</span>
+                      {/* 2. CATEGORY & NOTES GROUP */}
+                      <div className="mt-4 space-y-1.5">
+                        <div className="text-[16px] font-semibold text-[#1A1A1A] flex items-center gap-2">
+                          <Wrench size={15} className="text-slate-400 shrink-0" />
+                          <span>Kategori: {m.category}</span>
                         </div>
+
                         {m.notes && (
-                          <p className="text-[15px] font-normal text-slate-500 line-clamp-2 leading-relaxed">
+                          <div className="text-[13.5px] font-normal text-[#71717A] line-clamp-2 leading-relaxed">
                             Catatan: {m.notes}
-                          </p>
+                          </div>
                         )}
                       </div>
 
-                      {/* 3. MONITORING SECTION (Spacing 20px - Secondary Soft Box) */}
-                      <div className="mt-5 bg-[#F8F9FA] p-4 rounded-xl space-y-2 border border-slate-100 text-[15px] text-slate-600 font-normal">
-                        <div className="flex items-center gap-2">
-                          <Clock size={16} className="text-slate-400 shrink-0" />
-                          <span>Estimasi PO: +{m.delay_days} Hari Production</span>
+                      {/* 3. MONITORING SECTION (2 Columns stats) */}
+                      <div className="mt-5 grid grid-cols-2 gap-4 text-left pt-1">
+                        <div>
+                          <span className="text-[16px] font-semibold text-[#1A1A1A] block font-sans">+{m.delay_days} Hari PO</span>
+                          <span className="text-[12px] font-normal text-[#71717A]">Estimasi Indent</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar size={16} className="text-slate-400 shrink-0" />
-                          <span>Terakhir dicek: {new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                        <div>
+                          <span className="text-[16px] font-semibold text-[#1A1A1A] block font-sans">
+                            {new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                          </span>
+                          <span className="text-[12px] font-normal text-[#71717A]">Cek Terakhir</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* 4. ACTION SECTION (Spacing 24px) */}
-                    <div className="mt-6 pt-2 flex items-center gap-3">
+                    {/* 4. ACTION SECTION */}
+                    <div className="pt-2 flex items-center gap-3">
                       <button
                         onClick={() => {
                           setSelectedMaterialForLog(m);
@@ -548,9 +545,9 @@ export default function Craftsmen() {
                           setLogNotes(m.notes || '');
                           setShowLogModal(true);
                         }}
-                        className="flex-1 bg-[#5c1616] hover:bg-[#4a1212] text-white text-[15px] font-semibold py-3 px-4 rounded-[12px] flex items-center justify-center gap-2.5 shadow-xs transition-all cursor-pointer"
+                        className="flex-1 bg-[#5c1616] hover:bg-[#4a1212] text-white text-[14px] font-semibold py-3 px-4 rounded-[12px] flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                       >
-                        <CheckCircle2 size={18} /> Input Cek WA
+                        <CheckCircle2 size={16} /> Input Cek WA
                       </button>
                       <button
                         onClick={() => {
@@ -566,7 +563,7 @@ export default function Craftsmen() {
                         className="p-3 text-slate-400 hover:text-[#5c1616] hover:bg-slate-100 rounded-[12px] border border-slate-200 transition-colors flex items-center justify-center cursor-pointer"
                         title="Edit Bahan"
                       >
-                        <Edit size={18} />
+                        <Edit size={16} />
                       </button>
                     </div>
                   </div>
