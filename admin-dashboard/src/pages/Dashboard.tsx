@@ -249,53 +249,53 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 🌟 BARIS 1: HERO SECTION (Ringkasan Omset + Top 3 Sepatu Terlaris) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      {/* 🌟 BARIS 1: HERO SECTION (Ringkasan Omset & Top 3 Sepatu Terlaris - Perfectly Balanced Height & Horizontal Layout) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         
-        {/* Left: Ringkasan Omset Executive Hero Card (Hug Content Height, Pitch Black 56px Number, 26px Title) */}
-        <div className="lg:col-span-7 bg-white p-8 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] h-auto flex flex-col justify-between font-sans">
+        {/* Left (5 cols): Ringkasan Omset Executive Card */}
+        <div className="lg:col-span-5 bg-white p-7 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex flex-col justify-between font-sans min-h-[220px]">
           {/* Header & Segmented Period Control */}
           <div className="flex justify-between items-center">
-            <h2 className="text-[26px] font-semibold text-gray-900 tracking-tight">
+            <h2 className="text-[22px] font-semibold text-gray-900 tracking-tight">
               Ringkasan Omset
             </h2>
             
-            {/* Compact Segmented Control (Tinggi ~36px) */}
+            {/* Compact Segmented Control */}
             <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl text-[12px] font-medium text-gray-500">
               <button 
                 onClick={() => setRevenuePeriod('week')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${revenuePeriod === 'week' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-gray-900'}`}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${revenuePeriod === 'week' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-gray-900'}`}
               >
                 Minggu
               </button>
               <button 
                 onClick={() => setRevenuePeriod('month')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${revenuePeriod === 'month' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-gray-900'}`}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${revenuePeriod === 'month' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-gray-900'}`}
               >
                 Bulan
               </button>
               <button 
                 onClick={() => setRevenuePeriod('year')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${revenuePeriod === 'year' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-gray-900'}`}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${revenuePeriod === 'year' ? 'bg-[#5c1616] text-white font-semibold shadow-xs' : 'hover:text-gray-900'}`}
               >
                 Tahun
               </button>
             </div>
           </div>
 
-          {/* Hero Revenue Display (PITCH BLACK #111111, 56px Bold) */}
-          <div className="mt-8 mb-2 text-left">
-            <div className="text-[44px] sm:text-[56px] font-bold text-[#111111] leading-none tracking-tight font-sans">
+          {/* Hero Revenue Display (Pitch Black #111111, 48px Bold) */}
+          <div className="my-auto py-2 text-left">
+            <div className="text-[40px] sm:text-[46px] font-bold text-[#111111] leading-none tracking-tight font-sans">
               Rp {stats.revenue.toLocaleString('id-ID')}
             </div>
-            <p className="text-[16px] font-medium text-gray-500 mt-3">
+            <p className="text-[15px] font-medium text-gray-500 mt-2.5">
               Pendapatan {revenuePeriod === 'week' ? 'minggu ini' : revenuePeriod === 'month' ? 'bulan ini' : 'tahun ini'}
             </p>
           </div>
         </div>
 
-        {/* Right: Sepatu Terlaris (Top 3 List - Matching Executive Card Styling) */}
-        <div className="lg:col-span-5 bg-white p-7 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] h-auto flex flex-col justify-between space-y-4 font-sans">
+        {/* Right (7 cols): Sepatu Terlaris (Top 3 List - 3 Horizontal Mini-Cards Menyamping) */}
+        <div className="lg:col-span-7 bg-white p-7 rounded-[20px] border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.05)] flex flex-col justify-between space-y-4 font-sans min-h-[220px]">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <span className="text-[20px] font-semibold text-gray-900 flex items-center gap-2">
               <Flame size={20} className="text-orange-500" /> Sepatu Terlaris (Top 3)
@@ -305,31 +305,36 @@ export default function Dashboard() {
             </a>
           </div>
 
-          <div className="space-y-2.5">
-            {stats.top3Selling.length === 0 ? (
-              <p className="text-[13px] text-gray-500 py-6 text-center">Belum ada data penjualan.</p>
-            ) : (
-              stats.top3Selling.map((shoe, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2.5 bg-slate-50/70 rounded-xl border border-slate-100">
-                  <span className={`w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 ${
-                    idx === 0 ? 'bg-amber-100 text-amber-800' : idx === 1 ? 'bg-slate-200 text-slate-700' : 'bg-orange-100 text-orange-800'
-                  }`}>
-                    {idx + 1}
-                  </span>
-                  <div className="w-10 h-10 bg-white rounded-lg border border-slate-200 overflow-hidden flex-shrink-0">
+          {/* 3 Horizontal Cards Menyamping */}
+          {stats.top3Selling.length === 0 ? (
+            <p className="text-[13px] text-gray-500 py-6 text-center my-auto">Belum ada data penjualan.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-auto">
+              {stats.top3Selling.map((shoe, idx) => (
+                <div key={idx} className="bg-slate-50/70 p-3 rounded-xl border border-slate-100 flex flex-col justify-between space-y-2 text-left">
+                  <div className="flex items-center justify-between">
+                    <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${
+                      idx === 0 ? 'bg-amber-100 text-amber-800' : idx === 1 ? 'bg-slate-200 text-slate-700' : 'bg-orange-100 text-orange-800'
+                    }`}>
+                      #{idx + 1}
+                    </span>
+                    <span className="text-[11px] font-semibold text-gray-900 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                      {shoe.count} pasang
+                    </span>
+                  </div>
+                  
+                  <div className="w-full h-16 bg-white rounded-lg border border-slate-200 overflow-hidden my-0.5">
                     <img src={shoe.img} alt={shoe.name} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-[13px] truncate">{shoe.name}</p>
-                    <p className="text-[12px] text-gray-500 font-sans">Rp {shoe.price?.toLocaleString('id-ID')}</p>
+                  
+                  <div>
+                    <p className="font-semibold text-gray-900 text-[12px] truncate">{shoe.name}</p>
+                    <p className="text-[11px] text-gray-500 font-sans">Rp {shoe.price?.toLocaleString('id-ID')}</p>
                   </div>
-                  <span className="text-[12px] font-semibold text-gray-900 font-sans bg-white px-2.5 py-1 rounded-lg border border-slate-200 shrink-0">
-                    {shoe.count} pasang
-                  </span>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>
