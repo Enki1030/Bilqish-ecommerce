@@ -12,7 +12,8 @@ import {
   Edit, 
   MessageSquare,
   Calendar,
-  MapPin
+  MapPin,
+  Trash2
 } from 'lucide-react';
 
 interface Craftsman {
@@ -129,6 +130,56 @@ export default function Craftsmen() {
     const msg = encodeURIComponent(`Halo Pak/Bu ${craftsmanName}, mau konfirmasi ketersediaan stok pasokan bahan ${materialName || 'sepatu'} untuk produksi toko kami. Apakah stoknya saat ini masih aman/tersedia? Terima kasih!`);
     return `https://wa.me/${cleanPhone}?text=${msg}`;
   };
+
+  // Automatically update last_checked_at in Supabase when clicking WA contact button
+  const handleWaClick = async (craftsmanId: string, phone: string, name: string, materialType?: string) => {
+    const nowIso = new Date().toISOString();
+    
+    // Update in background on Supabase
+    supabase.from('craftsmen').update({ last_checked_at: nowIso }).eq('id', craftsmanId).then();
+
+    // Update local state immediately for instant UI response
+    setCraftsmen(prev => prev.map(c => c.id === craftsmanId ? { ...c, last_checked_at: nowIso } : c));
+
+    // Open WhatsApp URL in new tab
+    const url = getWaLink(phone, name, materialType);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  // Handle Delete Craftsman
+  async function handleDeleteCraftsman(id: string, name: string) {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus pengrajin "${name}"? Data bahan baku terkait juga akan terhapus.`)) return;
+
+    try {
+      const { error } = await supabase.from('craftsmen').delete().eq('id', id);
+      if (error) {
+        console.error('Delete craftsman error:', error);
+        alert('Gagal menghapus pengrajin: ' + error.message);
+        return;
+      }
+      setCraftsmen(prev => prev.filter(c => c.id !== id));
+      setMaterials(prev => prev.filter(m => m.craftsman_id !== id));
+    } catch (e) {
+      console.error('Delete error:', e);
+    }
+  }
+
+  // Handle Delete Raw Material
+  async function handleDeleteMaterial(id: string, name: string) {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus bahan baku "${name}"?`)) return;
+
+    try {
+      const { error } = await supabase.from('raw_materials').delete().eq('id', id);
+      if (error) {
+        console.error('Delete raw material error:', error);
+        alert('Gagal menghapus bahan baku: ' + error.message);
+        return;
+      }
+      setMaterials(prev => prev.filter(m => m.id !== id));
+    } catch (e) {
+      console.error('Delete error:', e);
+    }
+  }
 
   // Craftsmen needing contact alert (Interval exceeded)
   const urgentCraftsmen = useMemo(() => {
@@ -435,16 +486,15 @@ export default function Craftsmen() {
                       </div>
                     </div>
 
-                    {/* ACTION SECTION (WA Pill Button & Edit Icon) */}
+                    {/* ACTION SECTION (WA Pill Button, Edit Icon & Trash Icon) */}
                     <div className="pt-1 flex items-center gap-2">
-                      <a
-                        href={getWaLink(c.phone, c.name, c.material_type)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 bg-[#10D061] hover:bg-[#0ebf57] text-white font-semibold text-[12px] py-2.5 px-4 rounded-[12px] flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                      <button
+                        onClick={() => handleWaClick(c.id, c.phone, c.name, c.material_type)}
+                        className="flex-1 bg-[#10D061] hover:bg-[#0ebf57] text-white font-semibold text-[12px] py-2.5 px-3 rounded-[12px] flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                        title="Hubungi Pengrajin via WA & Otomatis Update Tanggal Cek Terakhir"
                       >
                         <MessageSquare size={14} /> Hubungi via WA
-                      </a>
+                      </button>
                       <button
                         onClick={() => {
                           setEditingCraftsman(c);
@@ -455,10 +505,17 @@ export default function Craftsmen() {
                           setCInterval(c.check_interval_days);
                           setShowCraftsmanModal(true);
                         }}
-                        className="w-9 h-9 rounded-[12px] border border-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
+                        className="w-9 h-9 rounded-[12px] border border-slate-200 text-slate-500 hover:text-[#5c1616] hover:border-[#5c1616] flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
                         title="Edit Pengrajin"
                       >
                         <Edit size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCraftsman(c.id, c.name)}
+                        className="w-9 h-9 rounded-[12px] border border-rose-200 text-rose-500 hover:text-rose-700 hover:bg-rose-50 flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
+                        title="Hapus Pengrajin"
+                      >
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </div>
@@ -557,7 +614,8 @@ export default function Craftsmen() {
                           setLogNotes(m.notes || '');
                           setShowLogModal(true);
                         }}
-                        className="flex-1 bg-[#10D061] hover:bg-[#0ebf57] text-white font-semibold text-[12px] py-2.5 px-4 rounded-[12px] flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                        className="flex-1 bg-[#10D061] hover:bg-[#0ebf57] text-white font-semibold text-[12px] py-2.5 px-3 rounded-[12px] flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                        title="Input Hasil Konfirmasi Stok WA"
                       >
                         <CheckCircle2 size={14} /> Input Cek WA
                       </button>
@@ -572,10 +630,17 @@ export default function Craftsmen() {
                           setMNotes(m.notes || '');
                           setShowMaterialModal(true);
                         }}
-                        className="w-9 h-9 rounded-[12px] border border-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
-                        title="Edit Bahan"
+                        className="w-9 h-9 rounded-[12px] border border-slate-200 text-slate-500 hover:text-[#5c1616] hover:border-[#5c1616] flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
+                        title="Edit Bahan Baku"
                       >
                         <Edit size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteMaterial(m.id, m.name)}
+                        className="w-9 h-9 rounded-[12px] border border-rose-200 text-rose-500 hover:text-rose-700 hover:bg-rose-50 flex items-center justify-center bg-white shadow-2xs transition-colors cursor-pointer shrink-0"
+                        title="Hapus Bahan Baku"
+                      >
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </div>
