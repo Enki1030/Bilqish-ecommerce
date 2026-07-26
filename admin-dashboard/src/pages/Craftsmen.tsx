@@ -181,13 +181,47 @@ export default function Craftsmen() {
     }
   }
 
-  // Craftsmen needing contact alert (Interval exceeded)
-  const urgentCraftsmen = useMemo(() => {
+  // 3-Tier Craftsman Monitoring Status Calculator
+  const getCraftsmanStatusInfo = (lastCheckedAt: string | undefined, createdAt: string | undefined, intervalDays: number) => {
     const now = Date.now();
+    const lastCheck = new Date(lastCheckedAt || createdAt || now).getTime();
+    const diffDays = Math.floor((now - lastCheck) / (1000 * 60 * 60 * 24));
+    const targetInterval = Number(intervalDays) || 7;
+
+    if (diffDays > targetInterval) {
+      const overdue = diffDays - targetInterval;
+      return {
+        level: 'overdue',
+        label: `Batas Lewat ${overdue} Hari`,
+        badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 font-bold',
+        diffDays,
+        isAlertNeeded: true
+      };
+    }
+    if (diffDays >= targetInterval - 1) {
+      const isToday = diffDays === targetInterval;
+      return {
+        level: 'warning',
+        label: isToday ? 'Jatuh Tempo Hari Ini' : 'Mendekati Tempo (H-1)',
+        badgeClass: 'bg-amber-50 text-amber-800 border-amber-300 font-bold',
+        diffDays,
+        isAlertNeeded: true
+      };
+    }
+    return {
+      level: 'safe',
+      label: 'Stok Aman',
+      badgeClass: 'bg-[#E6F9F0] text-[#00B060] border-[#B3F2D4] font-medium',
+      diffDays,
+      isAlertNeeded: false
+    };
+  };
+
+  // Craftsmen needing contact alert (Warning H-1 or Overdue)
+  const urgentCraftsmen = useMemo(() => {
     return craftsmen.filter(c => {
-      const lastCheck = new Date(c.last_checked_at || c.created_at || now).getTime();
-      const diffDays = Math.floor((now - lastCheck) / (1000 * 60 * 60 * 24));
-      return diffDays >= c.check_interval_days;
+      const statusInfo = getCraftsmanStatusInfo(c.last_checked_at, c.created_at, c.check_interval_days);
+      return statusInfo.isAlertNeeded;
     });
   }, [craftsmen]);
 
@@ -423,9 +457,7 @@ export default function Craftsmen() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {craftsmen.map((c) => {
-                const lastCheckDate = new Date(c.last_checked_at || c.created_at || Date.now());
-                const diffDays = Math.floor((Date.now() - lastCheckDate.getTime()) / (1000 * 60 * 60 * 24));
-                const isDue = diffDays >= c.check_interval_days;
+                const statusInfo = getCraftsmanStatusInfo(c.last_checked_at, c.created_at, c.check_interval_days);
 
                 return (
                   <div 
@@ -446,13 +478,9 @@ export default function Craftsmen() {
                           </p>
                         </div>
 
-                        {/* Status Badge Pill Top Right (Compact 11px) */}
-                        <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${
-                          isDue 
-                            ? 'bg-amber-50 text-amber-700 border-amber-200' 
-                            : 'bg-[#E6F9F0] text-[#00B060] border-[#B3F2D4]'
-                        }`}>
-                          {isDue ? 'Perlu Cek' : 'Aman'}
+                        {/* 3-Tier Status Badge Pill Top Right */}
+                        <span className={`text-[11px] px-2.5 py-0.5 rounded-full border ${statusInfo.badgeClass}`}>
+                          {statusInfo.label}
                         </span>
                       </div>
 
@@ -480,7 +508,7 @@ export default function Craftsmen() {
                           <span className="text-[10px] font-normal text-slate-400 mt-0.5 block font-sans">Interval Cek</span>
                         </div>
                         <div>
-                          <span className="text-[13px] font-bold text-[#1A1A1A] block font-sans">{diffDays === 0 ? 'Hari Ini' : `${diffDays} hr lalu`}</span>
+                          <span className="text-[13px] font-bold text-[#1A1A1A] block font-sans">{statusInfo.diffDays === 0 ? 'Hari Ini' : `${statusInfo.diffDays} hr lalu`}</span>
                           <span className="text-[10px] font-normal text-slate-400 mt-0.5 block font-sans">Cek Terakhir</span>
                         </div>
                       </div>
