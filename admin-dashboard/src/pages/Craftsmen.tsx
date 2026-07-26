@@ -210,7 +210,7 @@ export default function Craftsmen() {
     }
     return {
       level: 'safe',
-      label: 'Stok Aman',
+      label: 'Aman',
       badgeClass: 'bg-[#E6F9F0] text-[#00B060] border-[#B3F2D4] font-medium',
       diffDays,
       isAlertNeeded: false
