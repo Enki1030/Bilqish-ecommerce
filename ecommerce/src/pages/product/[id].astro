@@ -117,10 +117,19 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
             <p class="text-xs font-heading font-medium text-gray-500 mb-3 tracking-[0.2em] uppercase">{product.category}</p>
             <p class="text-2xl font-body font-bold text-gray-900">Rp {product.price.toLocaleString('id-ID')}</p>
             
-            <!-- Raw Material Craftsman Status PO Notice -->
-            <div id="craftsman-material-notice" class="hidden mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 font-sans flex items-center gap-2">
-              <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              <span id="craftsman-notice-text">Estimasi Produksi Tambahan +2 Hari (Pasokan Bahan Pengrajin Terbatas/PO)</span>
+            <!-- Privacy-Safe Dynamic Delivery Lead Time Estimator Widget -->
+            <div class="mt-5 p-4 bg-[#FAF9F6] border border-gray-200 rounded-xl font-sans space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  <span class="text-xs font-bold text-gray-900 tracking-wide uppercase font-heading">Estimasi Waktu Tiba</span>
+                </div>
+                <span id="lead-time-mode-badge" class="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">Ready Stock</span>
+              </div>
+              <p class="text-base font-bold text-gray-900" id="estimated-arrival-date">Menghitung estimasi...</p>
+              <p class="text-[11px] text-gray-500 font-light leading-relaxed" id="estimated-arrival-details">
+                Estimasi pengerjaan handmade & pengiriman standar (3 Hari Ekspedisi ke seluruh wilayah).
+              </p>
             </div>
           </div>
 
@@ -287,6 +296,92 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 
       syncLiveStock();
 
+      // --- 3-Stage Dynamic Lead Time Calculator (Privacy-Safe) ---
+      let rawMaterialsCache = null;
+
+      async function updateDynamicLeadTime() {
+        if (!supabaseUrl || !supabaseKey) return;
+
+        try {
+          if (!rawMaterialsCache) {
+            const res = await fetch(`${supabaseUrl}/rest/v1/raw_materials?select=*`, {
+              headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`
+              }
+            });
+            if (res.ok) {
+              rawMaterialsCache = await res.json();
+            }
+          }
+
+          const mats = rawMaterialsCache || [];
+          const selectedSolRadio = document.querySelector('input[name="outsole"]:checked');
+          const solModel = selectedSolRadio ? selectedSolRadio.value : 'Model 1';
+
+          const isLaced = product.name.toLowerCase().includes('bertali') || product.name.includes(' T') || product.name.toLowerCase().includes('tali');
+          const upperSubType = isLaced ? 'Bertali' : 'Non-Tali';
+
+          let upperDelay = 0;
+          let solDelay = 0;
+
+          // Check Upper Material Stock
+          const upperMat = mats.find(m => m.sub_type === upperSubType || m.name?.includes(upperSubType));
+          if (upperMat) {
+            const stock = Number(upperMat.stock_quantity ?? 25);
+            if (quantity > stock) {
+              upperDelay = Number(upperMat.delay_days || 2);
+            }
+          }
+
+          // Check Sol Material Stock
+          const solMat = mats.find(m => m.sub_type === solModel || m.name?.includes(solModel));
+          if (solMat) {
+            const stock = Number(solMat.stock_quantity ?? 25);
+            if (quantity > stock) {
+              solDelay = Number(solMat.delay_days || 2);
+            }
+          }
+
+          // 3-Stage Formula: Procurement + 2 Days Production + 3 Days Default Shipping
+          const procurementDelay = Math.max(upperDelay, solDelay);
+          const productionDays = 2;
+          const shippingDays = 3;
+          const totalDaysMin = procurementDelay + productionDays + shippingDays;
+          const totalDaysMax = totalDaysMin + 2;
+
+          const nowMin = new Date();
+          nowMin.setDate(nowMin.getDate() + totalDaysMin);
+          const nowMax = new Date();
+          nowMax.setDate(nowMax.getDate() + totalDaysMax);
+
+          const minStr = nowMin.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+          const maxStr = nowMax.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+
+          const arrivalEl = document.getElementById('estimated-arrival-date');
+          if (arrivalEl) arrivalEl.textContent = `${minStr} - ${maxStr} ${nowMin.getFullYear()}`;
+
+          const badgeEl = document.getElementById('lead-time-mode-badge');
+          if (badgeEl) {
+            if (procurementDelay > 0) {
+              badgeEl.textContent = 'Handmade Pre-Order';
+              badgeEl.className = 'text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full';
+            } else {
+              badgeEl.textContent = 'Ready Stock';
+              badgeEl.className = 'text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full';
+            }
+          }
+        } catch(e) {
+          console.error('Lead time update error:', e);
+        }
+      }
+
+      updateDynamicLeadTime();
+
+      outsoleRadios.forEach(radio => {
+        radio.addEventListener('change', updateDynamicLeadTime);
+      });
+
       // --- Size Selection Logic ---
       sizeBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -313,6 +408,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
         if (quantity > 1) {
           quantity--;
           if (qtyInput) qtyInput.value = quantity.toString();
+          updateDynamicLeadTime();
         }
       });
 
@@ -320,6 +416,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
         if (quantity < currentMaxStock) {
           quantity++;
           if (qtyInput) qtyInput.value = quantity.toString();
+          updateDynamicLeadTime();
         } else {
           if (window.showToast) window.showToast('Maksimal stok tercapai', 'error');
         }

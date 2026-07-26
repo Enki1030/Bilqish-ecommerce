@@ -32,6 +32,9 @@ interface RawMaterial {
   craftsman_id: string;
   name: string;
   category: string;
+  material_component?: 'Upper' | 'Sol';
+  sub_type?: 'Bertali' | 'Non-Tali' | 'Model 1' | 'Model 2';
+  stock_quantity: number;
   status: 'Tersedia' | 'Terbatas' | 'Habis';
   delay_days: number;
   notes?: string;
@@ -75,12 +78,14 @@ export default function Craftsmen() {
   const [cAddress, setCAddress] = useState('');
   const [cInterval, setCInterval] = useState(7);
 
-  // Form States - Material
+  // Form States - Material (Upper & Sol Classification + Exact Stock)
   const [mName, setMName] = useState('');
   const [mCraftsmanId, setMCraftsmanId] = useState('');
   const [mCategory, setMCategory] = useState('Outsole');
-  const [mStatus, setMStatus] = useState<'Tersedia' | 'Terbatas' | 'Habis'>('Tersedia');
-  const [mDelay, setMDelay] = useState(0);
+  const [mComponent, setMComponent] = useState<'Upper' | 'Sol'>('Sol');
+  const [mSubType, setMSubType] = useState<'Bertali' | 'Non-Tali' | 'Model 1' | 'Model 2'>('Model 1');
+  const [mStock, setMStock] = useState(25);
+  const [mDelay, setMDelay] = useState(2);
   const [mNotes, setMNotes] = useState('');
 
   // Form States - Check Log
@@ -259,14 +264,25 @@ export default function Craftsmen() {
     setEditingCraftsman(null);
   }
 
+  // Automatic Status Calculation based on Numeric Threshold
+  const getMaterialStatusFromStock = (stockQty: number): 'Tersedia' | 'Terbatas' | 'Habis' => {
+    if (stockQty > 20) return 'Tersedia';
+    if (stockQty > 0) return 'Terbatas';
+    return 'Habis';
+  };
+
   // Handle Raw Material Save
   async function handleSaveMaterial(e: React.FormEvent) {
     e.preventDefault();
+    const computedStatus = getMaterialStatusFromStock(Number(mStock));
     const payload = {
       name: mName,
       craftsman_id: mCraftsmanId,
       category: mCategory,
-      status: mStatus,
+      material_component: mComponent,
+      sub_type: mSubType,
+      stock_quantity: Number(mStock),
+      status: computedStatus,
       delay_days: Number(mDelay),
       notes: mNotes,
       last_checked_at: new Date().toISOString()
@@ -289,8 +305,10 @@ export default function Craftsmen() {
     setMName('');
     setMCraftsmanId('');
     setMCategory('Outsole');
-    setMStatus('Tersedia');
-    setMDelay(0);
+    setMComponent('Sol');
+    setMSubType('Model 1');
+    setMStock(25);
+    setMDelay(2);
     setMNotes('');
     setEditingMaterial(null);
   }
@@ -600,15 +618,15 @@ export default function Craftsmen() {
                           m.status === 'Tersedia' ? 'bg-[#E6F9F0] text-[#00B060] border-[#B3F2D4]' :
                           m.status === 'Terbatas' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'
                         }`}>
-                          {m.status} {m.delay_days > 0 ? `(+${m.delay_days}h PO)` : ''}
+                          {m.status} ({m.stock_quantity ?? 25} pasang)
                         </span>
                       </div>
 
                       {/* CONTACT / CATEGORY SECTION */}
                       <div className="mt-3.5 space-y-1">
                         <div className="text-[13px] font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                          <Users size={13} className="text-slate-400 shrink-0" />
-                          <span>{m.category}</span>
+                          <Wrench size={13} className="text-slate-400 shrink-0" />
+                          <span>{m.material_component || 'Sol'} - {m.sub_type || m.category}</span>
                         </div>
                         {m.notes && (
                           <div className="text-[11px] font-normal text-slate-400 leading-relaxed mt-0.5">
@@ -620,8 +638,8 @@ export default function Craftsmen() {
                       {/* MONITORING SECTION (2 Columns Grid) */}
                       <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-100 text-left">
                         <div>
-                          <span className="text-[13px] font-bold text-[#1A1A1A] block font-sans">+{m.delay_days} Hari</span>
-                          <span className="text-[10px] font-normal text-slate-400 mt-0.5 block font-sans">Estimasi PO</span>
+                          <span className="text-[13px] font-bold text-[#1A1A1A] block font-sans">+{m.delay_days} Hari PO</span>
+                          <span className="text-[10px] font-normal text-slate-400 mt-0.5 block font-sans">Stok Ready: {m.stock_quantity ?? 25} pasang</span>
                         </div>
                         <div>
                           <span className="text-[13px] font-bold text-[#1A1A1A] block font-sans">
@@ -653,7 +671,9 @@ export default function Craftsmen() {
                           setMName(m.name);
                           setMCraftsmanId(m.craftsman_id);
                           setMCategory(m.category);
-                          setMStatus(m.status);
+                          setMComponent(m.material_component || 'Sol');
+                          setMSubType(m.sub_type || (m.category === 'Upper' ? 'Bertali' : 'Model 1'));
+                          setMStock(m.stock_quantity ?? 25);
                           setMDelay(m.delay_days);
                           setMNotes(m.notes || '');
                           setShowMaterialModal(true);
@@ -944,32 +964,75 @@ export default function Craftsmen() {
                 </select>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-[#1A1A1A] block mb-1">Kategori Bahan:</label>
-                <select
-                  value={mCategory}
-                  onChange={(e) => setMCategory(e.target.value)}
-                  className="w-full border border-[#E2E8F0] rounded-lg p-2.5 text-xs outline-none focus:border-[#5c1616]"
-                >
-                  <option value="Outsole">Outsole / Sol</option>
-                  <option value="Upper">Upper / Atasan</option>
-                  <option value="Leather">Kulit Lembaran</option>
-                  <option value="Lining">Lining / Dalaman</option>
-                  <option value="Laces">Tali & Aksesoris</option>
-                </select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-[#1A1A1A] block mb-1">Komponen Utama:</label>
+                  <select
+                    value={mComponent}
+                    onChange={(e) => {
+                      const comp = e.target.value as 'Upper' | 'Sol';
+                      setMComponent(comp);
+                      setMSubType(comp === 'Upper' ? 'Bertali' : 'Model 1');
+                    }}
+                    className="w-full border border-[#E2E8F0] rounded-lg p-2.5 text-xs outline-none focus:border-[#5c1616]"
+                  >
+                    <option value="Sol">Sol (Outsole)</option>
+                    <option value="Upper">Upper (Atasan)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-[#1A1A1A] block mb-1">Varian / Model:</label>
+                  <select
+                    value={mSubType}
+                    onChange={(e) => setMSubType(e.target.value as any)}
+                    className="w-full border border-[#E2E8F0] rounded-lg p-2.5 text-xs outline-none focus:border-[#5c1616]"
+                  >
+                    {mComponent === 'Upper' ? (
+                      <>
+                        <option value="Bertali">Bertali (Kode T)</option>
+                        <option value="Non-Tali">Non-Tali / Slip-on (Kode N)</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Model 1">Sol Model 1</option>
+                        <option value="Model 2">Sol Model 2</option>
+                      </>
+                    )}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-[#1A1A1A] block mb-1">Status Ketersediaan AWAL:</label>
-                <select
-                  value={mStatus}
-                  onChange={(e) => setMStatus(e.target.value as any)}
-                  className="w-full border border-[#E2E8F0] rounded-lg p-2.5 text-xs outline-none focus:border-[#5c1616]"
-                >
-                  <option value="Tersedia">Tersedia (Aman)</option>
-                  <option value="Terbatas">Terbatas (Hampir Habis)</option>
-                  <option value="Habis">Habis (Perlu Restok)</option>
-                </select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-[#1A1A1A] block mb-1">Stok Bahan (Pasang):</label>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={mStock}
+                    onChange={(e) => setMStock(Number(e.target.value))}
+                    className="w-full border border-[#E2E8F0] rounded-lg p-2.5 text-xs outline-none focus:border-[#5c1616]"
+                    placeholder="Contoh: 25"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {mStock > 20 ? '🟢 Stok Aman (>20)' : mStock > 0 ? '🟡 Stok Terbatas (1-20)' : '🔴 Stok Habis (0)'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-[#1A1A1A] block mb-1">Estimasi PO / Restock (Hari):</label>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={mDelay}
+                    onChange={(e) => setMDelay(Number(e.target.value))}
+                    className="w-full border border-[#E2E8F0] rounded-lg p-2.5 text-xs outline-none focus:border-[#5c1616]"
+                    placeholder="Contoh: 2"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Hari restock dari pengrajin</p>
+                </div>
               </div>
 
               <div>

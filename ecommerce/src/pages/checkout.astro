@@ -302,6 +302,37 @@ import Layout from '../layouts/Layout.astro';
           const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
           if (itemsError) throw itemsError;
 
+          // Real-time Inventory Reduction for Upper & Sol Raw Materials
+          try {
+            const { data: mats } = await supabase.from('raw_materials').select('id, sub_type, stock_quantity');
+            if (mats && mats.length > 0) {
+              for (const item of cart) {
+                const isLaced = item.name.toLowerCase().includes('bertali') || item.name.includes(' T') || item.name.toLowerCase().includes('tali');
+                const upperSubType = isLaced ? 'Bertali' : 'Non-Tali';
+                const solSubType = item.outsole || 'Model 1';
+                const itemQty = Number(item.quantity) || 1;
+
+                // Decrement Upper Stock
+                const upperMat = mats.find((m: any) => m.sub_type === upperSubType || m.name?.includes(upperSubType));
+                if (upperMat) {
+                  const newStock = Math.max(0, (upperMat.stock_quantity ?? 25) - itemQty);
+                  const newStatus = newStock > 20 ? 'Tersedia' : (newStock > 0 ? 'Terbatas' : 'Habis');
+                  await supabase.from('raw_materials').update({ stock_quantity: newStock, status: newStatus }).eq('id', upperMat.id);
+                }
+
+                // Decrement Sol Stock
+                const solMat = mats.find((m: any) => m.sub_type === solSubType || m.name?.includes(solSubType));
+                if (solMat) {
+                  const newStock = Math.max(0, (solMat.stock_quantity ?? 25) - itemQty);
+                  const newStatus = newStock > 20 ? 'Tersedia' : (newStock > 0 ? 'Terbatas' : 'Habis');
+                  await supabase.from('raw_materials').update({ stock_quantity: newStock, status: newStatus }).eq('id', solMat.id);
+                }
+              }
+            }
+          } catch (matErr) {
+            console.error('Raw material inventory reduction error:', matErr);
+          }
+
           // Trigger Cloudflare Pages auto-build in background so E-Commerce static catalog updates
           fetch('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/984ad6b4-c842-44cb-a50e-855dbfb7d6d4', { method: 'POST' }).catch(console.error);
 
