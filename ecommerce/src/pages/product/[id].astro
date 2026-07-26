@@ -329,9 +329,9 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 
           // Check Upper Material Combined Stock across all vendors
           const matchingUppers = mats
-            .filter((m: any) => m.sub_type === upperSubType || (m.name || '').includes(upperSubType))
-            .sort((a: any, b: any) => (Number(b.stock_quantity) || 0) - (Number(a.stock_quantity) || 0));
-          const totalUpperStock = matchingUppers.reduce((acc: number, m: any) => acc + (Number(m.stock_quantity) || 0), 0);
+            .filter(m => m.sub_type === upperSubType || (m.name || '').includes(upperSubType))
+            .sort((a, b) => (Number(b.stock_quantity) || 0) - (Number(a.stock_quantity) || 0));
+          const totalUpperStock = matchingUppers.reduce((acc, m) => acc + (Number(m.stock_quantity) || 0), 0);
           if (quantity > totalUpperStock) {
             const primaryUpper = matchingUppers[0];
             upperDelay = Number(primaryUpper?.delay_days || 2);
@@ -339,9 +339,9 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 
           // Check Sol Material Combined Stock across all vendors
           const matchingSols = mats
-            .filter((m: any) => m.sub_type === solModel || (m.name || '').includes(solModel))
-            .sort((a: any, b: any) => (Number(b.stock_quantity) || 0) - (Number(a.stock_quantity) || 0));
-          const totalSolStock = matchingSols.reduce((acc: number, m: any) => acc + (Number(m.stock_quantity) || 0), 0);
+            .filter(m => m.sub_type === solModel || (m.name || '').includes(solModel))
+            .sort((a, b) => (Number(b.stock_quantity) || 0) - (Number(a.stock_quantity) || 0));
+          const totalSolStock = matchingSols.reduce((acc, m) => acc + (Number(m.stock_quantity) || 0), 0);
           if (quantity > totalSolStock) {
             const primarySol = matchingSols[0];
             solDelay = Number(primarySol?.delay_days || 2);

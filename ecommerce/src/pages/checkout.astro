@@ -307,10 +307,10 @@ import Layout from '../layouts/Layout.astro';
             const { data: mats } = await supabase.from('raw_materials').select('id, sub_type, stock_quantity');
             if (mats && mats.length > 0) {
               // Helper for Cascading Largest-Stock-First Deduction
-              const deductMaterialStock = async (subType: string, requiredQty: number) => {
+              const deductMaterialStock = async (subType, requiredQty) => {
                 const matchingMats = mats
-                  .filter((m: any) => m.sub_type === subType || (m.name || '').includes(subType))
-                  .sort((a: any, b: any) => (Number(b.stock_quantity) || 0) - (Number(a.stock_quantity) || 0));
+                  .filter(m => m.sub_type === subType || (m.name || '').includes(subType))
+                  .sort((a, b) => (Number(b.stock_quantity) || 0) - (Number(a.stock_quantity) || 0));
 
                 let remainingNeeded = requiredQty;
                 for (const mat of matchingMats) {
