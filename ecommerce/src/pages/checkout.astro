@@ -307,7 +307,9 @@ import Layout from '../layouts/Layout.astro';
             const { data: mats } = await supabase.from('raw_materials').select('id, sub_type, stock_quantity');
             if (mats && mats.length > 0) {
               for (const item of cart) {
-                const isLaced = item.name.toLowerCase().includes('bertali') || item.name.includes(' T') || item.name.toLowerCase().includes('tali');
+                const nameUpper = (item.name || '').toUpperCase();
+                const isLaced = nameUpper.includes(' T') || nameUpper.endsWith('T') || nameUpper.includes('BERTALI') || nameUpper.includes('TALI');
+                const isNonLaced = nameUpper.includes(' G') || nameUpper.endsWith('G') || nameUpper.includes('NON-TALI') || nameUpper.includes('SLIP');
                 const upperSubType = isLaced ? 'Bertali' : 'Non-Tali';
                 const solSubType = item.outsole || 'Model 1';
                 const itemQty = Number(item.quantity) || 1;

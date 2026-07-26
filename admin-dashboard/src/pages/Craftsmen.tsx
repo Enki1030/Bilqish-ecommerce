@@ -991,7 +991,7 @@ export default function Craftsmen() {
                     {mComponent === 'Upper' ? (
                       <>
                         <option value="Bertali">Bertali (Kode T)</option>
-                        <option value="Non-Tali">Non-Tali / Slip-on (Kode N)</option>
+                        <option value="Non-Tali">Non-Tali / Slip-on (Kode G)</option>
                       </>
                     ) : (
                       <>

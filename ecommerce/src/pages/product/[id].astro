@@ -319,7 +319,9 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           const selectedSolRadio = document.querySelector('input[name="outsole"]:checked');
           const solModel = selectedSolRadio ? selectedSolRadio.value : 'Model 1';
 
-          const isLaced = product.name.toLowerCase().includes('bertali') || product.name.includes(' T') || product.name.toLowerCase().includes('tali');
+          const nameUpper = (product.name || '').toUpperCase();
+          const isLaced = nameUpper.includes(' T') || nameUpper.endsWith('T') || nameUpper.includes('BERTALI') || nameUpper.includes('TALI');
+          const isNonLaced = nameUpper.includes(' G') || nameUpper.endsWith('G') || nameUpper.includes('NON-TALI') || nameUpper.includes('SLIP');
           const upperSubType = isLaced ? 'Bertali' : 'Non-Tali';
 
           let upperDelay = 0;
