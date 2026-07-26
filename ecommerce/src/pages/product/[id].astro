@@ -327,22 +327,24 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           let upperDelay = 0;
           let solDelay = 0;
 
-          // Check Upper Material Stock
-          const upperMat = mats.find(m => m.sub_type === upperSubType || m.name?.includes(upperSubType));
-          if (upperMat) {
-            const stock = Number(upperMat.stock_quantity ?? 25);
-            if (quantity > stock) {
-              upperDelay = Number(upperMat.delay_days || 2);
-            }
+          // Check Upper Material Combined Stock across all vendors
+          const matchingUppers = mats
+            .filter((m: any) => m.sub_type === upperSubType || (m.name || '').includes(upperSubType))
+            .sort((a: any, b: any) => (Number(b.stock_quantity) || 0) - (Number(a.stock_quantity) || 0));
+          const totalUpperStock = matchingUppers.reduce((acc: number, m: any) => acc + (Number(m.stock_quantity) || 0), 0);
+          if (quantity > totalUpperStock) {
+            const primaryUpper = matchingUppers[0];
+            upperDelay = Number(primaryUpper?.delay_days || 2);
           }
 
-          // Check Sol Material Stock
-          const solMat = mats.find(m => m.sub_type === solModel || m.name?.includes(solModel));
-          if (solMat) {
-            const stock = Number(solMat.stock_quantity ?? 25);
-            if (quantity > stock) {
-              solDelay = Number(solMat.delay_days || 2);
-            }
+          // Check Sol Material Combined Stock across all vendors
+          const matchingSols = mats
+            .filter((m: any) => m.sub_type === solModel || (m.name || '').includes(solModel))
+            .sort((a: any, b: any) => (Number(b.stock_quantity) || 0) - (Number(a.stock_quantity) || 0));
+          const totalSolStock = matchingSols.reduce((acc: number, m: any) => acc + (Number(m.stock_quantity) || 0), 0);
+          if (quantity > totalSolStock) {
+            const primarySol = matchingSols[0];
+            solDelay = Number(primarySol?.delay_days || 2);
           }
 
           // 3-Stage Formula: Procurement + 2 Days Production + 3 Days Default Shipping

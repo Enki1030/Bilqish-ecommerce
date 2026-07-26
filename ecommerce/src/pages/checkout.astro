@@ -302,33 +302,44 @@ import Layout from '../layouts/Layout.astro';
           const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
           if (itemsError) throw itemsError;
 
-          // Real-time Inventory Reduction for Upper & Sol Raw Materials
+          // Real-time Inventory Reduction for Upper & Sol (Largest Stock First Priority)
           try {
             const { data: mats } = await supabase.from('raw_materials').select('id, sub_type, stock_quantity');
             if (mats && mats.length > 0) {
+              // Helper for Cascading Largest-Stock-First Deduction
+              const deductMaterialStock = async (subType: string, requiredQty: number) => {
+                const matchingMats = mats
+                  .filter((m: any) => m.sub_type === subType || (m.name || '').includes(subType))
+                  .sort((a: any, b: any) => (Number(b.stock_quantity) || 0) - (Number(a.stock_quantity) || 0));
+
+                let remainingNeeded = requiredQty;
+                for (const mat of matchingMats) {
+                  if (remainingNeeded <= 0) break;
+                  const currentStock = Number(mat.stock_quantity) || 0;
+                  if (currentStock <= 0) continue;
+
+                  const qtyDeducted = Math.min(currentStock, remainingNeeded);
+                  const newStock = currentStock - qtyDeducted;
+                  remainingNeeded -= qtyDeducted;
+
+                  mat.stock_quantity = newStock; // update local cache
+                  const newStatus = newStock > 20 ? 'Tersedia' : (newStock > 0 ? 'Terbatas' : 'Habis');
+                  await supabase.from('raw_materials').update({ stock_quantity: newStock, status: newStatus }).eq('id', mat.id);
+                }
+              };
+
               for (const item of cart) {
                 const nameUpper = (item.name || '').toUpperCase();
                 const isLaced = nameUpper.includes(' T') || nameUpper.endsWith('T') || nameUpper.includes('BERTALI') || nameUpper.includes('TALI');
-                const isNonLaced = nameUpper.includes(' G') || nameUpper.endsWith('G') || nameUpper.includes('NON-TALI') || nameUpper.includes('SLIP');
                 const upperSubType = isLaced ? 'Bertali' : 'Non-Tali';
                 const solSubType = item.outsole || 'Model 1';
                 const itemQty = Number(item.quantity) || 1;
 
-                // Decrement Upper Stock
-                const upperMat = mats.find((m: any) => m.sub_type === upperSubType || m.name?.includes(upperSubType));
-                if (upperMat) {
-                  const newStock = Math.max(0, (upperMat.stock_quantity ?? 25) - itemQty);
-                  const newStatus = newStock > 20 ? 'Tersedia' : (newStock > 0 ? 'Terbatas' : 'Habis');
-                  await supabase.from('raw_materials').update({ stock_quantity: newStock, status: newStatus }).eq('id', upperMat.id);
-                }
+                // Deduct Upper using Largest Stock First
+                await deductMaterialStock(upperSubType, itemQty);
 
-                // Decrement Sol Stock
-                const solMat = mats.find((m: any) => m.sub_type === solSubType || m.name?.includes(solSubType));
-                if (solMat) {
-                  const newStock = Math.max(0, (solMat.stock_quantity ?? 25) - itemQty);
-                  const newStatus = newStock > 20 ? 'Tersedia' : (newStock > 0 ? 'Terbatas' : 'Habis');
-                  await supabase.from('raw_materials').update({ stock_quantity: newStock, status: newStatus }).eq('id', solMat.id);
-                }
+                // Deduct Sol using Largest Stock First
+                await deductMaterialStock(solSubType, itemQty);
               }
             }
           } catch (matErr) {
