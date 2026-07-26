@@ -105,11 +105,43 @@ export default function Craftsmen() {
         .select('*')
         .order('name', { ascending: true });
 
-      // 2. Fetch Raw Materials
+      // 2. Fetch Raw Materials & Parse Embedded Tags
       const { data: mData } = await supabase
         .from('raw_materials')
         .select('*, craftsmen(*)')
         .order('name', { ascending: true });
+
+      const parsedMaterials = (mData || []).map((m: any) => {
+        let stock_quantity = m.stock_quantity;
+        let material_component = m.material_component;
+        let sub_type = m.sub_type;
+        const notesStr = m.notes || '';
+
+        if (notesStr.includes('[STOCK:')) {
+          const sMatch = notesStr.match(/\[STOCK:(\d+)\]/);
+          if (sMatch) stock_quantity = parseInt(sMatch[1]);
+        }
+        if (notesStr.includes('[COMP:')) {
+          const cMatch = notesStr.match(/\[COMP:(\w+)\]/);
+          if (cMatch) material_component = cMatch[1];
+        }
+        if (notesStr.includes('[SUB:')) {
+          const subMatch = notesStr.match(/\[SUB:([^\]]+)\]/);
+          if (subMatch) sub_type = subMatch[1];
+        }
+
+        if (stock_quantity === undefined || stock_quantity === null) stock_quantity = 25;
+        if (!material_component) material_component = m.category === 'Upper' ? 'Upper' : 'Sol';
+        if (!sub_type) sub_type = m.name?.includes('Bertali') ? 'Bertali' : (m.name?.includes('Model 2') ? 'Model 2' : 'Model 1');
+
+        return {
+          ...m,
+          stock_quantity,
+          material_component,
+          sub_type,
+          notes: notesStr.replace(/\[(STOCK|COMP|SUB):[^\]]+\]/g, '').trim()
+        };
+      });
 
       // 3. Fetch History Logs
       const { data: lData } = await supabase
@@ -118,7 +150,7 @@ export default function Craftsmen() {
         .order('checked_at', { ascending: false });
 
       setCraftsmen(cData || []);
-      setMaterials(mData || []);
+      setMaterials(parsedMaterials);
       setLogs(lData || []);
     } catch (err) {
       console.error('Error fetching craftsmen data:', err);
@@ -275,7 +307,13 @@ export default function Craftsmen() {
   async function handleSaveMaterial(e: React.FormEvent) {
     e.preventDefault();
     const computedStatus = getMaterialStatusFromStock(Number(mStock));
-    const payload = {
+
+    // Construct embedded tag so data is ALWAYS saved regardless of schema changes
+    const embeddedTag = `[STOCK:${mStock}][COMP:${mComponent}][SUB:${mSubType}]`;
+    const cleanNotesInput = (mNotes || '').replace(/\[(STOCK|COMP|SUB):[^\]]+\]/g, '').trim();
+    const fullNotes = `${embeddedTag} ${cleanNotesInput}`.trim();
+
+    const payloadFull = {
       name: mName,
       craftsman_id: mCraftsmanId,
       category: mCategory,
@@ -284,17 +322,78 @@ export default function Craftsmen() {
       stock_quantity: Number(mStock),
       status: computedStatus,
       delay_days: Number(mDelay),
-      notes: mNotes,
+      notes: fullNotes,
       last_checked_at: new Date().toISOString()
     };
 
+    let savedItem: any = null;
+
     if (editingMaterial) {
-      await supabase.from('raw_materials').update(payload).eq('id', editingMaterial.id);
-      setMaterials(prev => prev.map(m => m.id === editingMaterial.id ? { ...m, ...payload } : m));
+      // Try update with full payload
+      const { data, error } = await supabase.from('raw_materials').update(payloadFull).eq('id', editingMaterial.id).select().single();
+      if (error) {
+        // Fallback update without new schema columns
+        const payloadBase = {
+          name: mName,
+          craftsman_id: mCraftsmanId,
+          category: mCategory,
+          status: computedStatus,
+          delay_days: Number(mDelay),
+          notes: fullNotes,
+          last_checked_at: new Date().toISOString()
+        };
+        const { data: bData, error: bErr } = await supabase.from('raw_materials').update(payloadBase).eq('id', editingMaterial.id).select().single();
+        if (bErr) {
+          alert('Gagal mengupdate bahan baku ke Supabase: ' + bErr.message);
+          return;
+        }
+        savedItem = bData;
+      } else {
+        savedItem = data;
+      }
+
+      setMaterials(prev => prev.map(m => m.id === editingMaterial.id ? { 
+        ...m, 
+        ...savedItem, 
+        stock_quantity: Number(mStock), 
+        material_component: mComponent, 
+        sub_type: mSubType,
+        notes: cleanNotesInput
+      } : m));
     } else {
-      const { data } = await supabase.from('raw_materials').insert(payload).select().single();
-      const newMat = data || { id: 'm_' + Date.now(), ...payload };
-      setMaterials(prev => [newMat, ...prev]);
+      // Try insert with full payload
+      const { data, error } = await supabase.from('raw_materials').insert(payloadFull).select().single();
+      if (error) {
+        console.warn('Full payload insert failed, falling back to base columns:', error);
+        // Fallback insert without new schema columns
+        const payloadBase = {
+          name: mName,
+          craftsman_id: mCraftsmanId,
+          category: mCategory,
+          status: computedStatus,
+          delay_days: Number(mDelay),
+          notes: fullNotes,
+          last_checked_at: new Date().toISOString()
+        };
+        const { data: bData, error: bErr } = await supabase.from('raw_materials').insert(payloadBase).select().single();
+        if (bErr) {
+          alert('Gagal menyimpan bahan baku ke Supabase: ' + bErr.message);
+          return;
+        }
+        savedItem = bData;
+      } else {
+        savedItem = data;
+      }
+
+      const newMaterialState = {
+        ...savedItem,
+        stock_quantity: Number(mStock),
+        material_component: mComponent,
+        sub_type: mSubType,
+        notes: cleanNotesInput
+      };
+
+      setMaterials(prev => [newMaterialState, ...prev]);
     }
 
     setShowMaterialModal(false);
