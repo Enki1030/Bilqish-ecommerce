@@ -217,7 +217,7 @@ export default function Orders() {
     setActiveSubTab('all');
   };
 
-  // Contextual dropdown choices according to user specification
+  // Contextual dropdown choices according to user specification with rollback capability
   const getContextualOptions = (currentStatus: string) => {
     const st = currentStatus || 'Diproses';
 
@@ -233,6 +233,7 @@ export default function Orders() {
         { value: 'Diproses', label: 'Diproses' },
         { value: 'Siap Pickup', label: 'Siap Pickup' },
         { value: 'Dikirim', label: 'Serahkan ke Kurir (Dikirim)' },
+        { value: 'Belum Diproses', label: '↩ Kembali ke Belum Diproses' },
         { value: 'Dibatalkan', label: 'Dibatalkan' }
       ];
     }
@@ -241,6 +242,7 @@ export default function Orders() {
         { value: 'Siap Pickup', label: 'Siap Pickup' },
         { value: 'Diterima Ekspedisi', label: 'Diterima Ekspedisi' },
         { value: 'Gagal Pickup', label: 'Gagal Pickup' },
+        { value: 'Diproses', label: '↩ Kembali ke Diproses' },
         { value: 'Dibatalkan', label: 'Dibatalkan' }
       ];
     }
@@ -248,6 +250,7 @@ export default function Orders() {
       return [
         { value: 'Gagal Pickup', label: 'Gagal Pickup' },
         { value: 'Siap Pickup', label: 'Siap Pickup (Coba Ulang)' },
+        { value: 'Diproses', label: '↩ Kembali ke Diproses' },
         { value: 'Dibatalkan', label: 'Dibatalkan' }
       ];
     }
@@ -255,6 +258,7 @@ export default function Orders() {
       return [
         { value: st, label: st },
         { value: 'Dalam Pengiriman', label: 'Dalam Pengiriman' },
+        { value: 'Siap Pickup', label: '↩ Kembali ke Siap Pickup' },
         { value: 'Dibatalkan', label: 'Dibatalkan' }
       ];
     }
@@ -263,6 +267,7 @@ export default function Orders() {
         { value: 'Dalam Pengiriman', label: 'Dalam Pengiriman' },
         { value: 'Tiba di Tujuan', label: 'Tiba di Tujuan' },
         { value: 'Pengiriman Gagal', label: 'Pengiriman Gagal' },
+        { value: 'Diterima Ekspedisi', label: '↩ Kembali ke Diterima Ekspedisi' },
         { value: 'Dibatalkan', label: 'Dibatalkan' }
       ];
     }
@@ -270,6 +275,14 @@ export default function Orders() {
       return [
         { value: 'Tiba di Tujuan', label: 'Tiba di Tujuan' },
         { value: 'Selesai', label: 'Pesanan Selesai' },
+        { value: 'Komplain / Retur', label: 'Komplain / Retur' },
+        { value: 'Dalam Pengiriman', label: '↩ Kembali ke Dalam Pengiriman' }
+      ];
+    }
+    if (st === 'Selesai') {
+      return [
+        { value: 'Selesai', label: 'Pesanan Selesai' },
+        { value: 'Tiba di Tujuan', label: '↩ Kembali ke Tiba di Tujuan' },
         { value: 'Komplain / Retur', label: 'Komplain / Retur' }
       ];
     }
@@ -277,12 +290,14 @@ export default function Orders() {
       return [
         { value: 'Pengiriman Gagal', label: 'Pengiriman Gagal' },
         { value: 'Dalam Pengiriman', label: 'Dalam Pengiriman (Kirim Ulang)' },
+        { value: 'Diterima Ekspedisi', label: '↩ Kembali ke Diterima Ekspedisi' },
         { value: 'Dibatalkan', label: 'Dibatalkan' }
       ];
     }
     if (['Komplain / Retur', 'Komplain', 'Retur'].includes(st)) {
       return [
         { value: st, label: st },
+        { value: 'Tiba di Tujuan', label: '↩ Kembali ke Tiba di Tujuan' },
         { value: 'Dikembalikan', label: 'Pesanan Dikembalikan' }
       ];
     }
