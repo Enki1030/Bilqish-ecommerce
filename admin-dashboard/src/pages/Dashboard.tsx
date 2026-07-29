@@ -56,9 +56,10 @@ export default function Dashboard() {
   const handleExportNativeExcel = async () => {
     setExporting(true);
     try {
-      // 1. Fetch raw_materials and craftsmen for Sheet 4
+      // 1. Fetch raw_materials, craftsmen, and products
       const { data: rawMats } = await supabase.from('raw_materials').select('*');
       const { data: craftsmenData } = await supabase.from('craftsmen').select('*');
+      const { data: productsData } = await supabase.from('products').select('*');
 
       const craftsmanMap = new Map();
       (craftsmenData || []).forEach(c => craftsmanMap.set(c.id, c.name));
@@ -82,33 +83,125 @@ export default function Dashboard() {
         return `<Row>${cells.map(c => typeof c === 'number' ? `<Cell><Data ss:Type="Number">${c}</Data></Cell>` : `<Cell><Data ss:Type="String">${escapeXml(c)}</Data></Cell>`).join('')}</Row>`;
       };
 
-      // SHEET 1: Ringkasan Metrik
-      const sheet1Rows = [
-        makeRow(['Parameter', 'Nilai']),
-        makeRow(['Periode Laporan', periodText]),
-        makeRow(['Waktu Diunduh', generatedAt]),
-        makeRow(['Total Omset Toko (Rp)', stats.revenue || 0]),
-        makeRow(['Pesanan Aktif', stats.activeOrdersCount || 0]),
-        makeRow(['Pesanan Baru (<24 Jam)', stats.newOrdersCount || 0]),
-        makeRow(['Komplain Pelanggan', stats.complaintCount || 0]),
-        makeRow(['Pengiriman Gagal', stats.failedShipmentCount || 0]),
-      ].join('');
-
-      // SHEET 2: Sepatu Terlaris
-      const sheet2Rows = [
-        makeRow(['Peringkat', 'Nama Sepatu', 'Jumlah Terjual (Pasang)', 'Harga Satuan (Rp)', 'Total Kontribusi Omset (Rp)']),
-        ...(stats.top3Selling || []).map((shoe: any, idx: number) => 
-          makeRow([`#${idx + 1}`, shoe.name || 'Sepatu', shoe.count || 0, shoe.price || 0, (shoe.count || 0) * (shoe.price || 0)])
-        )
-      ].join('');
-
-      // SHEET 3: Transaksi Penjualan
+      // Filter Orders based on period
       let filteredOrders = orders.filter(o => o.status !== 'Dibatalkan');
       const limitDays = revenuePeriod === 'week' ? 7 : revenuePeriod === 'month' ? 30 : 365;
       const limitMs = limitDays * 24 * 60 * 60 * 1000;
       filteredOrders = filteredOrders.filter(o => (Date.now() - new Date(o.created_at || Date.now()).getTime()) <= limitMs);
 
+      const totalRevenue = stats.revenue || 0;
+      const totalOrdersCount = filteredOrders.length;
+      const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
+      const estCOGS = Math.round(totalRevenue * 0.55);
+      const estGrossProfit = totalRevenue - estCOGS;
+      const profitMarginPercent = totalRevenue > 0 ? Math.round((estGrossProfit / totalRevenue) * 100) : 0;
+
+      // SHEET 1: Ringkasan Omzet & Keuangan
+      const sheet1Rows = [
+        makeRow(['Parameter Analisis', 'Nilai / Keterangan']),
+        makeRow(['Periode Laporan', periodText]),
+        makeRow(['Tanggal & Waktu Diunduh', generatedAt]),
+        makeRow(['Total Omzet Penjualan (Rp)', totalRevenue]),
+        makeRow(['Estimasi Laba Kotor (Rp)', estGrossProfit]),
+        makeRow(['Margin Laba Kotor (%)', `${profitMarginPercent}%`]),
+        makeRow(['Rata-Rata Belanja / AOV (Rp)', avgOrderValue]),
+        makeRow(['Total Transaksi Berhasil', totalOrdersCount]),
+        makeRow(['Pesanan Aktif Sedang Berjalan', stats.activeOrdersCount || 0]),
+        makeRow(['Pesanan Baru (<24 Jam)', stats.newOrdersCount || 0]),
+        makeRow(['Klaim / Komplain Pelanggan', stats.complaintCount || 0]),
+        makeRow(['Pengiriman Paket Gagal', stats.failedShipmentCount || 0]),
+      ].join('');
+
+      // SHEET 2: Performa & Profitabilitas Produk
+      const productMap: Record<string, { name: string; qtySold: number; revenue: number; price: number }> = {};
+
+      filteredOrders.forEach(o => {
+        const items = Array.isArray(o.order_items) ? o.order_items : (o.order_items ? [o.order_items] : []);
+        items.forEach((item: any) => {
+          const pId = item.product_id || item.product_name || 'Sepatu';
+          if (!productMap[pId]) {
+            productMap[pId] = {
+              name: item.product_name || 'Sepatu Pantofel Bilqish',
+              qtySold: 0,
+              revenue: 0,
+              price: Number(item.price_per_unit || item.price) || 85000
+            };
+          }
+          const qty = Number(item.quantity) || 1;
+          const rev = (Number(item.price_per_unit || item.price) || 85000) * qty;
+          productMap[pId].qtySold += qty;
+          productMap[pId].revenue += rev;
+        });
+      });
+
+      const productProfitList = Object.values(productMap).map(p => {
+        const estUnitCOGS = Math.round(p.price * 0.55);
+        const estUnitProfit = p.price - estUnitCOGS;
+        const totalProfit = p.qtySold * estUnitProfit;
+        const marginPercent = p.price > 0 ? Math.round((estUnitProfit / p.price) * 100) : 0;
+        return { ...p, estUnitCOGS, estUnitProfit, totalProfit, marginPercent };
+      }).sort((a, b) => b.revenue - a.revenue);
+
+      const sheet2Rows = [
+        makeRow(['Peringkat', 'Nama Sepatu', 'Terjual (Pasang)', 'Harga Jual (Rp)', 'Est. HPP Pokok (Rp)', 'Est. Laba/Unit (Rp)', 'Total Omzet (Rp)', 'Est. Total Laba (Rp)', 'Margin Laba %']),
+        ...productProfitList.map((p, idx) => makeRow([
+          `#${idx + 1}`,
+          p.name,
+          p.qtySold,
+          p.price,
+          p.estUnitCOGS,
+          p.estUnitProfit,
+          p.revenue,
+          p.totalProfit,
+          `${p.marginPercent}%`
+        ]))
+      ].join('');
+
+      // SHEET 3: Intelijen Stok & Burn Rate
+      const totalShoesSold = productProfitList.reduce((sum, p) => sum + p.qtySold, 0);
+      const avgDailySalesVelocity = Math.max(0.5, totalShoesSold / limitDays);
+
       const sheet3Rows = [
+        makeRow(['Nama Bahan Baku', 'Kategori Komponen', 'Stok Gudang (Pasang)', 'Batas Aman / Safety Stock', 'Kecepatan Jual (Pasang/Hari)', 'Estimasi Ketahanan (Hari)', 'Status Reorder']),
+        ...(rawMats || []).map(m => {
+          const stock = Number(m.stock_quantity) || 25;
+          const daysLeft = Math.round(stock / avgDailySalesVelocity);
+          const statusReorder = stock <= 20 ? 'PERLU RESTOCK' : 'AMMAN / READY';
+          return makeRow([
+            m.name || 'Bahan Baku',
+            m.material_component || m.category || 'Outsole',
+            stock,
+            20,
+            Math.round(avgDailySalesVelocity * 10) / 10,
+            daysLeft,
+            statusReorder
+          ]);
+        })
+      ].join('');
+
+      // SHEET 4: Performa Vendor Pengrajin
+      const sheet4Rows = [
+        makeRow(['Peringkat', 'Nama Pengrajin / Pemasok', 'Jenis Bahan Utama', 'Rata-Rata Delay PO (Hari)', 'Ketepatan Waktu (On-Time %)', 'Status Performa']),
+        ...(craftsmenData || []).map((c, idx) => {
+          const cMats = (rawMats || []).filter(m => m.craftsman_id === c.id);
+          const avgDelay = cMats.length > 0 
+            ? Math.round(cMats.reduce((sum, m) => sum + (Number(m.delay_days) || 0), 0) / cMats.length)
+            : 2;
+          const onTimeRate = Math.max(70, Math.min(100, 100 - (avgDelay * 5)));
+          const ratingText = onTimeRate >= 95 ? 'Unggul & Sangat Tepat Waktu' : (onTimeRate >= 85 ? 'Baik' : 'Perlu Evaluasi');
+          return makeRow([
+            `#${idx + 1}`,
+            c.name,
+            c.material_type || 'Bahan Baku',
+            avgDelay,
+            `${onTimeRate}%`,
+            ratingText
+          ]);
+        })
+      ].join('');
+
+      // SHEET 5: Transaksi Penjualan Detail
+      const sheet5Rows = [
         makeRow(['ID Pesanan', 'Tanggal Transaksi', 'Nama Pelanggan', 'No. Telepon', 'Item Sepatu & Size', 'Total Bayar (Rp)', 'Status Pembayaran', 'Status Pengiriman']),
         ...filteredOrders.map(o => {
           const items = Array.isArray(o.order_items) ? o.order_items : (o.order_items ? [o.order_items] : []);
@@ -126,20 +219,6 @@ export default function Dashboard() {
         })
       ].join('');
 
-      // SHEET 4: Pasokan Pengrajin & Bahan Baku
-      const sheet4Rows = [
-        makeRow(['Nama Bahan Baku', 'Kategori Bahan', 'Pengrajin Pemasok', 'Status Ketersediaan', 'Estimasi PO (Hari)', 'Catatan Pasokan', 'Tanggal Cek Terakhir']),
-        ...(rawMats || []).map(m => makeRow([
-          m.name || 'Bahan Baku',
-          m.category || '-',
-          craftsmanMap.get(m.craftsman_id) || m.craftsman_id || 'Pengrajin Terkait',
-          m.status || 'Tersedia',
-          Number(m.delay_days) || 0,
-          m.notes || '-',
-          new Date(m.last_checked_at || Date.now()).toLocaleDateString('id-ID')
-        ]))
-      ].join('');
-
       const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -147,17 +226,20 @@ export default function Dashboard() {
  xmlns:x="urn:schemas-microsoft-com:office:excel"
  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
  xmlns:html="http://www.w3.org/TR/REC-html40">
- <Worksheet ss:Name="Ringkasan Metrik">
+ <Worksheet ss:Name="Ringkasan Omzet & Keuangan">
   <Table>${sheet1Rows}</Table>
  </Worksheet>
- <Worksheet ss:Name="Sepatu Terlaris">
+ <Worksheet ss:Name="Performa & Profit Produk">
   <Table>${sheet2Rows}</Table>
  </Worksheet>
- <Worksheet ss:Name="Transaksi Penjualan">
+ <Worksheet ss:Name="Intelijen Stok & Burn Rate">
   <Table>${sheet3Rows}</Table>
  </Worksheet>
- <Worksheet ss:Name="Pasokan Pengrajin">
+ <Worksheet ss:Name="Performa Vendor Pengrajin">
   <Table>${sheet4Rows}</Table>
+ </Worksheet>
+ <Worksheet ss:Name="Detail Transaksi Penjualan">
+  <Table>${sheet5Rows}</Table>
  </Worksheet>
 </Workbook>`;
 
@@ -165,7 +247,7 @@ export default function Dashboard() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Laporan_Eksekutif_Bilqish_${periodLabel}_${dateStr}.xls`;
+      a.download = `Laporan_Lengkap_Analisis_Bilqish_${periodLabel}_${dateStr}.xls`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

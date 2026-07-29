@@ -60,16 +60,6 @@ export default function Sidebar() {
           <Wrench size={18} />
           <span>Pengrajin & Bahan</span>
         </NavLink>
-
-        <NavLink 
-          to="/analytics"
-          className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
-            isActive ? 'bg-[#5c1616] text-white shadow-xs' : 'text-[#333333] hover:bg-[#fdf5f5] hover:text-[#5c1616]'
-          }`}
-        >
-          <BarChart3 size={18} />
-          <span>Analisis & Laporan</span>
-        </NavLink>
       </div>
 
       {/* Logout Footer */}
