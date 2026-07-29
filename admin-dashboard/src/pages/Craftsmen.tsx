@@ -13,7 +13,8 @@ import {
   MessageSquare,
   Calendar,
   MapPin,
-  Trash2
+  Trash2,
+  AlertCircle
 } from 'lucide-react';
 
 interface Craftsman {
@@ -261,6 +262,69 @@ export default function Craftsmen() {
       return statusInfo.isAlertNeeded;
     });
   }, [craftsmen]);
+
+  // Supplier Potential Yield & Bottleneck Calculator (Owner Business Logic)
+  const potentialYieldCalc = useMemo(() => {
+    let upperG = 0;
+    let upperT = 0;
+    let sol1 = 0;
+    let sol2 = 0;
+
+    materials.forEach(m => {
+      const stock = Number(m.stock_quantity) || 0;
+      const sub = (m.sub_type || m.name || '').toUpperCase();
+      const comp = m.material_component || (sub.includes('UPPER') ? 'Upper' : 'Sol');
+
+      if (comp === 'Upper' || sub.includes('BERTALI') || sub.includes('NON-TALI') || sub.includes('SLIP')) {
+        if (sub.includes('NON-TALI') || sub.includes('SLIP') || sub.includes(' G')) {
+          upperG += stock;
+        } else {
+          upperT += stock;
+        }
+      } else {
+        if (sub.includes('MODEL 2') || sub.includes(' 2')) {
+          sol2 += stock;
+        } else {
+          sol1 += stock;
+        }
+      }
+    });
+
+    // 1. Balance Sol Model 1 & Model 2: min(sol1, sol2)
+    const balancedSolBase = Math.min(sol1, sol2);
+    const leftoverSol1 = Math.max(0, sol1 - balancedSolBase);
+    const leftoverSol2 = Math.max(0, sol2 - balancedSolBase);
+
+    // 2. Divide balanced sol equally between Upper G & Upper T with Math.floor (round down)
+    const allocatedSolPerModel = Math.floor(balancedSolBase / 2);
+    const solOddRemainder = balancedSolBase % 2;
+
+    // 3. Determine Max Potential Shoes for Model G & Model T
+    const yieldModelG = Math.min(allocatedSolPerModel, upperG);
+    const yieldModelT = Math.min(allocatedSolPerModel, upperT);
+    const totalPotentialShoes = yieldModelG + yieldModelT;
+
+    // 4. Calculate Excess / Leftover Raw Materials
+    const leftoverUpperG = Math.max(0, upperG - yieldModelG);
+    const leftoverUpperT = Math.max(0, upperT - yieldModelT);
+    const totalLeftoverSol1 = leftoverSol1 + solOddRemainder;
+
+    return {
+      upperG,
+      upperT,
+      sol1,
+      sol2,
+      balancedSolBase,
+      allocatedSolPerModel,
+      yieldModelG,
+      yieldModelT,
+      totalPotentialShoes,
+      leftoverUpperG,
+      leftoverUpperT,
+      leftoverSol1: totalLeftoverSol1,
+      leftoverSol2
+    };
+  }, [materials]);
 
   // Handle Craftsman Save
   async function handleSaveCraftsman(e: React.FormEvent) {
@@ -673,6 +737,78 @@ export default function Craftsmen() {
       {/* TAB 2: BAHAN BAKU & KETERHUBUNGAN VARIAN */}
       {activeTab === 'materials' && (
         <div className="space-y-4">
+          {/* Executive Supplier Yield & Bottleneck Calculator Widget */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-5 rounded-[20px] shadow-md border border-slate-700/60 font-sans space-y-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-700/60 pb-3.5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="bg-[#5c1616] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    Analisis Pasokan Owner
+                  </span>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Wrench size={16} className="text-amber-400" /> Potensi Pasokan Sepatu Siap Rangkai
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-300 mt-1">
+                  Kalkulasi otomatis keseimbangan pasokan bahan baku (Upper G & T + Sol 1 & 2) dari seluruh pengrajin.
+                </p>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-right">
+                <span className="text-[10px] text-slate-300 font-medium block uppercase tracking-wider">Total Potensi Rangkai</span>
+                <span className="text-2xl font-black text-amber-400 font-sans">{potentialYieldCalc.totalPotentialShoes} <span className="text-xs text-slate-200 font-normal">Pasang</span></span>
+              </div>
+            </div>
+
+            {/* 3 Metric Grid Columns */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Box 1: Yield Model G */}
+              <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl space-y-1">
+                <div className="flex justify-between items-center text-xs text-slate-300 font-semibold">
+                  <span>Model G (Non-Tali)</span>
+                  <span className="text-emerald-400 font-bold">{potentialYieldCalc.yieldModelG} Pasang</span>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Total Upper G: {potentialYieldCalc.upperG} | Alokasi Sol: {potentialYieldCalc.allocatedSolPerModel}
+                </p>
+              </div>
+
+              {/* Box 2: Yield Model T */}
+              <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl space-y-1">
+                <div className="flex justify-between items-center text-xs text-slate-300 font-semibold">
+                  <span>Model T (Bertali)</span>
+                  <span className="text-emerald-400 font-bold">{potentialYieldCalc.yieldModelT} Pasang</span>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Total Upper T: {potentialYieldCalc.upperT} | Alokasi Sol: {potentialYieldCalc.allocatedSolPerModel}
+                </p>
+              </div>
+
+              {/* Box 3: Sol Balance Base */}
+              <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl space-y-1">
+                <div className="flex justify-between items-center text-xs text-slate-300 font-semibold">
+                  <span>Keseimbangan Outsole</span>
+                  <span className="text-amber-300 font-bold">{potentialYieldCalc.balancedSolBase} Pasang</span>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Sol 1: {potentialYieldCalc.sol1} pasang | Sol 2: {potentialYieldCalc.sol2} pasang
+                </p>
+              </div>
+            </div>
+
+            {/* Leftover / Bottleneck Stock Info */}
+            <div className="bg-black/30 p-3 rounded-xl border border-white/5 text-xs space-y-1">
+              <span className="font-bold text-amber-300 flex items-center gap-1.5 text-[11px]">
+                <AlertCircle size={13} /> Rincian Sisa Pasokan Bahan Baku Cadangan:
+              </span>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-300">
+                <span>• Sisa Upper G: <strong className="text-white">{potentialYieldCalc.leftoverUpperG} pasang</strong></span>
+                <span>• Sisa Upper T: <strong className="text-white">{potentialYieldCalc.leftoverUpperT} pasang</strong></span>
+                <span>• Sisa Sol Model 1: <strong className="text-white">{potentialYieldCalc.leftoverSol1} pasang</strong></span>
+                <span>• Sisa Sol Model 2: <strong className="text-white">{potentialYieldCalc.leftoverSol2} pasang</strong></span>
+              </div>
+            </div>
+          </div>
           {materials.length === 0 ? (
             <div className="bg-white p-12 rounded-[18px] border border-slate-100 shadow-xs text-center space-y-3">
               <div className="w-12 h-12 bg-rose-50 text-[#5c1616] rounded-full flex items-center justify-center mx-auto">
