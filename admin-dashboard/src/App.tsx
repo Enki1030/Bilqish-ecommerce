@@ -11,6 +11,7 @@ import Notifications from './pages/Notifications';
 import { Loader2 } from 'lucide-react';
 
 import Craftsmen from './pages/Craftsmen';
+import Analytics from './pages/Analytics';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -50,6 +51,7 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="orders" element={<Orders />} />
           <Route path="craftsmen" element={<Craftsmen />} />
+          <Route path="analytics" element={<Analytics />} />
           <Route path="notifications" element={<Notifications />} />
         </Route>
       </Routes>
