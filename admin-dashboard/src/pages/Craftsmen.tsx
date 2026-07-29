@@ -89,6 +89,9 @@ export default function Craftsmen() {
   const [mDelay, setMDelay] = useState(2);
   const [mNotes, setMNotes] = useState('');
 
+  // Interactive Outsole Allocation Percentage Slider (0 - 100%, Default: 50%)
+  const [modelGPercent, setModelGPercent] = useState<number>(50);
+
   // Form States - Check Log
   const [logStatus, setLogStatus] = useState<'Tersedia' | 'Terbatas' | 'Habis'>('Tersedia');
   const [logDelay, setLogDelay] = useState(0);
@@ -295,19 +298,18 @@ export default function Craftsmen() {
     const leftoverSol1 = Math.max(0, sol1 - balancedSolBase);
     const leftoverSol2 = Math.max(0, sol2 - balancedSolBase);
 
-    // 2. Divide balanced sol equally between Upper G & Upper T with Math.floor (round down)
-    const allocatedSolPerModel = Math.floor(balancedSolBase / 2);
-    const solOddRemainder = balancedSolBase % 2;
+    // 2. Divide balanced sol based on interactive slider percentage (modelGPercent %)
+    const allocatedSolModelG = Math.floor(balancedSolBase * (modelGPercent / 100));
+    const allocatedSolModelT = Math.max(0, balancedSolBase - allocatedSolModelG);
 
     // 3. Determine Max Potential Shoes for Model G & Model T
-    const yieldModelG = Math.min(allocatedSolPerModel, upperG);
-    const yieldModelT = Math.min(allocatedSolPerModel, upperT);
+    const yieldModelG = Math.min(allocatedSolModelG, upperG);
+    const yieldModelT = Math.min(allocatedSolModelT, upperT);
     const totalPotentialShoes = yieldModelG + yieldModelT;
 
-    // 4. Calculate Excess / Leftover Raw Materials
+    // 4. Calculate Excess / Leftover Raw Materials (Real-time)
     const leftoverUpperG = Math.max(0, upperG - yieldModelG);
     const leftoverUpperT = Math.max(0, upperT - yieldModelT);
-    const totalLeftoverSol1 = leftoverSol1 + solOddRemainder;
 
     return {
       upperG,
@@ -315,16 +317,17 @@ export default function Craftsmen() {
       sol1,
       sol2,
       balancedSolBase,
-      allocatedSolPerModel,
+      allocatedSolModelG,
+      allocatedSolModelT,
       yieldModelG,
       yieldModelT,
       totalPotentialShoes,
       leftoverUpperG,
       leftoverUpperT,
-      leftoverSol1: totalLeftoverSol1,
+      leftoverSol1,
       leftoverSol2
     };
-  }, [materials]);
+  }, [materials, modelGPercent]);
 
   // Handle Craftsman Save
   async function handleSaveCraftsman(e: React.FormEvent) {
@@ -760,6 +763,76 @@ export default function Craftsmen() {
               </div>
             </div>
 
+            {/* Interactive Outsole Allocation Percentage Slider (0-100%) */}
+            <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl space-y-2.5">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                <label className="text-xs font-bold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
+                  <span>🎛️ Simulasikan Alokasi Sol:</span>
+                  <span className="text-white bg-[#5c1616] px-2 py-0.5 rounded-md font-mono text-[11px] font-bold">
+                    Model G ({modelGPercent}%) vs Model T ({100 - modelGPercent}%)
+                  </span>
+                </label>
+
+                {/* Quick Presets */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setModelGPercent(50)}
+                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                      modelGPercent === 50 ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'bg-white/10 hover:bg-white/20 text-slate-300'
+                    }`}
+                  >
+                    50:50 (Default)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModelGPercent(70)}
+                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                      modelGPercent === 70 ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'bg-white/10 hover:bg-white/20 text-slate-300'
+                    }`}
+                  >
+                    70% G / 30% T
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModelGPercent(80)}
+                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                      modelGPercent === 80 ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'bg-white/10 hover:bg-white/20 text-slate-300'
+                    }`}
+                  >
+                    80% G / 20% T
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModelGPercent(100)}
+                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                      modelGPercent === 100 ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'bg-white/10 hover:bg-white/20 text-slate-300'
+                    }`}
+                  >
+                    100% G
+                  </button>
+                </div>
+              </div>
+
+              {/* Slider Input */}
+              <div className="space-y-1">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={modelGPercent}
+                  onChange={(e) => setModelGPercent(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                  <span>0% Model G (100% Model T)</span>
+                  <span>50% Seimbang</span>
+                  <span>100% Model G (0% Model T)</span>
+                </div>
+              </div>
+            </div>
+
             {/* 3 Metric Grid Columns */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {/* Box 1: Yield Model G */}
@@ -769,7 +842,7 @@ export default function Craftsmen() {
                   <span className="text-emerald-400 font-bold">{potentialYieldCalc.yieldModelG} Pasang</span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Total Upper G: {potentialYieldCalc.upperG} | Alokasi Sol: {potentialYieldCalc.allocatedSolPerModel}
+                  Upper G: {potentialYieldCalc.upperG} | Alokasi Sol ({modelGPercent}%): {potentialYieldCalc.allocatedSolModelG}
                 </p>
               </div>
 
@@ -780,7 +853,7 @@ export default function Craftsmen() {
                   <span className="text-emerald-400 font-bold">{potentialYieldCalc.yieldModelT} Pasang</span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Total Upper T: {potentialYieldCalc.upperT} | Alokasi Sol: {potentialYieldCalc.allocatedSolPerModel}
+                  Upper T: {potentialYieldCalc.upperT} | Alokasi Sol ({100 - modelGPercent}%): {potentialYieldCalc.allocatedSolModelT}
                 </p>
               </div>
 
