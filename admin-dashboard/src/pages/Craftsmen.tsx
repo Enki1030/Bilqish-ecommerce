@@ -14,7 +14,8 @@ import {
   Calendar,
   MapPin,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Calculator
 } from 'lucide-react';
 
 interface Craftsman {
@@ -25,7 +26,7 @@ interface Craftsman {
   address?: string;
   check_interval_days: number;
   last_checked_at: string;
-  created_at?: string;
+  created_at: string;
 }
 
 interface RawMaterial {
@@ -41,23 +42,23 @@ interface RawMaterial {
   notes?: string;
   linked_models?: string[];
   last_checked_at: string;
-  created_at?: string;
-  craftsmen?: Craftsman;
+  created_at: string;
+  craftsmen?: { name: string };
 }
 
 interface MaterialLog {
   id: string;
   material_id: string;
-  craftsman_id: string;
-  craftsman_name: string;
   material_name: string;
+  craftsman_name: string;
   status: string;
+  delay_days: number;
   notes?: string;
   checked_at: string;
 }
 
 export default function Craftsmen() {
-  const [activeTab, setActiveTab] = useState<'craftsmen' | 'materials' | 'history'>('craftsmen');
+  const [activeTab, setActiveTab] = useState<'craftsmen' | 'materials' | 'calculator' | 'history'>('craftsmen');
   const [craftsmen, setCraftsmen] = useState<Craftsman[]>([]);
   const [materials, setMaterials] = useState<RawMaterial[]>([]);
   const [logs, setLogs] = useState<MaterialLog[]>([]);
@@ -609,6 +610,14 @@ export default function Craftsmen() {
           <Wrench size={16} /> Bahan Baku ({materials.length})
         </button>
         <button
+          onClick={() => setActiveTab('calculator')}
+          className={`pb-3 flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'calculator' ? 'border-[#5c1616] text-[#5c1616] font-bold' : 'border-transparent text-[#71717A] hover:text-[#1A1A1A]'
+          }`}
+        >
+          <Calculator size={16} /> Kalkulator Stok
+        </button>
+        <button
           onClick={() => setActiveTab('history')}
           className={`pb-3 flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
             activeTab === 'history' ? 'border-[#5c1616] text-[#5c1616] font-bold' : 'border-transparent text-[#71717A] hover:text-[#1A1A1A]'
@@ -740,148 +749,6 @@ export default function Craftsmen() {
       {/* TAB 2: BAHAN BAKU & KETERHUBUNGAN VARIAN */}
       {activeTab === 'materials' && (
         <div className="space-y-4">
-          {/* Executive Supplier Yield & Bottleneck Calculator Widget */}
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-5 rounded-[20px] shadow-md border border-slate-700/60 font-sans space-y-4">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-700/60 pb-3.5">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="bg-[#5c1616] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    Analisis Pasokan Owner
-                  </span>
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Wrench size={16} className="text-amber-400" /> Potensi Pasokan Sepatu Siap Rangkai
-                  </h3>
-                </div>
-                <p className="text-xs text-slate-300 mt-1">
-                  Kalkulasi otomatis keseimbangan pasokan bahan baku (Upper G & T + Sol 1 & 2) dari seluruh pengrajin.
-                </p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-right">
-                <span className="text-[10px] text-slate-300 font-medium block uppercase tracking-wider">Total Potensi Rangkai</span>
-                <span className="text-2xl font-black text-amber-400 font-sans">{potentialYieldCalc.totalPotentialShoes} <span className="text-xs text-slate-200 font-normal">Pasang</span></span>
-              </div>
-            </div>
-
-            {/* Interactive Outsole Allocation Percentage Slider (0-100%) */}
-            <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl space-y-2.5">
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                <label className="text-xs font-bold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
-                  <span>🎛️ Simulasikan Alokasi Sol:</span>
-                  <span className="text-white bg-[#5c1616] px-2 py-0.5 rounded-md font-mono text-[11px] font-bold">
-                    Model G ({modelGPercent}%) vs Model T ({100 - modelGPercent}%)
-                  </span>
-                </label>
-
-                {/* Quick Presets */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => setModelGPercent(50)}
-                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
-                      modelGPercent === 50 ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'bg-white/10 hover:bg-white/20 text-slate-300'
-                    }`}
-                  >
-                    50:50 (Default)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setModelGPercent(70)}
-                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
-                      modelGPercent === 70 ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'bg-white/10 hover:bg-white/20 text-slate-300'
-                    }`}
-                  >
-                    70% G / 30% T
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setModelGPercent(80)}
-                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
-                      modelGPercent === 80 ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'bg-white/10 hover:bg-white/20 text-slate-300'
-                    }`}
-                  >
-                    80% G / 20% T
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setModelGPercent(100)}
-                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
-                      modelGPercent === 100 ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'bg-white/10 hover:bg-white/20 text-slate-300'
-                    }`}
-                  >
-                    100% G
-                  </button>
-                </div>
-              </div>
-
-              {/* Slider Input */}
-              <div className="space-y-1">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="5"
-                  value={modelGPercent}
-                  onChange={(e) => setModelGPercent(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400"
-                />
-                <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                  <span>0% Model G (100% Model T)</span>
-                  <span>50% Seimbang</span>
-                  <span>100% Model G (0% Model T)</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 3 Metric Grid Columns */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {/* Box 1: Yield Model G */}
-              <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl space-y-1">
-                <div className="flex justify-between items-center text-xs text-slate-300 font-semibold">
-                  <span>Model G (Non-Tali)</span>
-                  <span className="text-emerald-400 font-bold">{potentialYieldCalc.yieldModelG} Pasang</span>
-                </div>
-                <p className="text-[11px] text-slate-400">
-                  Upper G: {potentialYieldCalc.upperG} | Alokasi Sol ({modelGPercent}%): {potentialYieldCalc.allocatedSolModelG}
-                </p>
-              </div>
-
-              {/* Box 2: Yield Model T */}
-              <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl space-y-1">
-                <div className="flex justify-between items-center text-xs text-slate-300 font-semibold">
-                  <span>Model T (Bertali)</span>
-                  <span className="text-emerald-400 font-bold">{potentialYieldCalc.yieldModelT} Pasang</span>
-                </div>
-                <p className="text-[11px] text-slate-400">
-                  Upper T: {potentialYieldCalc.upperT} | Alokasi Sol ({100 - modelGPercent}%): {potentialYieldCalc.allocatedSolModelT}
-                </p>
-              </div>
-
-              {/* Box 3: Sol Balance Base */}
-              <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl space-y-1">
-                <div className="flex justify-between items-center text-xs text-slate-300 font-semibold">
-                  <span>Keseimbangan Outsole</span>
-                  <span className="text-amber-300 font-bold">{potentialYieldCalc.balancedSolBase} Pasang</span>
-                </div>
-                <p className="text-[11px] text-slate-400">
-                  Sol 1: {potentialYieldCalc.sol1} pasang | Sol 2: {potentialYieldCalc.sol2} pasang
-                </p>
-              </div>
-            </div>
-
-            {/* Leftover / Bottleneck Stock Info */}
-            <div className="bg-black/30 p-3 rounded-xl border border-white/5 text-xs space-y-1">
-              <span className="font-bold text-amber-300 flex items-center gap-1.5 text-[11px]">
-                <AlertCircle size={13} /> Rincian Sisa Pasokan Bahan Baku Cadangan:
-              </span>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-300">
-                <span>• Sisa Upper G: <strong className="text-white">{potentialYieldCalc.leftoverUpperG} pasang</strong></span>
-                <span>• Sisa Upper T: <strong className="text-white">{potentialYieldCalc.leftoverUpperT} pasang</strong></span>
-                <span>• Sisa Sol Model 1: <strong className="text-white">{potentialYieldCalc.leftoverSol1} pasang</strong></span>
-                <span>• Sisa Sol Model 2: <strong className="text-white">{potentialYieldCalc.leftoverSol2} pasang</strong></span>
-              </div>
-            </div>
-          </div>
           {materials.length === 0 ? (
             <div className="bg-white p-12 rounded-[18px] border border-slate-100 shadow-xs text-center space-y-3">
               <div className="w-12 h-12 bg-rose-50 text-[#5c1616] rounded-full flex items-center justify-center mx-auto">
@@ -1006,7 +873,162 @@ export default function Craftsmen() {
         </div>
       )}
 
-      {/* TAB 3: RIWAYAT LOG & PERFORMA SUPPLIER */}
+      {/* TAB 3: KALKULATOR STOK & ANALISIS PASOKAN OWNER */}
+      {activeTab === 'calculator' && (
+        <div className="space-y-5">
+          {/* Main White Card matching Admin Dashboard Theme */}
+          <div className="bg-white p-6 rounded-[20px] border border-[#E2E8F0] shadow-xs space-y-6">
+            
+            {/* Header & Total Yield Banner */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-5 border-b border-[#E2E8F0]">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="bg-[#5c1616] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    Analisis Pasokan Owner
+                  </span>
+                  <h2 className="text-lg font-bold text-[#1A1A1A] flex items-center gap-2">
+                    <Calculator className="text-[#5c1616]" size={20} /> Potensi Pasokan Sepatu Siap Rangkai
+                  </h2>
+                </div>
+                <p className="text-xs text-[#71717A]">
+                  Kalkulasi otomatis keseimbangan pasokan bahan baku (Upper G & T + Sol 1 & 2) dari seluruh pengrajin.
+                </p>
+              </div>
+
+              {/* Total Yield Pill */}
+              <div className="bg-rose-50/70 border border-rose-200/80 px-5 py-3 rounded-2xl text-right shrink-0">
+                <span className="text-[10px] font-bold text-[#71717A] block uppercase tracking-wider">Total Potensi Rangkai</span>
+                <span className="text-3xl font-black text-[#5c1616] font-sans">
+                  {potentialYieldCalc.totalPotentialShoes} <span className="text-sm font-semibold text-[#1A1A1A]">Pasang</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Slider Simulation Section */}
+            <div className="bg-slate-50 border border-slate-200/80 p-5 rounded-2xl space-y-3.5">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                <label className="text-xs font-bold text-[#1A1A1A] flex items-center gap-2 uppercase tracking-wide">
+                  <span>🎛️ Simulasikan Rasio Alokasi Outsole:</span>
+                  <span className="bg-[#5c1616] text-white px-2.5 py-0.5 rounded-md font-mono text-[11px] font-bold">
+                    Model G ({modelGPercent}%) vs Model T ({100 - modelGPercent}%)
+                  </span>
+                </label>
+
+                {/* Quick Presets */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { label: '50:50 (Default)', val: 50 },
+                    { label: '70% G / 30% T', val: 70 },
+                    { label: '80% G / 20% T', val: 80 },
+                    { label: '100% G', val: 100 }
+                  ].map(p => (
+                    <button
+                      key={p.val}
+                      type="button"
+                      onClick={() => setModelGPercent(p.val)}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        modelGPercent === p.val
+                          ? 'bg-[#5c1616] text-white shadow-xs'
+                          : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Slider Bar */}
+              <div className="space-y-1.5 pt-1">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={modelGPercent}
+                  onChange={(e) => setModelGPercent(Number(e.target.value))}
+                  className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#5c1616]"
+                />
+                <div className="flex justify-between text-[11px] text-slate-400 font-medium font-mono">
+                  <span>0% Model G (100% Model T)</span>
+                  <span>50% Seimbang</span>
+                  <span>100% Model G (0% Model T)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3 Metric Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Box 1: Yield Model G */}
+              <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-[#1A1A1A]">Model G (Non-Tali)</span>
+                  <span className="text-sm font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    {potentialYieldCalc.yieldModelG} Pasang
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Upper G: <strong className="text-slate-800">{potentialYieldCalc.upperG}</strong> pasang | Alokasi Sol ({modelGPercent}%): <strong className="text-slate-800">{potentialYieldCalc.allocatedSolModelG}</strong>
+                </p>
+              </div>
+
+              {/* Box 2: Yield Model T */}
+              <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-[#1A1A1A]">Model T (Bertali)</span>
+                  <span className="text-sm font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    {potentialYieldCalc.yieldModelT} Pasang
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Upper T: <strong className="text-slate-800">{potentialYieldCalc.upperT}</strong> pasang | Alokasi Sol ({100 - modelGPercent}%): <strong className="text-slate-800">{potentialYieldCalc.allocatedSolModelT}</strong>
+                </p>
+              </div>
+
+              {/* Box 3: Sol Balance Base */}
+              <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-[#1A1A1A]">Keseimbangan Outsole</span>
+                  <span className="text-sm font-extrabold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                    {potentialYieldCalc.balancedSolBase} Pasang
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Sol 1: <strong className="text-slate-800">{potentialYieldCalc.sol1}</strong> pasang | Sol 2: <strong className="text-slate-800">{potentialYieldCalc.sol2}</strong> pasang
+                </p>
+              </div>
+            </div>
+
+            {/* Leftover / Bottleneck Stock Info Box */}
+            <div className="bg-amber-50/70 border border-amber-200/60 p-4 rounded-2xl space-y-2">
+              <span className="font-bold text-amber-900 flex items-center gap-2 text-xs">
+                <AlertCircle size={15} className="text-amber-600" /> Rincian Sisa Pasokan Bahan Baku Cadangan:
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-amber-950 font-medium pt-1">
+                <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/40">
+                  <span className="text-slate-400 text-[11px] block">Sisa Upper G</span>
+                  <span className="font-bold text-sm text-[#1A1A1A]">{potentialYieldCalc.leftoverUpperG} pasang</span>
+                </div>
+                <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/40">
+                  <span className="text-slate-400 text-[11px] block">Sisa Upper T</span>
+                  <span className="font-bold text-sm text-[#1A1A1A]">{potentialYieldCalc.leftoverUpperT} pasang</span>
+                </div>
+                <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/40">
+                  <span className="text-slate-400 text-[11px] block">Sisa Sol Model 1</span>
+                  <span className="font-bold text-sm text-[#1A1A1A]">{potentialYieldCalc.leftoverSol1} pasang</span>
+                </div>
+                <div className="bg-white/80 p-2.5 rounded-xl border border-amber-200/40">
+                  <span className="text-slate-400 text-[11px] block">Sisa Sol Model 2</span>
+                  <span className="font-bold text-sm text-[#1A1A1A]">{potentialYieldCalc.leftoverSol2} pasang</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: RIWAYAT LOG & PERFORMA SUPPLIER */}
       {activeTab === 'history' && (
         <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
           <div className="p-5 border-b border-[#E2E8F0] flex justify-between items-center">
