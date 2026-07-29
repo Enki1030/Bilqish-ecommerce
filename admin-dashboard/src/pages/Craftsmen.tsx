@@ -308,11 +308,9 @@ export default function Craftsmen() {
     e.preventDefault();
     const computedStatus = getMaterialStatusFromStock(Number(mStock));
 
-    // Construct embedded tag so data is ALWAYS saved regardless of schema changes
-    const embeddedTag = `[STOCK:${mStock}][COMP:${mComponent}][SUB:${mSubType}]`;
     const cleanNotesInput = (mNotes || '').replace(/\[(STOCK|COMP|SUB):[^\]]+\]/g, '').trim();
-    const fullNotes = `${embeddedTag} ${cleanNotesInput}`.trim();
 
+    // Primary payload using official database columns
     const payloadFull = {
       name: mName,
       craftsman_id: mCraftsmanId,
@@ -322,24 +320,25 @@ export default function Craftsmen() {
       stock_quantity: Number(mStock),
       status: computedStatus,
       delay_days: Number(mDelay),
-      notes: fullNotes,
+      notes: cleanNotesInput,
       last_checked_at: new Date().toISOString()
     };
 
     let savedItem: any = null;
 
     if (editingMaterial) {
-      // Try update with full payload
+      // Try update with official columns
       const { data, error } = await supabase.from('raw_materials').update(payloadFull).eq('id', editingMaterial.id).select().single();
       if (error) {
-        // Fallback update without new schema columns
+        // Fallback update embedding tags in notes if DB columns don't exist yet
+        const embeddedTag = `[STOCK:${mStock}][COMP:${mComponent}][SUB:${mSubType}]`;
         const payloadBase = {
           name: mName,
           craftsman_id: mCraftsmanId,
           category: mCategory,
           status: computedStatus,
           delay_days: Number(mDelay),
-          notes: fullNotes,
+          notes: `${embeddedTag} ${cleanNotesInput}`.trim(),
           last_checked_at: new Date().toISOString()
         };
         const { data: bData, error: bErr } = await supabase.from('raw_materials').update(payloadBase).eq('id', editingMaterial.id).select().single();
@@ -361,18 +360,18 @@ export default function Craftsmen() {
         notes: cleanNotesInput
       } : m));
     } else {
-      // Try insert with full payload
+      // Try insert with official columns
       const { data, error } = await supabase.from('raw_materials').insert(payloadFull).select().single();
       if (error) {
         console.warn('Full payload insert failed, falling back to base columns:', error);
-        // Fallback insert without new schema columns
+        const embeddedTag = `[STOCK:${mStock}][COMP:${mComponent}][SUB:${mSubType}]`;
         const payloadBase = {
           name: mName,
           craftsman_id: mCraftsmanId,
           category: mCategory,
           status: computedStatus,
           delay_days: Number(mDelay),
-          notes: fullNotes,
+          notes: `${embeddedTag} ${cleanNotesInput}`.trim(),
           last_checked_at: new Date().toISOString()
         };
         const { data: bData, error: bErr } = await supabase.from('raw_materials').insert(payloadBase).select().single();
