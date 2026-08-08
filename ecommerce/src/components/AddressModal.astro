@@ -28,11 +28,31 @@
     
     <!-- VIEW 1: Address List -->
     <div id="address-list-view" class="space-y-4">
-      <div class="flex justify-between items-center">
+      
+      <!-- Quick Search / Add Bar on View 1 (Desktop & Mobile) -->
+      <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs space-y-2">
+        <label class="block text-[11px] font-heading font-bold text-gray-800 uppercase tracking-wide flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-[#5c1616]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          Cari Lokasi / Tambah Alamat Baru
+        </label>
+        <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white focus-within:ring-2 focus-within:ring-[#5c1616]">
+          <input 
+            type="text" 
+            id="view1-quick-search" 
+            class="w-full bg-white px-3 py-2 text-xs font-body focus:outline-none placeholder-gray-400" 
+            placeholder="Ketik nama daerah (Wonokromo, Cibaduyut...)" 
+          />
+          <button id="btn-view1-search-go" type="button" class="bg-[#5c1616] text-white px-3 py-2 text-xs font-semibold hover:bg-[#400f0f] transition-colors cursor-pointer shrink-0">
+            Cari di Peta
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-1">
         <span class="text-xs font-heading font-semibold text-gray-600 uppercase tracking-wider">Daftar Alamat Tersimpan</span>
         <button id="btn-show-add-address" class="inline-flex items-center gap-1.5 text-xs font-heading font-bold text-[#5c1616] hover:text-[#400f0f] uppercase tracking-wider bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200 transition-colors cursor-pointer">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-          Tambah Alamat
+          + Tambah Alamat GPS
         </button>
       </div>
 
@@ -237,6 +257,26 @@
   closeBtn?.addEventListener('click', closeAddressModal);
   showAddBtn?.addEventListener('click', () => showForm());
   cancelAddBtn?.addEventListener('click', () => showList());
+
+  // View 1 Quick Search Trigger (Desktop & Mobile)
+  const view1Input = document.getElementById('view1-quick-search') as HTMLInputElement;
+  const view1SearchBtn = document.getElementById('btn-view1-search-go');
+
+  function triggerSearchFromView1() {
+    const q = view1Input?.value.trim();
+    if (!q) return;
+    showForm();
+    if (searchInput) searchInput.value = q;
+    performSearch(q);
+  }
+
+  view1SearchBtn?.addEventListener('click', triggerSearchFromView1);
+  view1Input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      triggerSearchFromView1();
+    }
+  });
 
   function showList() {
     listView?.classList.remove('hidden');
