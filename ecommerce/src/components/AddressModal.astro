@@ -371,13 +371,26 @@
     }
   }
 
-  // Smart GPS with Automatic IP-Based Geolocation Fallback
+  // Progressive Smart Location (Fast Wi-Fi/Cell Tower First -> High Precision Refinement)
   async function detectLocation() {
     const spinner = document.getElementById('gps-spinner');
     const gpsIcon = document.getElementById('gps-icon');
     spinner?.classList.remove('hidden');
     gpsIcon?.classList.add('hidden');
-    updateMapStatus('🔄 Sedang mencari koordinat lokasi Anda...');
+    updateMapStatus('🔄 Mendeteksi lokasi sekitar Anda...');
+
+    const applyLocation = (lat: number, lon: number, accuracy: number, msg: string) => {
+      if (map && marker) {
+        const zoom = accuracy < 100 ? 17 : 15;
+        map.flyTo([lat, lon], zoom, { duration: 1.2 });
+        marker.setLatLng([lat, lon]);
+        setCoordinates(lat, lon);
+        reverseGeocode(lat, lon);
+        updateMapStatus(msg);
+      }
+      spinner?.classList.add('hidden');
+      gpsIcon?.classList.remove('hidden');
+    };
 
     const fallbackToIP = async (reason: string) => {
       try {
@@ -387,13 +400,9 @@
         if (data && data.latitude && data.longitude) {
           const lat = parseFloat(data.latitude);
           const lon = parseFloat(data.longitude);
-          if (map && marker) {
-            map.flyTo([lat, lon], 14, { duration: 1.5 });
-            marker.setLatLng([lat, lon]);
-            setCoordinates(lat, lon);
-            reverseGeocode(lat, lon);
-          }
-          updateMapStatus(`📍 Terdeteksi di sekitar ${data.city || 'Kota Anda'}. Silakan geser pin ke atap rumah.`);
+          applyLocation(lat, lon, 5000, `📍 Terdeteksi di sekitar ${data.city || 'Kota Anda'}. Geser pin ke atap rumah.`);
+        } else {
+          updateMapStatus('💡 Silakan ketik nama daerah Anda di kotak pencarian.');
         }
       } catch(e) {
         updateMapStatus('💡 Silakan ketik nama daerah atau geser pin merah.');
@@ -404,27 +413,39 @@
     };
 
     if (!navigator.geolocation) {
-      fallbackToIP('GPS tidak didukung');
+      fallbackToIP('Perangkat tidak mendukung GPS');
       return;
     }
 
+    // Step 1: Fast Network / Wi-Fi Triangulation (< 500ms response, works indoors)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        spinner?.classList.add('hidden');
-        gpsIcon?.classList.remove('hidden');
-        const { latitude, longitude } = pos.coords;
-        if (map && marker) {
-          map.flyTo([latitude, longitude], 17, { duration: 1.5 });
-          marker.setLatLng([latitude, longitude]);
-          setCoordinates(latitude, longitude);
-          reverseGeocode(latitude, longitude);
-          updateMapStatus('🎯 GPS Akurat! Geser pin sedikit jika ingin menyesuaikan.');
+        const { latitude, longitude, accuracy } = pos.coords;
+        applyLocation(latitude, longitude, accuracy, '🎯 Lokasi ditemukan! Geser pin sedikit jika ingin lebih presisi.');
+
+        // Step 2: Background refinement if outdoors/satellite available
+        if (accuracy > 30) {
+          navigator.geolocation.getCurrentPosition(
+            (refinedPos) => {
+              const rLat = refinedPos.coords.latitude;
+              const rLng = refinedPos.coords.longitude;
+              applyLocation(rLat, rLng, refinedPos.coords.accuracy, '🎯 Titik presisi satelit aktif.');
+            },
+            () => {},
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+          );
         }
       },
-      (_err) => {
-        fallbackToIP('Izin GPS ditolak atau sinyal lemah');
+      (err) => {
+        if (err.code === 1) { // PERMISSION_DENIED
+          updateMapStatus('⚠️ Izin lokasi belum diizinkan di browser HP. Klik ikon gembok di URL atas untuk aktifkan.');
+          fallbackToIP('Izin lokasi belum diaktifkan');
+        } else {
+          // Timeout or position unavailable -> immediately fallback to IP/Wi-Fi
+          fallbackToIP('Sinyal satelit di dalam ruangan terbatas');
+        }
       },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     );
   }
 
