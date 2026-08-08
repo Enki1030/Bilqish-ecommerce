@@ -4,23 +4,28 @@ import Header from '../components/Header.astro';
 import ProductCard from '../components/ProductCard.astro';
 import Footer from '../components/Footer.astro';
 import { supabase } from '../lib/supabase';
+import { products as defaultProducts } from '../data/products';
 import bgPantofel from '../assets/backgroundpantofel.jpg';
 
-const { data: productsData, error } = await supabase
-  .from('products')
-  .select('*')
-  .order('created_at', { ascending: false });
-
-if (error) {
-  console.error('Error fetching from Supabase:', error);
+let productsData = null;
+try {
+  const res = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false });
+  productsData = res.data;
+} catch (err) {
+  console.error('Error fetching from Supabase:', err);
 }
 
-const allProducts = (productsData || []).map(p => ({
-  ...p,
-  image: p.image_url
-}));
+const allProducts = (productsData && productsData.length > 0)
+  ? productsData.map(p => ({
+      ...p,
+      image: p.image_url || p.image
+    }))
+  : defaultProducts;
 
-const uniqueModels = [...new Set(allProducts.map(p => p.model))].sort();
+const uniqueModels = [...new Set(allProducts.map(p => p.model))].filter(Boolean).sort();
 ---
 
 <Layout title="Ballqish Shoes - Official Store">

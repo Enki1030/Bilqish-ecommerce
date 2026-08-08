@@ -3,24 +3,47 @@ import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { supabase } from '../../lib/supabase';
+import { products as defaultProducts } from '../../data/products';
 
 export async function getStaticPaths() {
-  const { data: products } = await supabase.from('products').select('id');
-  return (products || []).map(p => ({
+  let productList: any[] = [];
+  try {
+    const res = await supabase.from('products').select('id');
+    if (res.data && res.data.length > 0) productList = res.data;
+  } catch (e) {}
+
+  if (productList.length === 0) {
+    productList = defaultProducts.map(p => ({ id: p.id }));
+  }
+
+  return productList.map(p => ({
     params: { id: p.id }
   }));
 }
 
 const { id } = Astro.params;
 
-const { data: product, error } = await supabase
-  .from('products')
-  .select('*')
-  .eq('id', id)
-  .single();
+let product: any = null;
+try {
+  const res = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (res.data) product = res.data;
+} catch (e) {}
 
-if (error || !product) {
-  return Astro.redirect('/404');
+if (!product) {
+  const fb = defaultProducts.find(p => p.id === id);
+  if (fb) {
+    product = {
+      ...fb,
+      image_url: fb.image,
+      model: fb.model || 'G'
+    };
+  } else {
+    return Astro.redirect('/404');
+  }
 }
 
 // Convert sizes array from JSON string if needed, or if it's already an array
