@@ -383,7 +383,7 @@
   }
 
   // Reverse Geocoding with OpenStreetMap Nominatim (Free)
-  async function reverseGeocode(lat: number, lng: number) {
+  async function reverseGeocode(lat: number, lng: number, forceUpdate = true) {
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`);
       const data = await res.json();
@@ -398,13 +398,15 @@
         const provinceEl = document.getElementById('addr-province') as HTMLInputElement;
 
         const combinedStreet = [road, village, city].filter(Boolean).join(', ');
-        if (fullAddrEl && !fullAddrEl.value.trim()) {
-          fullAddrEl.value = combinedStreet;
+        const finalAddressText = combinedStreet || data.display_name || '';
+
+        if (fullAddrEl && (forceUpdate || !fullAddrEl.value.trim())) {
+          fullAddrEl.value = finalAddressText;
         }
         if (cityEl) cityEl.value = city;
         if (provinceEl) provinceEl.value = state;
 
-        updateMapStatus(`📍 Alamat: ${combinedStreet || data.display_name.split(',')[0]}`);
+        updateMapStatus(`📍 Alamat: ${finalAddressText.split(',')[0] || city}`);
       }
     } catch(e) {
       console.warn('Reverse geocode error', e);
@@ -514,7 +516,7 @@
       
       if (results && results.length > 0 && searchResults) {
         searchResults.innerHTML = results.map((item: any) => `
-          <button type="button" class="w-full text-left px-3.5 py-2.5 hover:bg-rose-50 border-b border-gray-100 last:border-0 cursor-pointer search-item flex items-start gap-2.5 transition-colors" data-lat="${item.lat}" data-lon="${item.lon}">
+          <button type="button" class="w-full text-left px-3.5 py-2.5 hover:bg-rose-50 border-b border-gray-100 last:border-0 cursor-pointer search-item flex items-start gap-2.5 transition-colors" data-display="${item.display_name}" data-lat="${item.lat}" data-lon="${item.lon}">
             <span class="text-rose-600 mt-0.5 shrink-0">📍</span>
             <div class="min-w-0 flex-1">
               <p class="font-bold text-gray-900 text-xs truncate">${item.display_name.split(',')[0]}</p>
@@ -528,12 +530,19 @@
           item.addEventListener('click', (e: any) => {
             const lat = parseFloat(e.currentTarget.dataset.lat);
             const lon = parseFloat(e.currentTarget.dataset.lon);
+            const display = e.currentTarget.dataset.display;
+
+            const fullAddrEl = document.getElementById('addr-full') as HTMLTextAreaElement;
+            if (fullAddrEl && display) {
+              fullAddrEl.value = display;
+            }
+
             if (map && marker) {
               map.flyTo([lat, lon], 16, { duration: 1.5 });
               marker.setLatLng([lat, lon]);
               setCoordinates(lat, lon);
-              reverseGeocode(lat, lon);
-              updateMapStatus(`📍 Peta berpindah ke: ${e.currentTarget.querySelector('p').textContent}`);
+              reverseGeocode(lat, lon, true);
+              updateMapStatus(`📍 Peta berpindah ke: ${display.split(',')[0]}`);
             }
             searchResults.classList.add('hidden');
           });
