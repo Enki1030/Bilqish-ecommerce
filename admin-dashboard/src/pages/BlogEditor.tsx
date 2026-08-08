@@ -14,6 +14,53 @@ import UnderlineExtension from '@tiptap/extension-underline';
 import Placeholder from '@tiptap/extension-placeholder';
 import { supabase } from '../lib/supabase';
 
+// Convert any image to lightweight WebP
+async function convertToWebP(file: File, quality = 0.85): Promise<File> {
+  if (file.type === 'image/svg+xml' || file.type === 'image/webp') {
+    return file;
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      img.src = e.target?.result as string;
+    };
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const convertedName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+              const webpFile = new File([blob], convertedName, {
+                type: 'image/webp',
+                lastModified: Date.now(),
+              });
+              resolve(webpFile);
+            } else {
+              resolve(file);
+            }
+          },
+          'image/webp',
+          quality
+        );
+      } else {
+        resolve(file);
+      }
+    };
+
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function BlogEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -40,7 +87,22 @@ export default function BlogEditor() {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3] }
+        heading: { levels: [1, 2, 3] },
+        bulletList: {
+          HTMLAttributes: {
+            class: 'list-disc pl-6 my-3 space-y-1'
+          }
+        },
+        orderedList: {
+          HTMLAttributes: {
+            class: 'list-decimal pl-6 my-3 space-y-1'
+          }
+        },
+        blockquote: {
+          HTMLAttributes: {
+            class: 'border-l-4 border-[#5c1616] pl-4 py-2 my-4 italic bg-[#faf9f6] text-gray-700 rounded-r-lg'
+          }
+        }
       }),
       UnderlineExtension,
       ImageExtension.configure({
@@ -118,21 +180,25 @@ export default function BlogEditor() {
     }
   };
 
-  // Upload Image to Supabase Storage
+  // Upload Image to Supabase Storage ('product-image') as WebP
   const handleUploadImage = async (file: File): Promise<string | null> => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `blog-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+      const webpFile = await convertToWebP(file);
+      const fileName = `blog-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.webp`;
       const filePath = `blog/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+        .from('product-image')
+        .upload(filePath, webpFile, { 
+          contentType: 'image/webp',
+          cacheControl: '3600', 
+          upsert: true 
+        });
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
+        .from('product-image')
         .getPublicUrl(filePath);
 
       return publicUrl;
@@ -251,6 +317,7 @@ export default function BlogEditor() {
       {/* Top Bar Navigation & Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs sticky top-4 z-30">
         <button
+          type="button"
           onClick={() => navigate('/blog')}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
         >
@@ -260,6 +327,7 @@ export default function BlogEditor() {
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
           <button
+            type="button"
             onClick={() => handleSave('Draft')}
             disabled={saving}
             className="px-4 py-2 border border-gray-300 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
@@ -267,6 +335,7 @@ export default function BlogEditor() {
             Simpan Draf
           </button>
           <button
+            type="button"
             onClick={() => handleSave('Published')}
             disabled={saving}
             className="inline-flex items-center gap-1.5 bg-[#5c1616] hover:bg-[#400f0f] text-white px-5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors shadow-xs cursor-pointer disabled:opacity-50"
@@ -321,24 +390,30 @@ export default function BlogEditor() {
 
             {/* TIPTAP WYSIWYG TOOLBAR */}
             {editor && (
-              <div className="border border-gray-200 rounded-xl p-1.5 bg-gray-50/80 flex flex-wrap items-center gap-1 sticky top-20 z-20 shadow-2xs">
+              <div className="border border-gray-200 rounded-xl p-1.5 bg-gray-50/90 flex flex-wrap items-center gap-1 sticky top-20 z-20 shadow-2xs">
                 
                 {/* Heading Options */}
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                  className={`p-1.5 rounded text-xs font-bold ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
+                  className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer ${
+                    editor.isActive('heading', { level: 2 }) ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
                   title="Heading 2 (H2)"
                 >
-                  <Heading2 size={16} />
+                  H2
                 </button>
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                  className={`p-1.5 rounded text-xs font-bold ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
+                  className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer ${
+                    editor.isActive('heading', { level: 3 }) ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
                   title="Heading 3 (H3)"
                 >
-                  <Heading3 size={16} />
+                  H3
                 </button>
 
                 <span className="h-4 w-px bg-gray-300 mx-1" />
@@ -346,27 +421,36 @@ export default function BlogEditor() {
                 {/* Formats */}
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().toggleBold().run()}
-                  className={`p-1.5 rounded ${editor.isActive('bold') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
-                  title="Bold (Ctrl+B)"
+                  className={`p-1.5 rounded transition-colors cursor-pointer ${
+                    editor.isActive('bold') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                  title="Tebal (Ctrl+B)"
                 >
-                  <Bold size={16} />
+                  <Bold size={15} />
                 </button>
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className={`p-1.5 rounded ${editor.isActive('italic') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
-                  title="Italic (Ctrl+I)"
+                  className={`p-1.5 rounded transition-colors cursor-pointer ${
+                    editor.isActive('italic') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                  title="Miring (Ctrl+I)"
                 >
-                  <Italic size={16} />
+                  <Italic size={15} />
                 </button>
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().toggleUnderline().run()}
-                  className={`p-1.5 rounded ${editor.isActive('underline') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
-                  title="Underline (Ctrl+U)"
+                  className={`p-1.5 rounded transition-colors cursor-pointer ${
+                    editor.isActive('underline') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                  title="Garis Bawah (Ctrl+U)"
                 >
-                  <UnderlineIcon size={16} />
+                  <UnderlineIcon size={15} />
                 </button>
 
                 <span className="h-4 w-px bg-gray-300 mx-1" />
@@ -374,27 +458,36 @@ export default function BlogEditor() {
                 {/* Lists & Quote */}
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().toggleBulletList().run()}
-                  className={`p-1.5 rounded ${editor.isActive('bulletList') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
-                  title="Bullet List"
+                  className={`p-1.5 rounded transition-colors cursor-pointer ${
+                    editor.isActive('bulletList') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                  title="Daftar Bullet (•)"
                 >
-                  <List size={16} />
+                  <List size={15} />
                 </button>
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                  className={`p-1.5 rounded ${editor.isActive('orderedList') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
-                  title="Numbered List"
+                  className={`p-1.5 rounded transition-colors cursor-pointer ${
+                    editor.isActive('orderedList') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                  title="Daftar Nomor (1.)"
                 >
-                  <ListOrdered size={16} />
+                  <ListOrdered size={15} />
                 </button>
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                  className={`p-1.5 rounded ${editor.isActive('blockquote') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
-                  title="Blockquote"
+                  className={`p-1.5 rounded transition-colors cursor-pointer ${
+                    editor.isActive('blockquote') ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  }`}
+                  title="Kutipan / Blockquote"
                 >
-                  <Quote size={16} />
+                  <Quote size={15} />
                 </button>
 
                 <span className="h-4 w-px bg-gray-300 mx-1" />
@@ -403,11 +496,11 @@ export default function BlogEditor() {
                 <button
                   type="button"
                   onClick={() => inlineImageInputRef.current?.click()}
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold text-gray-700 hover:bg-gray-200 cursor-pointer"
                   title="Sisipkan Foto"
                 >
-                  <ImageIcon size={16} className="text-[#5c1616]" />
-                  <span>Foto</span>
+                  <ImageIcon size={15} className="text-[#5c1616]" />
+                  <span>+ Foto</span>
                 </button>
                 <input
                   type="file"
@@ -422,19 +515,21 @@ export default function BlogEditor() {
                 {/* Undo / Redo */}
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().undo().run()}
-                  className="p-1.5 rounded text-gray-700 hover:bg-gray-200"
-                  title="Undo"
+                  className="p-1.5 rounded text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  title="Undo (Ctrl+Z)"
                 >
-                  <Undo size={16} />
+                  <Undo size={15} />
                 </button>
                 <button
                   type="button"
+                  onMouseDown={e => e.preventDefault()}
                   onClick={() => editor.chain().focus().redo().run()}
-                  className="p-1.5 rounded text-gray-700 hover:bg-gray-200"
-                  title="Redo"
+                  className="p-1.5 rounded text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  title="Redo (Ctrl+Y)"
                 >
-                  <Redo size={16} />
+                  <Redo size={15} />
                 </button>
               </div>
             )}
@@ -445,44 +540,62 @@ export default function BlogEditor() {
                 <div className="flex items-center gap-0.5 bg-gray-900 text-white p-1 rounded-xl shadow-2xl border border-gray-700 text-xs">
                   <button
                     type="button"
+                    onMouseDown={e => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleBold().run()}
-                    className={`p-1.5 rounded hover:bg-gray-800 ${editor.isActive('bold') ? 'text-amber-300 font-bold' : 'text-white'}`}
+                    className={`p-1.5 rounded hover:bg-gray-800 cursor-pointer ${
+                      editor.isActive('bold') ? 'text-amber-300 font-bold' : 'text-white'
+                    }`}
                   >
                     <Bold size={14} />
                   </button>
                   <button
                     type="button"
+                    onMouseDown={e => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleItalic().run()}
-                    className={`p-1.5 rounded hover:bg-gray-800 ${editor.isActive('italic') ? 'text-amber-300 font-bold' : 'text-white'}`}
+                    className={`p-1.5 rounded hover:bg-gray-800 cursor-pointer ${
+                      editor.isActive('italic') ? 'text-amber-300 font-bold' : 'text-white'
+                    }`}
                   >
                     <Italic size={14} />
                   </button>
                   <button
                     type="button"
+                    onMouseDown={e => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleUnderline().run()}
-                    className={`p-1.5 rounded hover:bg-gray-800 ${editor.isActive('underline') ? 'text-amber-300 font-bold' : 'text-white'}`}
+                    className={`p-1.5 rounded hover:bg-gray-800 cursor-pointer ${
+                      editor.isActive('underline') ? 'text-amber-300 font-bold' : 'text-white'
+                    }`}
                   >
                     <UnderlineIcon size={14} />
                   </button>
                   <span className="h-3 w-px bg-gray-700 mx-1" />
                   <button
                     type="button"
+                    onMouseDown={e => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                    className={`px-2 py-1 rounded hover:bg-gray-800 font-bold ${editor.isActive('heading', { level: 2 }) ? 'text-amber-300' : 'text-white'}`}
+                    className={`px-2 py-1 rounded hover:bg-gray-800 font-bold cursor-pointer ${
+                      editor.isActive('heading', { level: 2 }) ? 'text-amber-300' : 'text-white'
+                    }`}
                   >
                     H2
                   </button>
                   <button
                     type="button"
+                    onMouseDown={e => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                    className={`px-2 py-1 rounded hover:bg-gray-800 font-bold ${editor.isActive('heading', { level: 3 }) ? 'text-amber-300' : 'text-white'}`}
+                    className={`px-2 py-1 rounded hover:bg-gray-800 font-bold cursor-pointer ${
+                      editor.isActive('heading', { level: 3 }) ? 'text-amber-300' : 'text-white'
+                    }`}
                   >
                     H3
                   </button>
                   <button
                     type="button"
+                    onMouseDown={e => e.preventDefault()}
                     onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                    className={`p-1.5 rounded hover:bg-gray-800 ${editor.isActive('blockquote') ? 'text-amber-300' : 'text-white'}`}
+                    className={`p-1.5 rounded hover:bg-gray-800 cursor-pointer ${
+                      editor.isActive('blockquote') ? 'text-amber-300' : 'text-white'
+                    }`}
                   >
                     <Quote size={14} />
                   </button>
@@ -494,13 +607,13 @@ export default function BlogEditor() {
             <div 
               onDrop={handleEditorDrop} 
               onDragOver={e => e.preventDefault()}
-              className="min-h-[400px] border border-dashed border-gray-200 rounded-xl p-4 sm:p-6 focus-within:border-gray-400 transition-colors bg-white cursor-text"
+              className="min-h-[400px] border border-dashed border-gray-200 rounded-xl p-4 sm:p-6 focus-within:border-[#5c1616] transition-colors bg-white cursor-text tiptap-article-wrapper"
             >
-              <EditorContent editor={editor} className="prose prose-stone max-w-none focus:outline-none min-h-[360px]" />
+              <EditorContent editor={editor} className="prose max-w-none focus:outline-none min-h-[360px]" />
             </div>
 
             <p className="text-[11px] text-gray-400 italic">
-              💡 Tip: Sorot teks dengan mouse untuk format cepat, atau tarik foto langsung dari laptop Anda ke dalam lembar editor.
+              💡 Tip: Sorot teks dengan mouse untuk format cepat, atau tarik foto langsung dari laptop Anda ke dalam lembar editor (otomatis terkonversi WebP).
             </p>
 
           </div>
@@ -513,7 +626,7 @@ export default function BlogEditor() {
           {/* Cover Image Upload Box */}
           <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
             <label className="block text-xs font-heading font-bold text-gray-800 uppercase tracking-wide">
-              Gambar Cover Utama
+              Gambar Cover Utama (WebP)
             </label>
             
             {coverImage ? (
@@ -534,9 +647,9 @@ export default function BlogEditor() {
               >
                 <Upload size={24} className="mx-auto text-gray-400 mb-2" />
                 <p className="text-xs font-semibold text-gray-700">
-                  {uploadingCover ? 'Mengunggah...' : 'Upload Foto Cover'}
+                  {uploadingCover ? 'Mengunggah & Mengonversi...' : 'Upload Foto Cover'}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-1">Format PNG, JPG, WebP (Rasio 16:9 disarankan)</p>
+                <p className="text-[10px] text-gray-400 mt-1">Otomatis dioptimasi menjadi WebP</p>
               </div>
             )}
             <input 
@@ -648,6 +761,67 @@ export default function BlogEditor() {
 
       </div>
 
+      {/* Editor ProseMirror Styling */}
+      <style>{`
+        .tiptap-article-wrapper .ProseMirror:focus {
+          outline: none;
+        }
+        .tiptap-article-wrapper .ProseMirror h2 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #111827;
+          margin-top: 1.5rem;
+          margin-bottom: 0.5rem;
+          line-height: 1.3;
+        }
+        .tiptap-article-wrapper .ProseMirror h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin-top: 1.25rem;
+          margin-bottom: 0.35rem;
+          line-height: 1.3;
+        }
+        .tiptap-article-wrapper .ProseMirror p {
+          color: #374151;
+          line-height: 1.75;
+          margin-bottom: 1rem;
+          font-size: 0.95rem;
+        }
+        .tiptap-article-wrapper .ProseMirror ul {
+          list-style-type: disc !important;
+          padding-left: 1.5rem !important;
+          margin: 1rem 0 !important;
+          color: #374151;
+        }
+        .tiptap-article-wrapper .ProseMirror ol {
+          list-style-type: decimal !important;
+          padding-left: 1.5rem !important;
+          margin: 1rem 0 !important;
+          color: #374151;
+        }
+        .tiptap-article-wrapper .ProseMirror li {
+          margin-bottom: 0.35rem;
+        }
+        .tiptap-article-wrapper .ProseMirror blockquote {
+          border-left: 4px solid #5c1616 !important;
+          padding-left: 1rem !important;
+          font-style: italic !important;
+          color: #4b5563 !important;
+          background-color: #faf9f6 !important;
+          padding-top: 0.5rem !important;
+          padding-bottom: 0.5rem !important;
+          margin: 1.25rem 0 !important;
+          border-radius: 0 0.5rem 0.5rem 0 !important;
+        }
+        .tiptap-article-wrapper .ProseMirror p.is-editor-empty:first-child::before {
+          color: #adb5bd;
+          content: attr(data-placeholder);
+          float: left;
+          height: 0;
+          pointer-events: none;
+        }
+      `}</style>
     </div>
   );
 }
