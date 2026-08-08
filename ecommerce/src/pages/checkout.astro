@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import AddressModal from '../components/AddressModal.astro';
 ---
 
 <Layout title="Checkout & Pembayaran - Ballqish Shoes">
@@ -20,12 +21,40 @@ import Layout from '../layouts/Layout.astro';
         <div class="flex-1 space-y-6">
           
           <!-- Informasi Pengiriman -->
-          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none">
-            <h2 class="text-xs font-heading font-bold text-gray-900 mb-6 uppercase tracking-widest">
-              Informasi Pengiriman
-            </h2>
-            <div class="space-y-5">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none space-y-5">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-gray-100 pb-4">
+              <div>
+                <h2 class="text-xs font-heading font-bold text-gray-900 uppercase tracking-widest">
+                  Informasi Pengiriman
+                </h2>
+                <p class="text-[11px] text-gray-500 font-body mt-0.5">Pilih dari alamat tersimpan atau input alamat baru</p>
+              </div>
+              <button 
+                id="btn-open-address-book" 
+                type="button" 
+                class="inline-flex items-center gap-1.5 text-xs font-heading font-bold text-[#5c1616] hover:text-[#400f0f] uppercase tracking-wider bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Pilih Dari Buku Alamat
+              </button>
+            </div>
+
+            <!-- Active Selected Address Banner -->
+            <div id="selected-address-badge" class="hidden p-3.5 bg-rose-50/60 border border-rose-200/80 rounded-xl flex items-start gap-3">
+              <div class="p-1.5 bg-white text-[#5c1616] rounded-lg shadow-2xs mt-0.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <div class="flex-1 text-xs">
+                <div class="flex items-center gap-2">
+                  <span id="badge-addr-label" class="font-heading font-bold uppercase tracking-wider text-gray-900">Alamat Terpilih</span>
+                  <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-semibold">Tersinkronisasi</span>
+                </div>
+                <p id="badge-addr-detail" class="text-gray-600 mt-1 font-body leading-snug"></p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-heading font-semibold text-gray-900 mb-2 uppercase tracking-wide">Nama Penerima</label>
                   <input type="text" id="cust-name" class="w-full border border-gray-300 px-4 py-3 text-sm font-body focus:outline-none focus:border-gray-900 bg-transparent transition-colors rounded-lg sm:rounded-none" placeholder="John Doe">
@@ -261,6 +290,72 @@ import Layout from '../layouts/Layout.astro';
         });
       });
 
+      // Address Book Integration
+      const btnOpenAddress = document.getElementById('btn-open-address-book');
+      const badgeContainer = document.getElementById('selected-address-badge');
+      const badgeLabel = document.getElementById('badge-addr-label');
+      const badgeDetail = document.getElementById('badge-addr-detail');
+
+      btnOpenAddress?.addEventListener('click', () => {
+        if ((window as any).openAddressModal) {
+          (window as any).openAddressModal();
+        }
+      });
+
+      function applyAddressToForm(addr: any) {
+        if (!addr) return;
+        const nameEl = document.getElementById('cust-name') as HTMLInputElement;
+        const phoneEl = document.getElementById('cust-phone') as HTMLInputElement;
+        const addrEl = document.getElementById('cust-address') as HTMLTextAreaElement;
+
+        if (nameEl) nameEl.value = addr.recipient_name || '';
+        if (phoneEl) phoneEl.value = addr.recipient_phone || '';
+        
+        const fullTxt = [
+          addr.full_address,
+          addr.benchmark_notes ? `(Patokan: ${addr.benchmark_notes})` : '',
+          addr.city ? `${addr.city}, ${addr.province || ''}` : ''
+        ].filter(Boolean).join(' - ');
+
+        if (addrEl) addrEl.value = fullTxt;
+
+        if (badgeContainer && badgeLabel && badgeDetail) {
+          badgeLabel.textContent = `${addr.label_name || 'Rumah'} (${addr.recipient_name})`;
+          badgeDetail.textContent = fullTxt;
+          badgeContainer.classList.remove('hidden');
+        }
+      }
+
+      // Auto-load default address from Supabase
+      try {
+        const { data: defaultAddr } = await supabase
+          .from('user_addresses')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .eq('is_default', true)
+          .maybeSingle();
+
+        if (defaultAddr) {
+          applyAddressToForm(defaultAddr);
+        } else {
+          // If no default, check latest
+          const { data: latestAddr } = await supabase
+            .from('user_addresses')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (latestAddr) applyAddressToForm(latestAddr);
+        }
+      } catch(e) {}
+
+      // Listen for custom event from AddressModal
+      window.addEventListener('addressSelected', (e: any) => {
+        applyAddressToForm(e.detail);
+        if (window.showToast) window.showToast('Alamat berhasil diterapkan!', 'success');
+      });
+
       // Pay Now Logic
       const btnPayNow = document.getElementById('btn-pay-now');
       btnPayNow?.addEventListener('click', async () => {
@@ -329,4 +424,6 @@ import Layout from '../layouts/Layout.astro';
       });
     });
   </script>
+
+  <AddressModal />
 </Layout>

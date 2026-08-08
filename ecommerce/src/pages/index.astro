@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import ProductCard from '../components/ProductCard.astro';
 import Footer from '../components/Footer.astro';
+import AddressModal from '../components/AddressModal.astro';
 import { supabase } from '../lib/supabase';
 import { products as defaultProducts } from '../data/products';
 import bgPantofel from '../assets/backgroundpantofel.jpg';
@@ -254,6 +255,7 @@ const uniqueModels = [...new Set(allProducts.map(p => p.model))].filter(Boolean)
     </div>
   </div>
 
+  <AddressModal />
   <Footer />
 
   <style>
@@ -530,7 +532,7 @@ const uniqueModels = [...new Set(allProducts.map(p => p.model))].filter(Boolean)
       updateCartUI();
       loadOrders();
 
-      // Check if openCart, openFav, or openOrders is in URL
+      // Check if openCart, openFav, openOrders, or openAddress is in URL
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('openCart') === 'true') {
         openModal(cartModal);
@@ -540,6 +542,9 @@ const uniqueModels = [...new Set(allProducts.map(p => p.model))].filter(Boolean)
         window.history.replaceState({}, document.title, window.location.pathname);
       } else if (urlParams.get('openOrders') === 'true') {
         openModal(orderModal);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (urlParams.get('openAddress') === 'true') {
+        if ((window as any).openAddressModal) (window as any).openAddressModal();
         window.history.replaceState({}, document.title, window.location.pathname);
       } else if (urlParams.get('success') === 'true') {
         if (window.showToast) window.showToast('Pembayaran Sukses! Pesanan Anda sedang diproses.', 'success');

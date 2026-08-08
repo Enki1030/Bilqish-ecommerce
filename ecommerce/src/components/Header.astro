@@ -78,6 +78,10 @@
             Login
           </a>
           <div id="user-menu" class="hidden flex items-center gap-3">
+            <button id="desktop-address-btn" title="Buku Alamat Saya" class="text-[11px] font-heading font-semibold text-gray-700 hover:text-primary uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer py-1 px-2.5 rounded-lg hover:bg-gray-100 border border-gray-200">
+              <svg class="w-3.5 h-3.5 text-[#5c1616]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              Alamat
+            </button>
             <div class="h-8 w-8 bg-gray-100 border border-gray-200 rounded-full overflow-hidden flex-shrink-0 cursor-pointer">
               <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile" class="w-full h-full object-cover">
             </div>
@@ -142,6 +146,10 @@
         <button id="mobile-drawer-fav-btn" class="w-full text-left flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-primary py-2.5 transition-colors cursor-pointer">
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
           Sepatu Favorit
+        </button>
+        <button id="mobile-drawer-address-btn" class="w-full text-left flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-primary py-2.5 transition-colors cursor-pointer">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          Buku Alamat Saya
         </button>
       </div>
     </div>
@@ -262,8 +270,13 @@
   const triggerCart = document.getElementById('cart-button');
   const triggerFav = document.getElementById('favorites-btn');
   const triggerOrder = document.getElementById('orders-btn');
+  const triggerAddress = document.getElementById('desktop-address-btn');
 
   function handleModalNavigation(param) {
+    if ((window as any).openAddressModal && param === 'openAddress') {
+      (window as any).openAddressModal();
+      return;
+    }
     if (window.location.pathname !== '/') {
       window.location.href = `/?${param}=true`;
     }
@@ -272,6 +285,7 @@
   triggerCart?.addEventListener('click', () => handleModalNavigation('openCart'));
   triggerFav?.addEventListener('click', () => handleModalNavigation('openFav'));
   triggerOrder?.addEventListener('click', () => handleModalNavigation('openOrders'));
+  triggerAddress?.addEventListener('click', () => handleModalNavigation('openAddress'));
 
   // Mobile Drawer Toggle Logic
   const mobileToggleBtn = document.getElementById('mobile-menu-toggle-btn');
@@ -280,6 +294,7 @@
   const mobileCloseBtn = document.getElementById('mobile-nav-close-btn');
   const mobileDrawerOrders = document.getElementById('mobile-drawer-orders-btn');
   const mobileDrawerFav = document.getElementById('mobile-drawer-fav-btn');
+  const mobileDrawerAddress = document.getElementById('mobile-drawer-address-btn');
 
   function openMobileMenu() {
     mobileBackdrop?.classList.remove('hidden');
@@ -305,5 +320,10 @@
   mobileDrawerFav?.addEventListener('click', () => {
     closeMobileMenu();
     handleModalNavigation('openFav');
+  });
+
+  mobileDrawerAddress?.addEventListener('click', () => {
+    closeMobileMenu();
+    handleModalNavigation('openAddress');
   });
 </script>
