@@ -32,7 +32,7 @@ export default function Layout() {
       <Sidebar isMobileOpen={isMobileOpen} onCloseMobile={() => setIsMobileOpen(false)} />
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto w-full max-w-full">
+      <main className="flex-1 px-2.5 py-4 sm:p-6 md:p-8 overflow-y-auto w-full max-w-full">
         <Outlet />
       </main>
     </div>

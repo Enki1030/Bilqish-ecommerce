@@ -526,7 +526,7 @@ export default function Craftsmen() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6 font-sans">
+    <div className="space-y-6 max-w-[1400px] mx-auto font-sans pb-12">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
@@ -591,8 +591,8 @@ export default function Craftsmen() {
         </div>
       )}
 
-      {/* TABS NAVIGATION */}
-      <div className="border-b border-[#E2E8F0] flex items-center gap-6 text-sm font-medium">
+      {/* TABS NAVIGATION (Scrollable on mobile) */}
+      <div className="border-b border-[#E2E8F0] flex items-center gap-4 sm:gap-6 text-sm font-medium overflow-x-auto no-scrollbar whitespace-nowrap">
         <button
           onClick={() => setActiveTab('craftsmen')}
           className={`pb-3 flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
