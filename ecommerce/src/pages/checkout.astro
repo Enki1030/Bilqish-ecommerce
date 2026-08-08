@@ -14,13 +14,13 @@ import Layout from '../layouts/Layout.astro';
         </a>
       </div>
 
-      <div class="flex flex-col lg:flex-row gap-8">
+      <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
         
         <!-- LEFT: Payment & Shipping Details -->
         <div class="flex-1 space-y-6">
           
           <!-- Informasi Pengiriman -->
-          <div class="bg-white p-8 border border-gray-200">
+          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none">
             <h2 class="text-xs font-heading font-bold text-gray-900 mb-6 uppercase tracking-widest">
               Informasi Pengiriman
             </h2>
@@ -28,29 +28,29 @@ import Layout from '../layouts/Layout.astro';
               <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label class="block text-xs font-heading font-semibold text-gray-900 mb-2 uppercase tracking-wide">Nama Penerima</label>
-                  <input type="text" id="cust-name" class="w-full border border-gray-300 px-4 py-3 text-sm font-body focus:outline-none focus:border-gray-900 bg-transparent transition-colors" placeholder="John Doe">
+                  <input type="text" id="cust-name" class="w-full border border-gray-300 px-4 py-3 text-sm font-body focus:outline-none focus:border-gray-900 bg-transparent transition-colors rounded-lg sm:rounded-none" placeholder="John Doe">
                 </div>
                 <div>
                   <label class="block text-xs font-heading font-semibold text-gray-900 mb-2 uppercase tracking-wide">Nomor Telepon (WA)</label>
-                  <input type="tel" id="cust-phone" class="w-full border border-gray-300 px-4 py-3 text-sm font-body focus:outline-none focus:border-gray-900 bg-transparent transition-colors" placeholder="081234567890">
+                  <input type="tel" id="cust-phone" class="w-full border border-gray-300 px-4 py-3 text-sm font-body focus:outline-none focus:border-gray-900 bg-transparent transition-colors rounded-lg sm:rounded-none" placeholder="081234567890">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-heading font-semibold text-gray-900 mb-2 uppercase tracking-wide">Alamat Lengkap</label>
-                <textarea id="cust-address" rows="3" class="w-full border border-gray-300 px-4 py-3 text-sm font-body focus:outline-none focus:border-gray-900 bg-transparent transition-colors" placeholder="Jl. Sudirman No. 123..."></textarea>
+                <textarea id="cust-address" rows="3" class="w-full border border-gray-300 px-4 py-3 text-sm font-body focus:outline-none focus:border-gray-900 bg-transparent transition-colors rounded-lg sm:rounded-none" placeholder="Jl. Sudirman No. 123..."></textarea>
               </div>
             </div>
           </div>
 
           <!-- Metode Pembayaran -->
-          <div class="bg-white p-8 border border-gray-200">
+          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none">
             <h2 class="text-xs font-heading font-bold text-gray-900 mb-6 uppercase tracking-widest">
               Metode Pembayaran
             </h2>
             
             <div class="space-y-3">
               <!-- E-Wallet -->
-              <label class="payment-method border border-gray-200 p-4 flex items-center cursor-pointer hover:border-gray-900 transition-colors bg-white">
+              <label class="payment-method border border-gray-200 p-4 flex items-center cursor-pointer hover:border-gray-900 transition-colors bg-white rounded-lg sm:rounded-none">
                 <input type="radio" name="payment" value="ewallet" class="text-primary focus:ring-primary mr-4 w-4 h-4">
                 <div class="flex-1">
                   <span class="font-heading font-semibold text-gray-900 block text-sm tracking-wide">E-Wallet</span>
@@ -59,7 +59,7 @@ import Layout from '../layouts/Layout.astro';
               </label>
 
               <!-- Bank Transfer -->
-              <label class="payment-method border border-gray-200 p-4 flex items-center cursor-pointer hover:border-gray-900 transition-colors bg-white">
+              <label class="payment-method border border-gray-200 p-4 flex items-center cursor-pointer hover:border-gray-900 transition-colors bg-white rounded-lg sm:rounded-none">
                 <input type="radio" name="payment" value="bank" class="text-primary focus:ring-primary mr-4 w-4 h-4">
                 <div class="flex-1">
                   <span class="font-heading font-semibold text-gray-900 block text-sm tracking-wide">Transfer Bank (Virtual Account)</span>
@@ -68,7 +68,7 @@ import Layout from '../layouts/Layout.astro';
               </label>
 
               <!-- QRIS -->
-              <label class="payment-method border border-gray-200 p-4 flex items-center cursor-pointer hover:border-gray-900 transition-colors bg-white">
+              <label class="payment-method border border-gray-200 p-4 flex items-center cursor-pointer hover:border-gray-900 transition-colors bg-white rounded-lg sm:rounded-none">
                 <input type="radio" name="payment" value="qris" class="text-primary focus:ring-primary mr-4 w-4 h-4">
                 <div class="flex-1">
                   <span class="font-heading font-semibold text-gray-900 block text-sm tracking-wide">QRIS</span>
@@ -78,7 +78,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
 
             <!-- QRIS Dummy Display -->
-            <div id="qris-display" class="hidden mt-6 p-6 border border-gray-300 text-center bg-[#FAF9F6]">
+            <div id="qris-display" class="hidden mt-6 p-6 border border-gray-300 text-center bg-[#FAF9F6] rounded-xl sm:rounded-none">
               <p class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Scan kode QR (DUMMY)</p>
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DUMMY_PAYMENT_QRIS_BALLQISH" alt="QRIS Dummy" class="mx-auto border border-gray-200 mix-blend-multiply">
               <p class="text-xs text-gray-500 mt-4">Peringatan: Ini hanya demonstrasi e-commerce.</p>
@@ -89,7 +89,7 @@ import Layout from '../layouts/Layout.astro';
 
         <!-- RIGHT: Order Summary -->
         <div class="w-full lg:w-96 flex-shrink-0">
-          <div class="bg-white p-8 border border-gray-200 sticky top-28">
+          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none sticky top-28">
             <h3 class="text-xs font-heading font-bold text-gray-900 uppercase tracking-widest mb-6">Ringkasan Pesanan</h3>
             
             <!-- Items Container -->
@@ -97,12 +97,23 @@ import Layout from '../layouts/Layout.astro';
               <!-- Diisi via JS -->
             </div>
 
-            <!-- Voucher -->
+            <!-- Voucher (Flush aligned & Responsive) -->
             <div class="mb-8 pt-8 border-t border-gray-200">
               <label class="block text-xs font-heading font-semibold text-gray-900 mb-3 uppercase tracking-wide">Kode Voucher</label>
-              <div class="flex">
-                <input type="text" id="voucher-code" class="flex-1 border border-r-0 border-gray-300 px-4 py-3 text-sm font-body focus:outline-none focus:border-gray-900 bg-transparent uppercase transition-colors" placeholder="BQL2026">
-                <button id="apply-voucher" class="bg-gray-900 text-white px-6 py-3 text-xs font-heading font-semibold uppercase tracking-widest hover:bg-primary transition-colors border border-gray-900 hover:border-primary">Apply</button>
+              <div class="flex w-full border border-gray-300 rounded-lg focus-within:border-gray-900 overflow-hidden transition-colors">
+                <input 
+                  type="text" 
+                  id="voucher-code" 
+                  class="flex-1 min-w-0 border-none px-3.5 py-3 text-sm font-body focus:outline-none focus:ring-0 bg-transparent uppercase" 
+                  placeholder="BQL2026"
+                >
+                <button 
+                  id="apply-voucher" 
+                  type="button"
+                  class="bg-gray-900 text-white px-5 sm:px-6 py-3 text-xs font-heading font-semibold uppercase tracking-widest hover:bg-primary transition-colors shrink-0 cursor-pointer"
+                >
+                  Apply
+                </button>
               </div>
             </div>
 
@@ -126,7 +137,7 @@ import Layout from '../layouts/Layout.astro';
               </div>
             </div>
 
-            <button id="btn-pay-now" class="w-full bg-primary border border-primary text-white font-heading font-semibold text-xs uppercase tracking-widest px-4 py-4 hover:bg-gray-900 hover:border-gray-900 transition-colors flex justify-center items-center">
+            <button id="btn-pay-now" class="w-full bg-primary border border-primary text-white font-heading font-semibold text-xs uppercase tracking-widest px-4 py-4 hover:bg-gray-900 hover:border-gray-900 transition-colors flex justify-center items-center rounded-lg sm:rounded-none cursor-pointer">
               Bayar Sekarang
             </button>
             <p class="text-[10px] text-gray-400 text-center mt-4 flex items-center justify-center gap-1">
