@@ -40,26 +40,48 @@
       </div>
 
       {/* Right Icons */}
-      <div class="flex items-center space-x-3 sm:space-x-6">
-        <button id="orders-btn" title="Cek Pesanan" class="p-2 text-gray-600 hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors">
+      <div class="flex items-center space-x-2 sm:space-x-6">
+        {/* Desktop Only: Orders & Favorites */}
+        <button id="orders-btn" title="Cek Pesanan" class="hidden lg:flex p-2 text-gray-600 hover:text-primary items-center gap-2 text-sm font-medium transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
         </button>
-        <button id="favorites-btn" title="Favorit Saya" class="p-2 text-gray-600 hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors">
+        <button id="favorites-btn" title="Favorit Saya" class="hidden lg:flex p-2 text-gray-600 hover:text-primary items-center gap-2 text-sm font-medium transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
         </button>
+
+        {/* Cart Button (Always visible on mobile & desktop) */}
         <button id="cart-button" title="Keranjang Belanja" class="p-2 relative text-gray-600 hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
           <span id="cart-count" class="absolute top-0.5 right-0.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-primary rounded-full hidden">0</span>
         </button>
-        <div id="auth-container" class="relative ml-1 sm:ml-2 border-l border-gray-200 pl-3 sm:pl-4">
+
+        {/* Mobile-Only Auth Action (Clean Login / Logout text button on the right edge) */}
+        <div class="lg:hidden ml-1">
+          <a 
+            href="/login" 
+            id="mobile-login-link" 
+            class="text-[11px] font-heading font-semibold text-gray-900 hover:text-primary uppercase tracking-wider py-1.5 px-3 border border-gray-300 rounded-lg transition-colors hidden"
+          >
+            Login
+          </a>
+          <button 
+            id="mobile-logout-btn" 
+            class="text-[11px] font-heading font-semibold text-rose-600 hover:text-rose-700 uppercase tracking-wider py-1.5 px-3 bg-rose-50 border border-rose-200 rounded-lg transition-colors hidden cursor-pointer"
+          >
+            Logout
+          </button>
+        </div>
+
+        {/* Desktop-Only Auth Container (Profile Box + Logout) */}
+        <div id="auth-container" class="hidden lg:block relative ml-2 border-l border-gray-200 pl-4">
           <a href="/login" id="login-link" class="text-xs font-heading font-semibold text-gray-900 hover:text-primary uppercase tracking-wider transition-colors hidden">
             Login
           </a>
-          <div id="user-menu" class="hidden flex items-center gap-2 sm:gap-3">
-            <div class="h-7 w-7 sm:h-8 sm:w-8 bg-gray-100 border border-gray-200 rounded-full overflow-hidden flex-shrink-0 cursor-pointer">
+          <div id="user-menu" class="hidden flex items-center gap-3">
+            <div class="h-8 w-8 bg-gray-100 border border-gray-200 rounded-full overflow-hidden flex-shrink-0 cursor-pointer">
               <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile" class="w-full h-full object-cover">
             </div>
-            <button id="logout-btn" class="text-xs font-heading font-semibold text-gray-500 hover:text-primary uppercase tracking-wider transition-colors hidden sm:block">
+            <button id="logout-btn" class="text-xs font-heading font-semibold text-gray-500 hover:text-primary uppercase tracking-wider transition-colors cursor-pointer">
               Logout
             </button>
           </div>
@@ -70,34 +92,58 @@
 
   {/* Mobile Navigation Drawer */}
   <div id="mobile-nav-backdrop" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden transition-opacity lg:hidden"></div>
-  <div id="mobile-nav-drawer" class="fixed top-0 bottom-0 left-0 w-[280px] bg-white z-50 shadow-2xl flex flex-col -translate-x-full transition-transform duration-300 ease-in-out lg:hidden">
+  <div id="mobile-nav-drawer" class="fixed top-0 bottom-0 left-0 w-[290px] bg-white z-50 shadow-2xl flex flex-col -translate-x-full transition-transform duration-300 ease-in-out lg:hidden">
+    {/* Drawer Header */}
     <div class="h-16 flex items-center justify-between px-6 border-b border-gray-100">
       <span class="text-lg font-heading font-bold text-primary tracking-widest uppercase">
         BALL<span class="text-gray-900">QISH</span>
       </span>
-      <button id="mobile-nav-close-btn" class="p-2 text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-100">
+      <button id="mobile-nav-close-btn" class="p-2 text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors" aria-label="Tutup Menu">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
 
-    <div class="flex-1 py-6 px-6 space-y-4 overflow-y-auto">
-      <a href="/" class="block text-base font-semibold text-gray-900 hover:text-primary tracking-wide">Koleksi Sepatu</a>
-      <a href="/blog" class="block text-base font-semibold text-gray-700 hover:text-primary tracking-wide">Blog & Cerita</a>
-      <a href="#about" class="block text-base font-semibold text-gray-700 hover:text-primary tracking-wide">Tentang Ballqish</a>
-      <a href="#contact" class="block text-base font-semibold text-gray-700 hover:text-primary tracking-wide">Kontak Kami</a>
-      
-      <hr class="border-gray-100 my-4" />
+    {/* Drawer Body */}
+    <div class="flex-1 py-5 px-6 space-y-4 overflow-y-auto">
+      {/* Profile Box Inside Drawer (Cleanly integrated without cluttering the navbar) */}
+      <div id="drawer-user-profile" class="hidden p-3.5 bg-gray-50 border border-gray-200/70 rounded-2xl items-center gap-3">
+        <div class="h-10 w-10 bg-white border border-gray-200 rounded-full overflow-hidden flex-shrink-0 shadow-2xs">
+          <img id="drawer-user-avatar" src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-0 flex-1">
+          <p id="drawer-user-email" class="text-xs font-semibold text-gray-900 truncate">user@email.com</p>
+          <span class="text-[10px] text-emerald-700 font-medium">Akun Pelanggan Aktif</span>
+        </div>
+      </div>
 
-      <button id="mobile-drawer-orders-btn" class="w-full text-left flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-primary py-2">
-        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-        Lacak Pesanan Saya
-      </button>
-      <button id="mobile-drawer-fav-btn" class="w-full text-left flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-primary py-2">
-        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-        Sepatu Favorit
-      </button>
+      <div id="drawer-guest-login" class="hidden">
+        <a href="/login" class="block w-full py-2.5 px-4 bg-gray-900 text-white text-xs font-heading font-semibold uppercase tracking-wider text-center rounded-xl hover:bg-gray-800 transition-colors">
+          Masuk / Daftar Akun
+        </a>
+      </div>
+
+      <div class="space-y-3 pt-2">
+        <a href="/" class="block text-sm font-semibold text-gray-900 hover:text-primary tracking-wide">Koleksi Sepatu</a>
+        <a href="/blog" class="block text-sm font-semibold text-gray-700 hover:text-primary tracking-wide">Blog & Cerita</a>
+        <a href="#about" class="block text-sm font-semibold text-gray-700 hover:text-primary tracking-wide">Tentang Ballqish</a>
+        <a href="#contact" class="block text-sm font-semibold text-gray-700 hover:text-primary tracking-wide">Kontak Kami</a>
+      </div>
+      
+      <hr class="border-gray-100 my-3" />
+
+      {/* Moved from Mobile Navbar into Drawer */}
+      <div class="space-y-1">
+        <button id="mobile-drawer-orders-btn" class="w-full text-left flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-primary py-2.5 transition-colors cursor-pointer">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+          Lacak Pesanan Saya
+        </button>
+        <button id="mobile-drawer-fav-btn" class="w-full text-left flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-primary py-2.5 transition-colors cursor-pointer">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+          Sepatu Favorit
+        </button>
+      </div>
     </div>
   </div>
 </header>
@@ -105,30 +151,67 @@
 <script>
   import { supabase } from '../lib/supabase';
 
+  // Desktop Auth Elements
   const loginLink = document.getElementById('login-link');
   const userMenu = document.getElementById('user-menu');
   const userAvatar = document.getElementById('user-avatar') as HTMLImageElement;
   const logoutBtn = document.getElementById('logout-btn');
 
+  // Mobile Auth Elements
+  const mobileLoginLink = document.getElementById('mobile-login-link');
+  const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+  const drawerUserProfile = document.getElementById('drawer-user-profile');
+  const drawerGuestLogin = document.getElementById('drawer-guest-login');
+  const drawerUserAvatar = document.getElementById('drawer-user-avatar') as HTMLImageElement;
+  const drawerUserEmail = document.getElementById('drawer-user-email');
+
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
+      // Logged in State
+      const email = session.user.email || 'User';
+      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(email)}&background=111827&color=fff`;
+
+      // Desktop
       if (loginLink) loginLink.classList.add('hidden');
       if (userMenu) {
         userMenu.classList.remove('hidden');
         userMenu.classList.add('flex');
       }
-      
-      const email = session.user.email || 'User';
-      if (userAvatar) {
-        userAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(email)}&background=random&color=fff`;
+      if (userAvatar) userAvatar.src = avatarUrl;
+
+      // Mobile Navbar: Show clean Logout button
+      if (mobileLoginLink) mobileLoginLink.classList.add('hidden');
+      if (mobileLogoutBtn) mobileLogoutBtn.classList.remove('hidden');
+
+      // Mobile Drawer: Show rich User Profile Card
+      if (drawerGuestLogin) drawerGuestLogin.classList.add('hidden');
+      if (drawerUserProfile) {
+        drawerUserProfile.classList.remove('hidden');
+        drawerUserProfile.classList.add('flex');
       }
+      if (drawerUserAvatar) drawerUserAvatar.src = avatarUrl;
+      if (drawerUserEmail) drawerUserEmail.textContent = email;
+
     } else {
+      // Guest State (Not Logged In)
+      // Desktop
       if (loginLink) loginLink.classList.remove('hidden');
       if (userMenu) {
         userMenu.classList.add('hidden');
         userMenu.classList.remove('flex');
+      }
+
+      // Mobile Navbar: Show clean Login button
+      if (mobileLoginLink) mobileLoginLink.classList.remove('hidden');
+      if (mobileLogoutBtn) mobileLogoutBtn.classList.add('hidden');
+
+      // Mobile Drawer: Show Guest Login Card
+      if (drawerGuestLogin) drawerGuestLogin.classList.remove('hidden');
+      if (drawerUserProfile) {
+        drawerUserProfile.classList.add('hidden');
+        drawerUserProfile.classList.remove('flex');
       }
     }
   }
@@ -143,12 +226,13 @@
     }
   });
 
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.reload();
-    });
-  }
+  const performLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
+
+  logoutBtn?.addEventListener('click', performLogout);
+  mobileLogoutBtn?.addEventListener('click', performLogout);
 
   // Global Cart Count Logic
   function updateCartCountGlobal() {
