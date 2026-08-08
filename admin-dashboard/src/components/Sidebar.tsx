@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, LogOut, Wrench, X } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, LogOut, Wrench, X, FileText } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface SidebarProps {
@@ -92,6 +92,17 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile }: Sidebar
           >
             <Wrench size={18} />
             <span>Pengrajin & Bahan</span>
+          </NavLink>
+
+          <NavLink 
+            to="/blog"
+            onClick={handleNavClick}
+            className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-lg text-[14px] font-medium transition-all ${
+              isActive ? 'bg-[#5c1616] text-white shadow-xs' : 'text-[#333333] hover:bg-[#fdf5f5] hover:text-[#5c1616]'
+            }`}
+          >
+            <FileText size={18} />
+            <span>Blog & Artikel</span>
           </NavLink>
         </div>
 
