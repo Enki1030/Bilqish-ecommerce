@@ -234,12 +234,36 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
               </div>
             </details>
           </div>
-
         </div>
       </div>
     </div>
   </main>
   
+  <!-- Mobile Sticky Floating Buy Bar (Visible only on < md screens like Shopee/Tokopedia) -->
+  <div class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 backdrop-blur-md px-4 py-3 border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] flex items-center justify-between gap-3">
+    <div>
+      <span class="text-[10px] text-gray-500 block uppercase tracking-wider font-heading">Total Harga</span>
+      <span class="text-base font-bold text-gray-900 leading-none font-body">Rp {product.price.toLocaleString('id-ID')}</span>
+    </div>
+
+    <div class="flex items-center gap-2 flex-1 max-w-[230px]">
+      <button 
+        id="mobile-add-cart-btn" 
+        type="button" 
+        class="flex-1 py-3 px-2 border border-gray-900 text-gray-900 text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-gray-50 active:scale-95 transition-all text-center cursor-pointer"
+      >
+        + Keranjang
+      </button>
+      <button 
+        id="mobile-buy-now-btn" 
+        type="button" 
+        class="flex-1 py-3 px-2 bg-gray-900 text-white text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-gray-800 active:scale-95 transition-all text-center shadow-xs cursor-pointer"
+      >
+        Beli Sekarang
+      </button>
+    </div>
+  </div>
+
   <Footer />
 
   <style>
@@ -490,6 +514,12 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 
       btnAddToCart?.addEventListener('click', () => handleAddToCart(false));
       btnBuyNow?.addEventListener('click', () => handleAddToCart(true));
+
+      // Mobile Sticky Floating Buttons
+      const mobileAddCartBtn = document.getElementById('mobile-add-cart-btn');
+      const mobileBuyNowBtn = document.getElementById('mobile-buy-now-btn');
+      mobileAddCartBtn?.addEventListener('click', () => handleAddToCart(false));
+      mobileBuyNowBtn?.addEventListener('click', () => handleAddToCart(true));
 
       // Interactive Thumbnail Image Switcher
       function bindThumbnails() {
