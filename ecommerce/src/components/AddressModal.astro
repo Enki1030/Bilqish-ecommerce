@@ -14,8 +14,8 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
       </div>
       <div>
-        <h2 id="address-modal-title" class="text-sm font-heading font-bold text-gray-900 tracking-wider uppercase">Buku Alamat Saya</h2>
-        <p class="text-[11px] text-gray-500 font-body">Kelola lokasi pengiriman & titik GPS kurir</p>
+        <h2 id="address-modal-title" class="text-sm font-sans font-medium text-gray-900 tracking-wider uppercase">Buku Alamat Saya</h2>
+        <p class="text-[11px] font-sans font-normal text-gray-500 mt-0.5">Kelola lokasi pengiriman & titik GPS kurir</p>
       </div>
     </div>
     <button id="close-address-modal" class="text-gray-400 hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100 cursor-pointer">
@@ -24,14 +24,14 @@
   </div>
 
   <!-- Body Content -->
-  <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-[#FAF9F6] hide-scrollbar">
+  <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-[#FAF9F6] hide-scrollbar font-sans">
     
     <!-- VIEW 1: Address List -->
     <div id="address-list-view" class="space-y-4">
       
       <!-- Quick Search / Add Bar on View 1 (Desktop & Mobile) -->
       <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs space-y-2">
-        <label class="block text-[11px] font-heading font-bold text-gray-800 uppercase tracking-wide flex items-center gap-1.5">
+        <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-[#5c1616]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           Cari Lokasi / Tambah Alamat Baru
         </label>
@@ -39,19 +39,19 @@
           <input 
             type="text" 
             id="view1-quick-search" 
-            class="w-full bg-white px-3 py-2 text-xs font-body focus:outline-none placeholder-gray-400" 
+            class="w-full bg-white px-3 py-2 text-xs font-sans font-normal text-gray-800 focus:outline-none placeholder-gray-400" 
             placeholder="Ketik nama daerah (Wonokromo, Cibaduyut...)" 
           />
-          <button id="btn-view1-search-go" type="button" class="bg-[#5c1616] text-white px-3 py-2 text-xs font-semibold hover:bg-[#400f0f] transition-colors cursor-pointer shrink-0">
+          <button id="btn-view1-search-go" type="button" class="bg-[#5c1616] text-white px-3 py-2 text-xs font-sans font-medium hover:bg-[#400f0f] transition-colors cursor-pointer shrink-0">
             Cari di Peta
           </button>
         </div>
       </div>
 
       <div class="flex justify-between items-center pt-1">
-        <span class="text-xs font-heading font-semibold text-gray-600 uppercase tracking-wider">Daftar Alamat Tersimpan</span>
-        <button id="btn-show-add-address" class="inline-flex items-center gap-1.5 text-xs font-heading font-bold text-[#5c1616] hover:text-[#400f0f] uppercase tracking-wider bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200 transition-colors cursor-pointer">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+        <span class="text-xs font-sans font-medium text-gray-500 uppercase tracking-wider">Daftar Alamat Tersimpan</span>
+        <button id="btn-show-add-address" class="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-[#5c1616] hover:text-[#400f0f] uppercase tracking-wider bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200 transition-colors cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
           + Tambah Alamat GPS
         </button>
       </div>
@@ -60,16 +60,16 @@
       <div id="address-cards-container" class="space-y-3">
         <div class="text-center py-12 text-gray-400">
           <svg class="w-12 h-12 mx-auto mb-3 text-gray-300 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-          <p class="text-xs">Memuat daftar alamat...</p>
+          <p class="text-xs font-sans font-normal text-gray-400">Memuat daftar alamat...</p>
         </div>
       </div>
     </div>
 
     <!-- VIEW 2: Form Add/Edit Address with Interactive GPS Map -->
-    <div id="address-form-view" class="hidden space-y-5 bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-xs">
+    <div id="address-form-view" class="hidden space-y-5 bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-xs font-sans">
       <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-        <h3 class="text-xs font-heading font-bold text-gray-900 uppercase tracking-wider">Pinpoint Lokasi & Detail Alamat</h3>
-        <button id="btn-cancel-add-address" class="text-xs font-semibold text-gray-500 hover:text-gray-900 cursor-pointer">
+        <h3 class="text-xs font-sans font-medium text-gray-900 uppercase tracking-wider">Pinpoint Lokasi & Detail Alamat</h3>
+        <button id="btn-cancel-add-address" class="text-xs font-sans font-normal text-gray-500 hover:text-gray-900 cursor-pointer">
           ← Kembali
         </button>
       </div>
@@ -80,13 +80,13 @@
         <!-- Search Header with GPS Button -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
-            <label class="text-[11px] font-heading font-bold text-gray-800 uppercase tracking-wide flex items-center gap-1.5">
+            <label class="text-[11px] font-sans font-medium text-gray-800 uppercase tracking-wide flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5 text-[#5c1616]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
               Cari & Tentukan Lokasi Anda
             </label>
-            <p class="text-[10px] text-gray-500 font-body">Ketik nama daerah atau klik tombol GPS di kanan</p>
+            <p class="text-[10px] font-sans font-normal text-gray-400 mt-0.5">Ketik nama daerah atau klik tombol GPS di kanan</p>
           </div>
-          <button id="btn-detect-gps" type="button" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300/80 px-3 py-1.5 rounded-lg transition-colors cursor-pointer active:scale-95 shadow-2xs">
+          <button id="btn-detect-gps" type="button" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-xs font-sans font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300/80 px-3 py-1.5 rounded-lg transition-colors cursor-pointer active:scale-95 shadow-2xs">
             <svg class="w-3.5 h-3.5 animate-spin hidden" id="gps-spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
             <svg class="w-3.5 h-3.5 text-emerald-700" id="gps-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span>🎯 Aktifkan / Deteksi Lokasi Saya</span>
@@ -95,30 +95,30 @@
 
         <!-- Prominent Keyword Search Box -->
         <div class="relative z-30">
-          <div class="flex items-center border-2 border-gray-900 rounded-xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-[#5c1616]">
-            <div class="pl-3 pr-1 text-gray-500">
-              <svg class="w-4 h-4 text-[#5c1616]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <div class="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-white shadow-xs focus-within:ring-2 focus-within:ring-[#5c1616]">
+            <div class="pl-3 pr-1 text-gray-400">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
             <input 
               type="text" 
               id="map-search-input" 
-              class="w-full bg-white px-2.5 py-2.5 text-xs font-body focus:outline-none placeholder-gray-400" 
+              class="w-full bg-white px-2.5 py-2.5 text-xs font-sans font-normal text-gray-800 focus:outline-none placeholder-gray-400" 
               placeholder="Ketik nama daerah/kecamatan/jalan (contoh: Wonokromo, Cibaduyut, Kebayoran...)" 
             />
             <button id="btn-clear-search" type="button" class="hidden pr-3 text-gray-400 hover:text-gray-900 text-xs cursor-pointer">✕</button>
           </div>
 
           <!-- Dropdown Results (Guaranteed High z-index) -->
-          <div id="map-search-results" class="absolute left-0 right-0 top-full mt-1.5 bg-white border border-gray-200 rounded-xl shadow-2xl z-[9999] max-h-56 overflow-y-auto hidden text-xs font-body divide-y divide-gray-100"></div>
+          <div id="map-search-results" class="absolute left-0 right-0 top-full mt-1.5 bg-white border border-gray-200 rounded-xl shadow-2xl z-[9999] max-h-56 overflow-y-auto hidden text-xs font-sans font-normal divide-y divide-gray-100"></div>
         </div>
 
         <!-- Quick Region Chips -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-[11px]">
-          <span class="text-gray-400 text-[10px] shrink-0 font-medium">Contoh:</span>
+          <span class="text-gray-400 text-[10px] shrink-0 font-sans font-normal">Contoh:</span>
           {['Wonokromo, Surabaya', 'Cibaduyut, Bandung', 'Kemang, Jakarta', 'Malioboro, Jogja', 'Simpang Lima, Semarang'].map(chip => (
             <button 
               type="button" 
-              class="quick-search-chip shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-800 px-2.5 py-1 rounded-full text-[10px] font-medium border border-gray-200 transition-colors cursor-pointer"
+              class="quick-search-chip shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 rounded-full text-[10px] font-sans font-normal border border-gray-200 transition-colors cursor-pointer"
               data-query={chip}
             >
               {chip}
@@ -128,30 +128,30 @@
 
         <!-- The Leaflet Map Canvas -->
         <div class="relative">
-          <div id="address-map" class="w-full h-56 sm:h-64 rounded-xl border-2 border-gray-300 z-10 overflow-hidden shadow-inner"></div>
+          <div id="address-map" class="w-full h-56 sm:h-64 rounded-xl border border-gray-300 z-10 overflow-hidden shadow-inner"></div>
           
           <!-- Status Banner inside Map -->
-          <div id="map-status-toast" class="absolute bottom-2.5 left-2.5 right-2.5 z-[500] bg-white/95 backdrop-blur-sm border border-gray-900/40 px-3 py-1.5 rounded-lg text-[11px] font-medium text-gray-900 shadow-md flex items-center justify-between">
-            <span id="map-status-text">📍 Geser pin merah atau ketik nama daerah untuk memilih titik rumah.</span>
-            <span class="text-[9px] bg-rose-100 text-[#5c1616] px-1.5 py-0.5 rounded font-bold uppercase shrink-0 ml-2">Pin Aktif</span>
+          <div id="map-status-toast" class="absolute bottom-2.5 left-2.5 right-2.5 z-[500] bg-white/95 backdrop-blur-sm border border-gray-200 px-3 py-1.5 rounded-lg text-[11px] font-sans font-normal text-gray-700 shadow-md flex items-center justify-between">
+            <span id="map-status-text">📍 Geser pin atau ketik nama daerah untuk memilih titik rumah.</span>
+            <span class="text-[9px] font-sans font-medium bg-rose-50 text-[#5c1616] border border-rose-200 px-1.5 py-0.5 rounded uppercase shrink-0 ml-2">Pin Aktif</span>
           </div>
         </div>
       </div>
 
       <!-- FORM FIELDS -->
-      <form id="form-user-address" class="space-y-3.5 pt-2">
+      <form id="form-user-address" class="space-y-3.5 pt-2 font-sans">
         <input type="hidden" id="addr-id" value="" />
         <input type="hidden" id="addr-lat" value="" />
         <input type="hidden" id="addr-lng" value="" />
 
         <!-- Label Type -->
         <div>
-          <label class="block text-[11px] font-heading font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Label Alamat</label>
+          <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide mb-1.5">Label Alamat</label>
           <div class="flex gap-2">
             {['Rumah', 'Kantor', 'Apartemen', 'Toko'].map(label => (
               <button 
                 type="button" 
-                class="addr-label-btn flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg border border-gray-200 text-gray-700 hover:border-gray-900 transition-colors cursor-pointer"
+                class="addr-label-btn flex-1 py-1.5 px-2 text-xs font-sans font-medium rounded-lg border border-gray-200 text-gray-700 hover:border-gray-900 transition-colors cursor-pointer"
                 data-label={label}
               >
                 {label}
@@ -164,47 +164,47 @@
         <!-- Recipient & Phone -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-[11px] font-heading font-semibold text-gray-700 uppercase tracking-wide mb-1">Nama Penerima *</label>
-            <input type="text" id="addr-recipient" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-body focus:outline-none focus:border-gray-900" placeholder="Contoh: Budi Santoso" />
+            <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide mb-1">Nama Penerima *</label>
+            <input type="text" id="addr-recipient" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616]" placeholder="Contoh: Budi Santoso" />
           </div>
           <div>
-            <label class="block text-[11px] font-heading font-semibold text-gray-700 uppercase tracking-wide mb-1">No. WhatsApp *</label>
-            <input type="tel" id="addr-phone" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-body focus:outline-none focus:border-gray-900" placeholder="08123456789" />
+            <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide mb-1">No. WhatsApp *</label>
+            <input type="tel" id="addr-phone" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616]" placeholder="08123456789" />
           </div>
         </div>
 
         <!-- Full Address -->
         <div>
-          <label class="block text-[11px] font-heading font-semibold text-gray-700 uppercase tracking-wide mb-1">Alamat Lengkap (Nama Jalan, No. Rumah, RT/RW) *</label>
-          <textarea id="addr-full" rows="2" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-body focus:outline-none focus:border-gray-900" placeholder="Jl. Terusan Buah Batu No. 45, RT 02/RW 04"></textarea>
+          <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide mb-1">Alamat Lengkap (Nama Jalan, No. Rumah, RT/RW) *</label>
+          <textarea id="addr-full" rows="2" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616]" placeholder="Jl. Terusan Buah Batu No. 45, RT 02/RW 04"></textarea>
         </div>
 
         <!-- City & Province -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[11px] font-heading font-semibold text-gray-700 uppercase tracking-wide mb-1">Kota / Kabupaten</label>
-            <input type="text" id="addr-city" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-body focus:outline-none focus:border-gray-900" placeholder="Bandung" />
+            <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide mb-1">Kota / Kabupaten</label>
+            <input type="text" id="addr-city" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616]" placeholder="Bandung" />
           </div>
           <div>
-            <label class="block text-[11px] font-heading font-semibold text-gray-700 uppercase tracking-wide mb-1">Provinsi</label>
-            <input type="text" id="addr-province" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-body focus:outline-none focus:border-gray-900" placeholder="Jawa Barat" />
+            <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide mb-1">Provinsi</label>
+            <input type="text" id="addr-province" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616]" placeholder="Jawa Barat" />
           </div>
         </div>
 
         <!-- Benchmark / Notes -->
         <div>
-          <label class="block text-[11px] font-heading font-semibold text-gray-700 uppercase tracking-wide mb-1">Patokan Kurir (Opsional)</label>
-          <input type="text" id="addr-notes" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-body focus:outline-none focus:border-gray-900" placeholder="Contoh: Pagar hitam, depan pos satpam" />
+          <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide mb-1">Patokan Kurir (Opsional)</label>
+          <input type="text" id="addr-notes" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616]" placeholder="Contoh: Pagar hitam, depan pos satpam" />
         </div>
 
         <!-- Is Default -->
         <div class="flex items-center gap-2 pt-1">
           <input type="checkbox" id="addr-is-default" class="rounded border-gray-300 text-[#5c1616] focus:ring-[#5c1616] w-4 h-4 cursor-pointer" />
-          <label for="addr-is-default" class="text-xs font-medium text-gray-800 cursor-pointer">Jadikan sebagai Alamat Utama</label>
+          <label for="addr-is-default" class="text-xs font-sans font-normal text-gray-600 cursor-pointer">Jadikan sebagai Alamat Utama</label>
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" id="btn-save-address" class="w-full mt-2 bg-[#5c1616] hover:bg-[#400f0f] text-white font-heading font-semibold text-xs uppercase tracking-widest py-3 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs">
+        <button type="submit" id="btn-save-address" class="w-full mt-2 bg-[#5c1616] hover:bg-[#400f0f] text-white font-sans font-medium text-xs uppercase tracking-widest py-3 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs">
           Simpan Alamat
         </button>
       </form>
@@ -594,13 +594,13 @@
 
     if (error || !data || data.length === 0) {
       cardsContainer.innerHTML = `
-        <div class="bg-white p-8 rounded-xl border border-gray-200 text-center space-y-3">
+        <div class="bg-white p-8 rounded-xl border border-gray-200 text-center space-y-3 font-sans">
           <div class="w-10 h-10 bg-rose-50 text-[#5c1616] rounded-full flex items-center justify-center mx-auto">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
           </div>
-          <p class="text-xs font-semibold text-gray-800">Belum ada alamat tersimpan</p>
-          <p class="text-[11px] text-gray-500">Tambahkan alamat pertama Anda untuk mempermudah dan mempercepat proses checkout!</p>
-          <button id="btn-add-first" class="bg-[#5c1616] text-white text-xs font-heading font-semibold uppercase px-4 py-2 rounded-lg hover:bg-[#400f0f] transition-colors cursor-pointer">
+          <p class="text-xs font-sans font-medium text-gray-800">Belum ada alamat tersimpan</p>
+          <p class="text-[11px] font-sans font-normal text-gray-500">Tambahkan alamat pertama Anda untuk mempermudah dan mempercepat proses checkout!</p>
+          <button id="btn-add-first" class="bg-[#5c1616] text-white text-xs font-sans font-medium uppercase px-4 py-2 rounded-lg hover:bg-[#400f0f] transition-colors cursor-pointer">
             + Tambah Alamat Sekarang
           </button>
         </div>
@@ -616,37 +616,37 @@
   function renderAddressCards() {
     if (!cardsContainer) return;
     cardsContainer.innerHTML = userAddresses.map((addr) => `
-      <div class="bg-white p-4 rounded-xl border ${addr.is_default ? 'border-[#5c1616] ring-1 ring-[#5c1616]' : 'border-gray-200'} shadow-xs space-y-2.5 relative">
+      <div class="bg-white p-4 rounded-xl border ${addr.is_default ? 'border-[#5c1616] ring-1 ring-[#5c1616]' : 'border-gray-200'} shadow-xs space-y-2.5 relative font-sans">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-heading font-bold uppercase tracking-wider text-gray-900">${addr.label_name || 'Rumah'}</span>
-            ${addr.is_default ? '<span class="text-[9px] font-heading font-bold text-white bg-[#5c1616] px-2 py-0.5 rounded-full uppercase tracking-wider">Utama</span>' : ''}
+            <span class="text-xs font-sans font-medium uppercase tracking-wider text-gray-900">${addr.label_name || 'Rumah'}</span>
+            ${addr.is_default ? '<span class="text-[9px] font-sans font-medium text-white bg-[#5c1616] px-2 py-0.5 rounded-full uppercase tracking-wider">Utama</span>' : ''}
           </div>
           <div class="flex items-center gap-2">
-            <button class="btn-edit-addr text-xs text-gray-500 hover:text-gray-900 cursor-pointer" data-id="${addr.id}">Edit</button>
-            <button class="btn-delete-addr text-xs text-rose-600 hover:text-rose-800 cursor-pointer" data-id="${addr.id}">Hapus</button>
+            <button class="btn-edit-addr text-xs font-sans font-normal text-gray-400 hover:text-gray-900 cursor-pointer" data-id="${addr.id}">Edit</button>
+            <button class="btn-delete-addr text-xs font-sans font-normal text-rose-600 hover:text-rose-800 cursor-pointer" data-id="${addr.id}">Hapus</button>
           </div>
         </div>
 
         <div>
-          <p class="text-xs font-bold text-gray-900">${addr.recipient_name} <span class="font-normal text-gray-500">(${addr.recipient_phone})</span></p>
-          <p class="text-xs text-gray-600 mt-1 font-body">${addr.full_address}</p>
-          ${addr.benchmark_notes ? `<p class="text-[11px] text-gray-500 mt-0.5 italic font-body">Patokan: ${addr.benchmark_notes}</p>` : ''}
-          ${addr.city ? `<p class="text-[11px] text-gray-400 mt-0.5">${addr.city}, ${addr.province || ''}</p>` : ''}
+          <p class="text-xs font-sans font-medium text-gray-900">${addr.recipient_name} <span class="font-sans font-normal text-gray-400">(${addr.recipient_phone})</span></p>
+          <p class="text-xs font-sans font-normal text-gray-600 mt-1 leading-relaxed">${addr.full_address}</p>
+          ${addr.benchmark_notes ? `<p class="text-[11px] font-sans font-normal text-gray-400 mt-0.5 italic">Patokan: ${addr.benchmark_notes}</p>` : ''}
+          ${addr.city ? `<p class="text-[11px] font-sans font-normal text-gray-400 mt-0.5">${addr.city}, ${addr.province || ''}</p>` : ''}
         </div>
 
         ${!addr.is_default ? `
           <div class="pt-2 border-t border-gray-100 flex justify-between items-center">
-            <button class="btn-set-default text-[11px] font-semibold text-[#5c1616] hover:underline cursor-pointer" data-id="${addr.id}">
+            <button class="btn-set-default text-[11px] font-sans font-medium text-[#5c1616] hover:underline cursor-pointer" data-id="${addr.id}">
               Jadikan Alamat Utama
             </button>
-            <button class="btn-use-checkout text-[11px] font-semibold bg-gray-900 text-white px-3 py-1 rounded-md hover:bg-primary transition-colors cursor-pointer" data-id="${addr.id}">
+            <button class="btn-use-checkout text-[11px] font-sans font-medium bg-gray-900 text-white px-3 py-1 rounded-md hover:bg-primary transition-colors cursor-pointer" data-id="${addr.id}">
               Gunakan Alamat Ini
             </button>
           </div>
         ` : `
           <div class="pt-2 border-t border-gray-100 flex justify-end">
-            <button class="btn-use-checkout text-[11px] font-semibold bg-[#5c1616] text-white px-3 py-1 rounded-md hover:bg-[#400f0f] transition-colors cursor-pointer" data-id="${addr.id}">
+            <button class="btn-use-checkout text-[11px] font-sans font-medium bg-[#5c1616] text-white px-3 py-1 rounded-md hover:bg-[#400f0f] transition-colors cursor-pointer" data-id="${addr.id}">
               Gunakan Alamat Ini
             </button>
           </div>
