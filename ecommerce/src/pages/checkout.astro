@@ -41,23 +41,45 @@ import AddressModal from '../components/AddressModal.astro';
               </button>
             </div>
 
-            <!-- Saved Addresses Dropdown Selector -->
-            <div id="saved-address-dropdown-container" class="hidden space-y-1.5">
-              <div class="flex items-center justify-between">
-                <label for="checkout-saved-address-select" class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide">
-                  Pilih Dari Buku Alamat
-                </label>
-                <span class="text-[10px] text-emerald-700 font-sans font-medium bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                  ⭐ Alamat Utama Otomatis Terpilih
-                </span>
-              </div>
-              <div class="relative">
-                <select 
-                  id="checkout-saved-address-select" 
-                  class="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2.5 text-xs font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] cursor-pointer shadow-xs"
+            <!-- Custom Interactive Saved Addresses Dropdown Card -->
+            <div id="saved-address-dropdown-container" class="hidden space-y-2 font-sans">
+              <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide">
+                Alamat Pengiriman
+              </label>
+              
+              <div class="relative" id="address-picker-wrapper">
+                <!-- Trigger Box (Current Selected Address) -->
+                <button 
+                  id="address-dropdown-trigger" 
+                  type="button" 
+                  class="w-full text-left bg-white hover:bg-rose-50/20 border border-gray-300 hover:border-[#5c1616] p-3.5 rounded-xl transition-all flex items-center justify-between gap-3 shadow-xs cursor-pointer"
                 >
-                  <!-- Diisi via JavaScript -->
-                </select>
+                  <div class="min-w-0 flex-1 space-y-1">
+                    <div class="flex items-center gap-2">
+                      <span id="selected-addr-label" class="text-xs font-sans font-medium uppercase tracking-wider text-gray-900">
+                        Memuat Alamat...
+                      </span>
+                      <span id="selected-addr-badge" class="text-[9px] font-sans font-medium text-[#5c1616] bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded-full uppercase hidden">
+                        Utama
+                      </span>
+                    </div>
+                    <p id="selected-addr-detail" class="text-xs font-sans font-normal text-gray-500 line-clamp-1">
+                      ...
+                    </p>
+                  </div>
+                  <div class="text-gray-400 shrink-0 flex items-center gap-1 text-xs font-sans font-normal">
+                    <span>Ganti</span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </button>
+
+                <!-- Expandable Dropdown List -->
+                <div 
+                  id="address-dropdown-menu" 
+                  class="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto hidden divide-y divide-gray-100 font-sans"
+                >
+                  <!-- Diisi via JavaScript dengan semua alamat tersimpan yang terstruktur rapi -->
+                </div>
               </div>
             </div>
 
@@ -298,11 +320,17 @@ import AddressModal from '../components/AddressModal.astro';
         });
       });
 
-      // Address Book & Dropdown Selector Integration
+      // Address Book & Interactive Dropdown Integration
       const btnOpenAddress = document.getElementById('btn-open-address-book');
       const savedDropdownContainer = document.getElementById('saved-address-dropdown-container');
-      const savedAddressSelect = document.getElementById('checkout-saved-address-select') as HTMLSelectElement;
+      const dropdownTrigger = document.getElementById('address-dropdown-trigger');
+      const dropdownMenu = document.getElementById('address-dropdown-menu');
+      const selectedAddrLabel = document.getElementById('selected-addr-label');
+      const selectedAddrBadge = document.getElementById('selected-addr-badge');
+      const selectedAddrDetail = document.getElementById('selected-addr-detail');
+
       let userSavedAddresses: any[] = [];
+      let currentSelectedAddressId: string | null = null;
 
       btnOpenAddress?.addEventListener('click', () => {
         if ((window as any).openAddressModal) {
@@ -310,8 +338,23 @@ import AddressModal from '../components/AddressModal.astro';
         }
       });
 
+      // Toggle dropdown open / close
+      dropdownTrigger?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownMenu?.classList.toggle('hidden');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e: any) => {
+        if (!e.target.closest('#address-picker-wrapper')) {
+          dropdownMenu?.classList.add('hidden');
+        }
+      });
+
       function applyAddressToForm(addr: any) {
         if (!addr) return;
+        currentSelectedAddressId = addr.id;
+
         const nameEl = document.getElementById('cust-name') as HTMLInputElement;
         const phoneEl = document.getElementById('cust-phone') as HTMLInputElement;
         const addrEl = document.getElementById('cust-address') as HTMLTextAreaElement;
@@ -326,9 +369,95 @@ import AddressModal from '../components/AddressModal.astro';
         ].filter(Boolean).join(' - ');
 
         if (addrEl && fullTxt) addrEl.value = fullTxt;
+
+        // Update trigger display box
+        if (selectedAddrLabel) {
+          selectedAddrLabel.textContent = `${addr.label_name || 'Rumah'} (${addr.recipient_name || 'Pelanggan'})`;
+        }
+
+        if (selectedAddrBadge) {
+          if (addr.is_default) {
+            selectedAddrBadge.classList.remove('hidden');
+          } else {
+            selectedAddrBadge.classList.add('hidden');
+          }
+        }
+
+        if (selectedAddrDetail) {
+          selectedAddrDetail.textContent = fullTxt || addr.full_address || '';
+        }
       }
 
-      // Load Saved Addresses & Populate Dropdown
+      // Render Dropdown Items
+      function renderDropdownMenu() {
+        if (!dropdownMenu) return;
+
+        dropdownMenu.innerHTML = `
+          ${userSavedAddresses.map(addr => {
+            const isSelected = addr.id === currentSelectedAddressId;
+            const fullTxt = [
+              addr.full_address,
+              addr.benchmark_notes ? `Patokan: ${addr.benchmark_notes}` : '',
+              addr.city ? `${addr.city}` : ''
+            ].filter(Boolean).join(' • ');
+
+            return `
+              <div 
+                class="address-dropdown-item p-3.5 hover:bg-rose-50/40 cursor-pointer transition-colors flex items-start justify-between gap-3 ${isSelected ? 'bg-rose-50/30' : ''}" 
+                data-id="${addr.id}"
+              >
+                <div class="space-y-1 min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-sans font-medium uppercase tracking-wider text-gray-900">
+                      ${addr.label_name || 'Rumah'} (${addr.recipient_name})
+                    </span>
+                    ${addr.is_default ? '<span class="text-[9px] font-sans font-medium text-[#5c1616] bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded-full uppercase">Utama</span>' : ''}
+                  </div>
+                  <p class="text-xs font-sans font-normal text-gray-500 line-clamp-1 leading-relaxed">
+                    ${fullTxt || addr.full_address}
+                  </p>
+                </div>
+                ${isSelected ? '<span class="text-[#5c1616] text-xs font-bold shrink-0 mt-0.5">Terpilih</span>' : ''}
+              </div>
+            `;
+          }).join('')}
+          
+          <button 
+            type="button" 
+            id="btn-dropdown-add-new" 
+            class="w-full p-3 text-left bg-gray-50 hover:bg-gray-100 text-[#5c1616] font-sans font-medium text-xs flex items-center gap-2 transition-colors cursor-pointer border-t border-gray-100"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>Kelola / Tambah Alamat Baru di Peta...</span>
+          </button>
+        `;
+
+        // Click on an address item
+        dropdownMenu.querySelectorAll('.address-dropdown-item').forEach(item => {
+          item.addEventListener('click', (e: any) => {
+            const id = e.currentTarget.dataset.id;
+            const chosen = userSavedAddresses.find(a => a.id === id);
+            if (chosen) {
+              applyAddressToForm(chosen);
+              renderDropdownMenu();
+              dropdownMenu.classList.add('hidden');
+              if ((window as any).showToast) {
+                (window as any).showToast(`Alamat "${chosen.label_name}" diterapkan!`, 'info');
+              }
+            }
+          });
+        });
+
+        // Click on Add New button
+        document.getElementById('btn-dropdown-add-new')?.addEventListener('click', () => {
+          dropdownMenu.classList.add('hidden');
+          if ((window as any).openAddressModal) {
+            (window as any).openAddressModal();
+          }
+        });
+      }
+
+      // Load Saved Addresses from Supabase
       async function loadSavedAddressesForCheckout(selectedIdToPick: string | null = null) {
         try {
           const { data: addresses, error } = await supabase
@@ -346,48 +475,19 @@ import AddressModal from '../components/AddressModal.astro';
           userSavedAddresses = addresses;
           savedDropdownContainer?.classList.remove('hidden');
 
-          if (savedAddressSelect) {
-            savedAddressSelect.innerHTML = `
-              ${addresses.map((addr) => `
-                <option value="${addr.id}">
-                  ${addr.is_default ? '⭐ [Alamat Utama]' : '📍'} ${addr.label_name || 'Rumah'} - ${addr.recipient_name} (${addr.full_address ? addr.full_address.split(',')[0] : ''})
-                </option>
-              `).join('')}
-              <option value="ADD_NEW">➕ Kelola / Tambah Alamat Baru di Peta...</option>
-            `;
+          // Pick requested ID or Default Address (which is guaranteed 1st element)
+          const targetAddr = selectedIdToPick 
+            ? addresses.find(a => a.id === selectedIdToPick) 
+            : addresses[0];
 
-            // If a specific ID is requested, pick it; otherwise pick the default address (which is first in the list)
-            const targetAddr = selectedIdToPick 
-              ? addresses.find(a => a.id === selectedIdToPick) 
-              : addresses[0];
-
-            if (targetAddr) {
-              savedAddressSelect.value = targetAddr.id;
-              applyAddressToForm(targetAddr);
-            }
+          if (targetAddr) {
+            applyAddressToForm(targetAddr);
           }
+          renderDropdownMenu();
         } catch(e) {
           console.warn('Error loading addresses in checkout', e);
         }
       }
-
-      // Dropdown Change Handler
-      savedAddressSelect?.addEventListener('change', (e: any) => {
-        const val = e.target.value;
-        if (val === 'ADD_NEW') {
-          if ((window as any).openAddressModal) {
-            (window as any).openAddressModal();
-          }
-        } else {
-          const chosen = userSavedAddresses.find(a => a.id === val);
-          if (chosen) {
-            applyAddressToForm(chosen);
-            if ((window as any).showToast) {
-              (window as any).showToast(`Alamat "${chosen.label_name}" dipilih!`, 'info');
-            }
-          }
-        }
-      });
 
       // Initial Load
       await loadSavedAddressesForCheckout();
