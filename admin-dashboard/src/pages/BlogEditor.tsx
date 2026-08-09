@@ -240,58 +240,99 @@ export default function BlogEditor() {
     }
   };
 
+  // Helper to ensure unique slug in Supabase
+  const resolveUniqueSlug = async (rawSlug: string, currentId?: string): Promise<string> => {
+    let cleanSlug = rawSlug
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+
+    if (!cleanSlug) {
+      cleanSlug = `artikel-${Date.now()}`;
+    }
+
+    let candidateSlug = cleanSlug;
+    let counter = 1;
+
+    while (true) {
+      let query = supabase
+        .from('articles')
+        .select('id')
+        .eq('slug', candidateSlug);
+
+      if (currentId) {
+        query = query.neq('id', currentId);
+      }
+
+      const { data, error } = await query.maybeSingle();
+
+      // If no other article has this slug, it's safe and unique!
+      if (!data || error) {
+        return candidateSlug;
+      }
+
+      // Suffix with incrementing counter
+      counter++;
+      candidateSlug = `${cleanSlug}-${counter}`;
+    }
+  };
+
   // Save Article
   const handleSave = async (publishStatus: 'Draft' | 'Published') => {
     if (!title.trim()) {
       alert('Mohon isi judul artikel');
       return;
     }
-    if (!slug.trim()) {
-      alert('Mohon tentukan URL Slug artikel');
-      return;
-    }
     if (!editor) return;
 
     setSaving(true);
-    const contentHtml = editor.getHTML();
 
-    const payload: any = {
-      title,
-      slug,
-      excerpt,
-      content: contentHtml,
-      cover_image: coverImage,
-      category,
-      author_name: authorName,
-      status: publishStatus,
-      read_time_minutes: readTimeMinutes,
-      featured_product_ids: featuredProductIds,
-      updated_at: new Date().toISOString()
-    };
+    try {
+      // Resolve unique slug automatically
+      const uniqueSlug = await resolveUniqueSlug(slug || title, id);
+      setSlug(uniqueSlug);
 
-    if (!id) {
-      payload.published_at = new Date().toISOString();
-      const { data, error } = await supabase.from('articles').insert([payload]).select().single();
-      if (error) {
-        alert(`Gagal menyimpan artikel: ${error.message}`);
-        setSaving(false);
-        return;
+      const contentHtml = editor.getHTML();
+
+      const payload: any = {
+        title: title.trim(),
+        slug: uniqueSlug,
+        excerpt: excerpt.trim(),
+        content: contentHtml,
+        cover_image: coverImage,
+        category,
+        author_name: authorName,
+        status: publishStatus,
+        read_time_minutes: readTimeMinutes,
+        featured_product_ids: featuredProductIds,
+        updated_at: new Date().toISOString()
+      };
+
+      if (!id) {
+        payload.published_at = new Date().toISOString();
+        const { data, error } = await supabase.from('articles').insert([payload]).select().single();
+        if (error) {
+          throw error;
+        }
+      } else {
+        const { error } = await supabase.from('articles').update(payload).eq('id', id);
+        if (error) {
+          throw error;
+        }
       }
-    } else {
-      const { error } = await supabase.from('articles').update(payload).eq('id', id);
-      if (error) {
-        alert(`Gagal memperbarui artikel: ${error.message}`);
-        setSaving(false);
-        return;
-      }
+
+      // Trigger Cloudflare Pages auto-build in background so E-Commerce static catalog updates
+      fetch('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/984ad6b4-c842-44cb-a50e-855dbfb7d6d4', { method: 'POST' }).catch(console.error);
+
+      setSaving(false);
+      alert(publishStatus === 'Published' ? 'Artikel berhasil diterbitkan!' : 'Draf artikel berhasil disimpan!');
+      navigate('/blog');
+    } catch (err: any) {
+      console.error('Save Article Error:', err);
+      alert(`Gagal menyimpan artikel: ${err.message || 'Terjadi kesalahan sistem'}`);
+      setSaving(false);
     }
-
-    // Trigger Cloudflare Pages auto-build in background so E-Commerce static catalog updates
-    fetch('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/984ad6b4-c842-44cb-a50e-855dbfb7d6d4', { method: 'POST' }).catch(console.error);
-
-    setSaving(false);
-    alert(publishStatus === 'Published' ? 'Artikel berhasil diterbitkan!' : 'Draf artikel berhasil disimpan!');
-    navigate('/blog');
   };
 
   const toggleProductSelect = (pId: string) => {
