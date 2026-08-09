@@ -312,7 +312,7 @@ export default function BlogEditor() {
   }
 
   return (
-    <div className="space-y-6 pb-20 max-w-5xl mx-auto">
+    <div className="space-y-6 pb-20 w-full">
       
       {/* Top Bar Navigation & Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs sticky top-4 z-30">
@@ -346,10 +346,10 @@ export default function BlogEditor() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
         
-        {/* LEFT / MAIN COLUMN: Notion-Style Document Canvas */}
-        <div className="lg:col-span-8 space-y-6">
+        {/* LEFT / MAIN COLUMN: Expansive Document Canvas */}
+        <div className="lg:col-span-8 xl:col-span-9 space-y-6">
           
           <div className="bg-white p-6 sm:p-10 rounded-2xl border border-gray-200 shadow-xs space-y-6">
             
@@ -603,25 +603,30 @@ export default function BlogEditor() {
               </BubbleMenu>
             )}
 
-            {/* EDITOR CANVAS */}
+            {/* EXPANSIVE EDITOR CANVAS (Click anywhere to type) */}
             <div 
+              onClick={(e) => {
+                if (editor && !(e.target as HTMLElement).closest('button, a, input, img')) {
+                  if (editor.isEmpty) {
+                    editor.commands.focus('start');
+                  } else {
+                    editor.commands.focus();
+                  }
+                }
+              }}
               onDrop={handleEditorDrop} 
               onDragOver={e => e.preventDefault()}
-              className="min-h-[400px] border border-dashed border-gray-200 rounded-xl p-4 sm:p-6 focus-within:border-[#5c1616] transition-colors bg-white cursor-text tiptap-article-wrapper"
+              className="min-h-[500px] border border-dashed border-gray-200 rounded-xl p-4 sm:p-8 focus-within:border-[#5c1616] transition-colors bg-white cursor-text tiptap-article-wrapper flex flex-col"
             >
-              <EditorContent editor={editor} className="prose max-w-none focus:outline-none min-h-[360px]" />
+              <EditorContent editor={editor} className="prose max-w-none focus:outline-none flex-1 min-h-[460px]" />
             </div>
-
-            <p className="text-[11px] text-gray-400 italic">
-              💡 Tip: Sorot teks dengan mouse untuk format cepat, atau tarik foto langsung dari laptop Anda ke dalam lembar editor (otomatis terkonversi WebP).
-            </p>
 
           </div>
 
         </div>
 
         {/* RIGHT COLUMN: Settings, Cover, & Product Promotion */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 xl:col-span-3 space-y-6">
           
           {/* Cover Image Upload Box */}
           <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
@@ -725,11 +730,7 @@ export default function BlogEditor() {
               <Sparkles size={16} className="text-[#5c1616]" />
             </div>
 
-            <p className="text-[11px] text-gray-500">
-              Pilih sepatu yang ingin ditampilkan di akhir artikel agar pembaca bisa langsung membelinya:
-            </p>
-
-            <div className="space-y-2 max-h-56 overflow-y-auto no-scrollbar pt-1">
+            <div className="space-y-2 max-h-60 overflow-y-auto no-scrollbar pt-1">
               {products.map(prod => {
                 const isSelected = featuredProductIds.includes(prod.id);
                 return (
@@ -763,6 +764,15 @@ export default function BlogEditor() {
 
       {/* Editor ProseMirror Styling */}
       <style>{`
+        .tiptap-article-wrapper {
+          cursor: text;
+        }
+        .tiptap-article-wrapper .ProseMirror {
+          min-height: 460px;
+          height: 100%;
+          cursor: text;
+          outline: none;
+        }
         .tiptap-article-wrapper .ProseMirror:focus {
           outline: none;
         }
