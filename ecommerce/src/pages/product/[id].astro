@@ -527,11 +527,8 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
         window.dispatchEvent(new Event('cartUpdated'));
 
         if (buyNow) {
-          // If buy now, we could theoretically redirect directly to checkout page, 
-          // or just open the cart modal. For now, redirect home to open cart.
-          setTimeout(() => {
-            window.location.href = '/?openCart=true';
-          }, 500);
+          // Direct redirect to checkout without intermediate modal
+          window.location.href = '/checkout';
         }
       }
 

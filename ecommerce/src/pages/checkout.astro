@@ -22,84 +22,86 @@ import AddressModal from '../components/AddressModal.astro';
         <!-- LEFT: Payment & Shipping Details -->
         <div class="flex-1 space-y-6">
           
-          <!-- Informasi Pengiriman -->
-          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none space-y-5 font-sans">
-            <div class="flex justify-between items-center border-b border-gray-100 pb-4">
+          <!-- Informasi Pengiriman Section -->
+          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none space-y-4 font-sans">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
               <div>
                 <h2 class="text-xs font-sans font-medium text-gray-900 uppercase tracking-wider">
                   Informasi Pengiriman
                 </h2>
-                <p class="text-[11px] font-sans font-normal text-gray-400 mt-0.5">Pilih alamat tersimpan atau kelola titik GPS di Buku Alamat</p>
+                <p class="text-[11px] font-sans font-normal text-gray-400 mt-0.5">Alamat tujuan pengiriman pesanan Anda</p>
               </div>
               <button 
                 id="btn-open-address-book" 
                 type="button" 
-                class="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-[#5c1616] hover:text-[#400f0f] uppercase tracking-wider bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                class="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-[#5c1616] hover:text-[#400f0f] uppercase tracking-wider bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer w-fit"
               >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                Buku Alamat & Peta
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                Tambah Alamat Baru
               </button>
             </div>
 
-            <!-- Custom Interactive Saved Addresses Dropdown Card -->
-            <div id="saved-address-dropdown-container" class="hidden space-y-2 font-sans">
-              <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide">
-                Alamat Pengiriman
-              </label>
+            <!-- Single Elegant Address Card with Dropdown Switcher -->
+            <div class="relative" id="address-picker-wrapper">
               
-              <div class="relative" id="address-picker-wrapper">
-                <!-- Trigger Box (Current Selected Address) -->
+              <!-- State 1: Active Selected Address Card -->
+              <div id="selected-address-card" class="p-4 sm:p-5 border border-gray-200 hover:border-gray-300 bg-[#FAF9F6] rounded-xl space-y-2 transition-all">
+                <div class="flex items-center justify-between gap-2 border-b border-gray-200/60 pb-2.5">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span id="card-addr-label" class="text-xs font-sans font-medium text-gray-900 uppercase tracking-wider">
+                      RUMAH
+                    </span>
+                    <span id="card-addr-badge" class="text-[10px] font-sans font-medium text-[#5c1616] bg-rose-50 border border-rose-200 px-2 py-0.2 rounded-full uppercase hidden">
+                      Utama
+                    </span>
+                  </div>
+                  <button 
+                    id="address-dropdown-trigger" 
+                    type="button" 
+                    class="text-xs font-sans font-medium text-[#5c1616] hover:text-[#400f0f] hover:underline cursor-pointer flex items-center gap-1 shrink-0"
+                  >
+                    <span>Pilih Alamat Lain</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                </div>
+                
+                <div>
+                  <p id="card-recipient-info" class="text-xs sm:text-sm font-sans font-medium text-gray-900">
+                    Memuat data penerima...
+                  </p>
+                  <p id="card-full-address" class="text-xs font-sans font-normal text-gray-500 mt-1 leading-relaxed">
+                    ...
+                  </p>
+                </div>
+              </div>
+
+              <!-- State 2: No Address Empty State Card -->
+              <div id="no-address-card" class="hidden p-6 border-2 border-dashed border-gray-200 rounded-xl text-center space-y-3 bg-[#FAF9F6]">
+                <p class="text-xs font-sans font-medium text-gray-700">Belum ada alamat tersimpan di akun Anda</p>
+                <p class="text-[11px] font-sans font-normal text-gray-400">Tambahkan alamat pertama Anda dengan titik peta presisi untuk mempermudah pengiriman.</p>
                 <button 
-                  id="address-dropdown-trigger" 
+                  id="btn-add-first-address" 
                   type="button" 
-                  class="w-full text-left bg-white hover:bg-rose-50/20 border border-gray-300 hover:border-[#5c1616] p-3.5 rounded-xl transition-all flex items-center justify-between gap-3 shadow-xs cursor-pointer"
+                  class="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-white bg-[#5c1616] hover:bg-[#400f0f] px-4 py-2 rounded-lg transition-colors cursor-pointer"
                 >
-                  <div class="min-w-0 flex-1 space-y-1">
-                    <div class="flex items-center gap-2">
-                      <span id="selected-addr-label" class="text-xs font-sans font-medium uppercase tracking-wider text-gray-900">
-                        Memuat Alamat...
-                      </span>
-                      <span id="selected-addr-badge" class="text-[9px] font-sans font-medium text-[#5c1616] bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded-full uppercase hidden">
-                        Utama
-                      </span>
-                    </div>
-                    <p id="selected-addr-detail" class="text-xs font-sans font-normal text-gray-500 line-clamp-1">
-                      ...
-                    </p>
-                  </div>
-                  <div class="text-gray-400 shrink-0 flex items-center gap-1 text-xs font-sans font-normal">
-                    <span>Ganti</span>
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                  </div>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                  + Tambah Alamat Pengiriman
                 </button>
+              </div>
 
-                <!-- Expandable Dropdown List -->
-                <div 
-                  id="address-dropdown-menu" 
-                  class="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto hidden divide-y divide-gray-100 font-sans"
-                >
-                  <!-- Diisi via JavaScript dengan semua alamat tersimpan yang terstruktur rapi -->
-                </div>
+              <!-- Dropdown Menu for Switching Addresses -->
+              <div 
+                id="address-dropdown-menu" 
+                class="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto hidden divide-y divide-gray-100 font-sans"
+              >
+                <!-- Diisi via JavaScript -->
               </div>
             </div>
 
-            <!-- Form Fields for Direct Edit / View -->
-            <div class="space-y-4 pt-1">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-sans font-medium text-gray-700 mb-1.5 uppercase tracking-wide">Nama Penerima</label>
-                  <input type="text" id="cust-name" class="w-full border border-gray-300 px-3.5 py-2.5 text-xs sm:text-sm font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] bg-white rounded-lg transition-colors" placeholder="Contoh: Budi Santoso">
-                </div>
-                <div>
-                  <label class="block text-xs font-sans font-medium text-gray-700 mb-1.5 uppercase tracking-wide">Nomor Telepon (WA)</label>
-                  <input type="tel" id="cust-phone" class="w-full border border-gray-300 px-3.5 py-2.5 text-xs sm:text-sm font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] bg-white rounded-lg transition-colors" placeholder="081234567890">
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs font-sans font-medium text-gray-700 mb-1.5 uppercase tracking-wide">Alamat Lengkap</label>
-                <textarea id="cust-address" rows="3" class="w-full border border-gray-300 px-3.5 py-2.5 text-xs sm:text-sm font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] bg-white rounded-lg transition-colors" placeholder="Jl. Sudirman No. 123, RT 01/RW 02..."></textarea>
-              </div>
-            </div>
+            <!-- Hidden Inputs for Form Submission -->
+            <input type="hidden" id="cust-name" value="" />
+            <input type="hidden" id="cust-phone" value="" />
+            <input type="hidden" id="cust-address" value="" />
           </div>
 
           <!-- Metode Pembayaran -->
@@ -236,11 +238,6 @@ import AddressModal from '../components/AddressModal.astro';
         return;
       }
 
-      const custName = document.getElementById('cust-name') as HTMLInputElement;
-      if (custName && session.user.user_metadata?.full_name) {
-        custName.value = session.user.user_metadata.full_name;
-      }
-
       const shippingCost = 7000;
       let discountAmount = 0;
       let finalTotal = 0;
@@ -320,23 +317,34 @@ import AddressModal from '../components/AddressModal.astro';
         });
       });
 
-      // Address Book & Interactive Dropdown Integration
+      // Address Card & Dropdown Logic
       const btnOpenAddress = document.getElementById('btn-open-address-book');
-      const savedDropdownContainer = document.getElementById('saved-address-dropdown-container');
+      const btnAddFirstAddress = document.getElementById('btn-add-first-address');
+      const selectedAddressCard = document.getElementById('selected-address-card');
+      const noAddressCard = document.getElementById('no-address-card');
       const dropdownTrigger = document.getElementById('address-dropdown-trigger');
       const dropdownMenu = document.getElementById('address-dropdown-menu');
-      const selectedAddrLabel = document.getElementById('selected-addr-label');
-      const selectedAddrBadge = document.getElementById('selected-addr-badge');
-      const selectedAddrDetail = document.getElementById('selected-addr-detail');
+      
+      const cardAddrLabel = document.getElementById('card-addr-label');
+      const cardAddrBadge = document.getElementById('card-addr-badge');
+      const cardRecipientInfo = document.getElementById('card-recipient-info');
+      const cardFullAddress = document.getElementById('card-full-address');
+
+      const custNameInput = document.getElementById('cust-name') as HTMLInputElement;
+      const custPhoneInput = document.getElementById('cust-phone') as HTMLInputElement;
+      const custAddressInput = document.getElementById('cust-address') as HTMLInputElement;
 
       let userSavedAddresses: any[] = [];
       let currentSelectedAddressId: string | null = null;
 
-      btnOpenAddress?.addEventListener('click', () => {
+      const triggerAddressModal = () => {
         if ((window as any).openAddressModal) {
           (window as any).openAddressModal();
         }
-      });
+      };
+
+      btnOpenAddress?.addEventListener('click', triggerAddressModal);
+      btnAddFirstAddress?.addEventListener('click', triggerAddressModal);
 
       // Toggle dropdown open / close
       dropdownTrigger?.addEventListener('click', (e) => {
@@ -351,16 +359,12 @@ import AddressModal from '../components/AddressModal.astro';
         }
       });
 
-      function applyAddressToForm(addr: any) {
+      function applyAddressToCard(addr: any) {
         if (!addr) return;
         currentSelectedAddressId = addr.id;
 
-        const nameEl = document.getElementById('cust-name') as HTMLInputElement;
-        const phoneEl = document.getElementById('cust-phone') as HTMLInputElement;
-        const addrEl = document.getElementById('cust-address') as HTMLTextAreaElement;
-
-        if (nameEl && addr.recipient_name) nameEl.value = addr.recipient_name;
-        if (phoneEl && addr.recipient_phone) phoneEl.value = addr.recipient_phone;
+        const recipient = addr.recipient_name || session.user.user_metadata?.full_name || 'Pelanggan';
+        const phone = addr.recipient_phone || '';
         
         const fullTxt = [
           addr.full_address,
@@ -368,27 +372,29 @@ import AddressModal from '../components/AddressModal.astro';
           addr.city ? `${addr.city}, ${addr.province || ''}` : ''
         ].filter(Boolean).join(' - ');
 
-        if (addrEl && fullTxt) addrEl.value = fullTxt;
+        // Update hidden inputs for order submission
+        if (custNameInput) custNameInput.value = recipient;
+        if (custPhoneInput) custPhoneInput.value = phone;
+        if (custAddressInput) custAddressInput.value = fullTxt || addr.full_address || '';
 
-        // Update trigger display box
-        if (selectedAddrLabel) {
-          selectedAddrLabel.textContent = `${addr.label_name || 'Rumah'} (${addr.recipient_name || 'Pelanggan'})`;
-        }
-
-        if (selectedAddrBadge) {
+        // Update Card UI
+        if (cardAddrLabel) cardAddrLabel.textContent = (addr.label_name || 'Rumah').toUpperCase();
+        if (cardRecipientInfo) cardRecipientInfo.textContent = phone ? `${recipient} • ${phone}` : recipient;
+        if (cardFullAddress) cardFullAddress.textContent = fullTxt || addr.full_address || '';
+        
+        if (cardAddrBadge) {
           if (addr.is_default) {
-            selectedAddrBadge.classList.remove('hidden');
+            cardAddrBadge.classList.remove('hidden');
           } else {
-            selectedAddrBadge.classList.add('hidden');
+            cardAddrBadge.classList.add('hidden');
           }
         }
 
-        if (selectedAddrDetail) {
-          selectedAddrDetail.textContent = fullTxt || addr.full_address || '';
-        }
+        selectedAddressCard?.classList.remove('hidden');
+        noAddressCard?.classList.add('hidden');
       }
 
-      // Render Dropdown Items
+      // Render Dropdown List of Addresses
       function renderDropdownMenu() {
         if (!dropdownMenu) return;
 
@@ -428,7 +434,7 @@ import AddressModal from '../components/AddressModal.astro';
             class="w-full p-3 text-left bg-gray-50 hover:bg-gray-100 text-[#5c1616] font-sans font-medium text-xs flex items-center gap-2 transition-colors cursor-pointer border-t border-gray-100"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            <span>Kelola / Tambah Alamat Baru di Peta...</span>
+            <span>+ Tambah / Kelola Alamat di Peta...</span>
           </button>
         `;
 
@@ -438,22 +444,20 @@ import AddressModal from '../components/AddressModal.astro';
             const id = e.currentTarget.dataset.id;
             const chosen = userSavedAddresses.find(a => a.id === id);
             if (chosen) {
-              applyAddressToForm(chosen);
+              applyAddressToCard(chosen);
               renderDropdownMenu();
               dropdownMenu.classList.add('hidden');
               if ((window as any).showToast) {
-                (window as any).showToast(`Alamat "${chosen.label_name}" diterapkan!`, 'info');
+                (window as any).showToast(`Alamat "${chosen.label_name}" dipilih!`, 'info');
               }
             }
           });
         });
 
-        // Click on Add New button
+        // Click on Add New button in dropdown
         document.getElementById('btn-dropdown-add-new')?.addEventListener('click', () => {
           dropdownMenu.classList.add('hidden');
-          if ((window as any).openAddressModal) {
-            (window as any).openAddressModal();
-          }
+          triggerAddressModal();
         });
       }
 
@@ -468,12 +472,15 @@ import AddressModal from '../components/AddressModal.astro';
             .order('created_at', { ascending: false });
 
           if (error || !addresses || addresses.length === 0) {
-            savedDropdownContainer?.classList.add('hidden');
+            userSavedAddresses = [];
+            selectedAddressCard?.classList.add('hidden');
+            noAddressCard?.classList.remove('hidden');
             return;
           }
 
           userSavedAddresses = addresses;
-          savedDropdownContainer?.classList.remove('hidden');
+          selectedAddressCard?.classList.remove('hidden');
+          noAddressCard?.classList.add('hidden');
 
           // Pick requested ID or Default Address (which is guaranteed 1st element)
           const targetAddr = selectedIdToPick 
@@ -481,7 +488,7 @@ import AddressModal from '../components/AddressModal.astro';
             : addresses[0];
 
           if (targetAddr) {
-            applyAddressToForm(targetAddr);
+            applyAddressToCard(targetAddr);
           }
           renderDropdownMenu();
         } catch(e) {
@@ -497,7 +504,7 @@ import AddressModal from '../components/AddressModal.astro';
         if (e.detail && e.detail.id) {
           loadSavedAddressesForCheckout(e.detail.id);
         } else {
-          applyAddressToForm(e.detail);
+          applyAddressToCard(e.detail);
         }
         if ((window as any).showToast) (window as any).showToast('Alamat berhasil diterapkan!', 'success');
       });
@@ -511,12 +518,13 @@ import AddressModal from '../components/AddressModal.astro';
       btnPayNow?.addEventListener('click', async () => {
         const selectedPayment = document.querySelector('input[name="payment"]:checked') as HTMLInputElement;
         
-        const name = (document.getElementById('cust-name') as HTMLInputElement).value.trim();
-        const phone = (document.getElementById('cust-phone') as HTMLInputElement).value.trim();
-        const address = (document.getElementById('cust-address') as HTMLTextAreaElement).value.trim();
+        const name = custNameInput?.value?.trim();
+        const phone = custPhoneInput?.value?.trim();
+        const address = custAddressInput?.value?.trim();
 
         if (!name || !phone || !address) {
-          if ((window as any).showToast) (window as any).showToast('Mohon lengkapi informasi pengiriman', 'error');
+          if ((window as any).showToast) (window as any).showToast('Mohon pilih atau tambahkan alamat pengiriman terlebih dahulu', 'error');
+          triggerAddressModal();
           return;
         }
 
