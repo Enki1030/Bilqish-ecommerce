@@ -3,15 +3,17 @@ import Layout from '../layouts/Layout.astro';
 import AddressModal from '../components/AddressModal.astro';
 ---
 
-<Layout title="Checkout & Pembayaran - Ballqish Shoes">
-  <div class="bg-[#FAF9F6] min-h-screen py-8">
+<Layout title="Checkout - Ballqish Shoes">
+  <div class="bg-[#FAF9F6] min-h-screen py-6 sm:py-12">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <!-- Header / Back Button -->
-      <div class="mb-8 border-b border-gray-200 pb-4">
-        <a href="/?openCart=true" class="inline-flex items-center text-xs font-heading font-semibold tracking-widest uppercase text-gray-500 hover:text-primary transition-colors">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-          Kembali ke Keranjang
+      <!-- Checkout Header -->
+      <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-6 sm:mb-8">
+        <h1 class="text-xl sm:text-2xl font-heading font-bold text-gray-900 tracking-wider uppercase">
+          Checkout Pesanan
+        </h1>
+        <a href="/" class="text-xs font-semibold text-gray-500 hover:text-primary transition-colors">
+          ← Kembali Belanja
         </a>
       </div>
 
@@ -21,100 +23,59 @@ import AddressModal from '../components/AddressModal.astro';
         <div class="flex-1 space-y-6">
           
           <!-- Informasi Pengiriman -->
-          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none space-y-5">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-gray-100 pb-4">
+          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none space-y-5 font-sans">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-4">
               <div>
-                <h2 class="text-xs font-heading font-bold text-gray-900 uppercase tracking-widest">
+                <h2 class="text-xs font-sans font-medium text-gray-900 uppercase tracking-wider">
                   Informasi Pengiriman
                 </h2>
-                <p class="text-[11px] font-sans font-normal text-gray-400 mt-0.5">Cari nama daerah, gunakan GPS, atau pilih alamat tersimpan</p>
+                <p class="text-[11px] font-sans font-normal text-gray-400 mt-0.5">Pilih alamat tersimpan atau kelola titik GPS di Buku Alamat</p>
               </div>
-              <div class="flex items-center gap-2">
-                <button 
-                  id="btn-checkout-gps" 
-                  type="button" 
-                  class="inline-flex items-center gap-1 text-xs font-sans font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3 py-1.5 rounded-lg transition-colors cursor-pointer active:scale-95 shadow-2xs"
+              <button 
+                id="btn-open-address-book" 
+                type="button" 
+                class="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-[#5c1616] hover:text-[#400f0f] uppercase tracking-wider bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Buku Alamat & Peta
+              </button>
+            </div>
+
+            <!-- Saved Addresses Dropdown Selector -->
+            <div id="saved-address-dropdown-container" class="hidden space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label for="checkout-saved-address-select" class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide">
+                  Pilih Dari Buku Alamat
+                </label>
+                <span class="text-[10px] text-emerald-700 font-sans font-medium bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                  ⭐ Alamat Utama Otomatis Terpilih
+                </span>
+              </div>
+              <div class="relative">
+                <select 
+                  id="checkout-saved-address-select" 
+                  class="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2.5 text-xs font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] cursor-pointer shadow-xs"
                 >
-                  <svg class="w-3.5 h-3.5 animate-spin hidden" id="checkout-gps-spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                  <svg class="w-3.5 h-3.5 text-emerald-700" id="checkout-gps-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  <span>🎯 Deteksi GPS Saya</span>
-                </button>
-                <button 
-                  id="btn-open-address-book" 
-                  type="button" 
-                  class="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-[#5c1616] hover:text-[#400f0f] uppercase tracking-wider bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                  Buku Alamat & Peta
-                </button>
+                  <!-- Diisi via JavaScript -->
+                </select>
               </div>
             </div>
 
-            <!-- Direct Address Search Bar (Desktop & Mobile) -->
-            <div class="relative z-20">
-              <label class="block text-[11px] font-sans font-medium text-gray-700 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-[#5c1616]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                Pencarian Cepat Daerah / Alamat
-              </label>
-              <div class="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-white shadow-xs focus-within:ring-2 focus-within:ring-[#5c1616]">
-                <div class="pl-3 text-gray-400">
-                  <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                </div>
-                <input 
-                  type="text" 
-                  id="checkout-search-input" 
-                  class="w-full bg-white px-3 py-2.5 text-xs font-sans font-normal text-gray-800 focus:outline-none placeholder-gray-400" 
-                  placeholder="Ketik nama daerah/kecamatan/jalan (contoh: Wonokromo, Cibaduyut, Kemang...)" 
-                />
-                <button id="btn-clear-checkout-search" type="button" class="hidden pr-3 text-gray-400 hover:text-gray-900 text-xs cursor-pointer">✕</button>
-              </div>
-
-              <!-- Search Results Dropdown -->
-              <div id="checkout-search-results" class="absolute left-0 right-0 top-full mt-1.5 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto hidden text-xs font-sans font-normal divide-y divide-gray-100"></div>
-
-              <!-- Quick Search Chips -->
-              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 text-[11px]">
-                <span class="text-gray-400 text-[10px] shrink-0 font-sans font-normal">Contoh:</span>
-                {['Wonokromo, Surabaya', 'Cibaduyut, Bandung', 'Kemang, Jakarta', 'Malioboro, Jogja', 'Simpang Lima, Semarang'].map(chip => (
-                  <button 
-                    type="button" 
-                    class="checkout-quick-chip shrink-0 bg-gray-100 hover:bg-rose-50 hover:border-rose-300 text-gray-600 px-2.5 py-1 rounded-full text-[10px] font-sans font-normal border border-gray-200 transition-colors cursor-pointer"
-                    data-query={chip}
-                  >
-                    {chip}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <!-- Active Selected Address Banner -->
-            <div id="selected-address-badge" class="hidden p-3.5 bg-rose-50/60 border border-rose-200/80 rounded-xl flex items-start gap-3">
-              <div class="p-1.5 bg-white text-[#5c1616] rounded-lg shadow-2xs mt-0.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-              </div>
-              <div class="flex-1 text-xs">
-                <div class="flex items-center gap-2">
-                  <span id="badge-addr-label" class="font-sans font-medium uppercase tracking-wider text-gray-900">Alamat Terpilih</span>
-                  <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-medium">Tersinkronisasi</span>
-                </div>
-                <p id="badge-addr-detail" class="text-gray-600 mt-1 font-sans font-normal leading-snug"></p>
-              </div>
-            </div>
-
-            <div class="space-y-4">
+            <!-- Form Fields for Direct Edit / View -->
+            <div class="space-y-4 pt-1">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-sans font-medium text-gray-700 mb-2 uppercase tracking-wide">Nama Penerima</label>
-                  <input type="text" id="cust-name" class="w-full border border-gray-300 px-4 py-3 text-sm font-sans font-normal focus:outline-none focus:border-gray-900 bg-transparent transition-colors rounded-lg sm:rounded-none" placeholder="John Doe">
+                  <label class="block text-xs font-sans font-medium text-gray-700 mb-1.5 uppercase tracking-wide">Nama Penerima</label>
+                  <input type="text" id="cust-name" class="w-full border border-gray-300 px-3.5 py-2.5 text-xs sm:text-sm font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] bg-white rounded-lg transition-colors" placeholder="Contoh: Budi Santoso">
                 </div>
                 <div>
-                  <label class="block text-xs font-sans font-medium text-gray-700 mb-2 uppercase tracking-wide">Nomor Telepon (WA)</label>
-                  <input type="tel" id="cust-phone" class="w-full border border-gray-300 px-4 py-3 text-sm font-sans font-normal focus:outline-none focus:border-gray-900 bg-transparent transition-colors rounded-lg sm:rounded-none" placeholder="081234567890">
+                  <label class="block text-xs font-sans font-medium text-gray-700 mb-1.5 uppercase tracking-wide">Nomor Telepon (WA)</label>
+                  <input type="tel" id="cust-phone" class="w-full border border-gray-300 px-3.5 py-2.5 text-xs sm:text-sm font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] bg-white rounded-lg transition-colors" placeholder="081234567890">
                 </div>
               </div>
               <div>
-                <label class="block text-xs font-sans font-medium text-gray-700 mb-2 uppercase tracking-wide">Alamat Lengkap</label>
-                <textarea id="cust-address" rows="3" class="w-full border border-gray-300 px-4 py-3 text-sm font-sans font-normal focus:outline-none focus:border-gray-900 bg-transparent transition-colors rounded-lg sm:rounded-none" placeholder="Jl. Sudirman No. 123..."></textarea>
+                <label class="block text-xs font-sans font-medium text-gray-700 mb-1.5 uppercase tracking-wide">Alamat Lengkap</label>
+                <textarea id="cust-address" rows="3" class="w-full border border-gray-300 px-3.5 py-2.5 text-xs sm:text-sm font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] bg-white rounded-lg transition-colors" placeholder="Jl. Sudirman No. 123, RT 01/RW 02..."></textarea>
               </div>
             </div>
           </div>
@@ -182,20 +143,19 @@ import AddressModal from '../components/AddressModal.astro';
                   type="text" 
                   id="voucher-code" 
                   class="flex-1 min-w-0 border-none px-3.5 py-3 text-sm font-sans font-normal focus:outline-none focus:ring-0 bg-transparent uppercase" 
-                  placeholder="BQL2026"
-                >
+                  placeholder="BQL2026" 
+                />
                 <button 
-                  id="apply-voucher" 
-                  type="button"
-                  class="bg-gray-900 text-white px-5 sm:px-6 py-3 text-xs font-heading font-semibold uppercase tracking-widest hover:bg-primary transition-colors shrink-0 cursor-pointer"
+                  id="apply-voucher"
+                  class="bg-gray-900 text-white px-5 py-3 text-xs font-heading font-semibold uppercase tracking-wider hover:bg-primary transition-colors cursor-pointer"
                 >
-                  Apply
+                  Gunakan
                 </button>
               </div>
             </div>
 
-            <!-- Totals -->
-            <div class="space-y-4 pt-8 border-t border-gray-200 mb-8 font-body">
+            <!-- Total Price Calculation -->
+            <div class="space-y-3 mb-8 pt-4 border-t border-gray-200">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Subtotal</span>
                 <span id="summary-subtotal" class="font-bold text-gray-900">Rp 0</span>
@@ -305,10 +265,10 @@ import AddressModal from '../components/AddressModal.astro';
         const code = (document.getElementById('voucher-code') as HTMLInputElement).value.toUpperCase();
         if (code === 'DISKON20') {
           discountAmount = 20000;
-          if (window.showToast) window.showToast('Voucher berhasil digunakan!', 'success');
+          if ((window as any).showToast) (window as any).showToast('Voucher berhasil digunakan!', 'success');
         } else if (code) {
           discountAmount = 0;
-          if (window.showToast) window.showToast('Voucher tidak valid atau sudah kadaluarsa', 'error');
+          if ((window as any).showToast) (window as any).showToast('Voucher tidak valid atau sudah kadaluarsa', 'error');
         }
         renderSummary();
       });
@@ -338,15 +298,11 @@ import AddressModal from '../components/AddressModal.astro';
         });
       });
 
-      // Address Book & Direct Search Integration
+      // Address Book & Dropdown Selector Integration
       const btnOpenAddress = document.getElementById('btn-open-address-book');
-      const badgeContainer = document.getElementById('selected-address-badge');
-      const badgeLabel = document.getElementById('badge-addr-label');
-      const badgeDetail = document.getElementById('badge-addr-detail');
-      const checkoutSearchInput = document.getElementById('checkout-search-input') as HTMLInputElement;
-      const checkoutSearchResults = document.getElementById('checkout-search-results');
-      const btnClearCheckoutSearch = document.getElementById('btn-clear-checkout-search');
-      const btnCheckoutGps = document.getElementById('btn-checkout-gps');
+      const savedDropdownContainer = document.getElementById('saved-address-dropdown-container');
+      const savedAddressSelect = document.getElementById('checkout-saved-address-select') as HTMLSelectElement;
+      let userSavedAddresses: any[] = [];
 
       btnOpenAddress?.addEventListener('click', () => {
         if ((window as any).openAddressModal) {
@@ -360,8 +316,8 @@ import AddressModal from '../components/AddressModal.astro';
         const phoneEl = document.getElementById('cust-phone') as HTMLInputElement;
         const addrEl = document.getElementById('cust-address') as HTMLTextAreaElement;
 
-        if (nameEl && !nameEl.value.trim()) nameEl.value = addr.recipient_name || '';
-        if (phoneEl && !phoneEl.value.trim()) phoneEl.value = addr.recipient_phone || '';
+        if (nameEl && addr.recipient_name) nameEl.value = addr.recipient_name;
+        if (phoneEl && addr.recipient_phone) phoneEl.value = addr.recipient_phone;
         
         const fullTxt = [
           addr.full_address,
@@ -369,170 +325,85 @@ import AddressModal from '../components/AddressModal.astro';
           addr.city ? `${addr.city}, ${addr.province || ''}` : ''
         ].filter(Boolean).join(' - ');
 
-        if (addrEl) addrEl.value = fullTxt;
-
-        if (badgeContainer && badgeLabel && badgeDetail) {
-          badgeLabel.textContent = `${addr.label_name || 'Lokasi Terpilih'} (${addr.recipient_name || 'Pelanggan'})`;
-          badgeDetail.textContent = fullTxt;
-          badgeContainer.classList.remove('hidden');
-        }
+        if (addrEl && fullTxt) addrEl.value = fullTxt;
       }
 
-      // Direct Live Search on Checkout Page
-      btnClearCheckoutSearch?.addEventListener('click', () => {
-        if (checkoutSearchInput) checkoutSearchInput.value = '';
-        btnClearCheckoutSearch.classList.add('hidden');
-        checkoutSearchResults?.classList.add('hidden');
-      });
-
-      async function performCheckoutSearch(query: string) {
-        if (!query || query.length < 2) {
-          checkoutSearchResults?.classList.add('hidden');
-          btnClearCheckoutSearch?.classList.add('hidden');
-          return;
-        }
-
-        btnClearCheckoutSearch?.classList.remove('hidden');
-
+      // Load Saved Addresses & Populate Dropdown
+      async function loadSavedAddressesForCheckout(selectedIdToPick: string | null = null) {
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=6&addressdetails=1`);
-          const results = await res.json();
-          if (results && results.length > 0 && checkoutSearchResults) {
-            checkoutSearchResults.innerHTML = results.map((item: any) => `
-              <button type="button" class="w-full text-left px-3.5 py-2.5 hover:bg-rose-50 border-b border-gray-100 last:border-0 cursor-pointer search-item flex items-start gap-2.5 transition-colors" data-display="${item.display_name}" data-lat="${item.lat}" data-lon="${item.lon}">
-                <span class="text-rose-600 mt-0.5 shrink-0">📍</span>
-                <div class="min-w-0 flex-1">
-                  <p class="font-bold text-gray-900 text-xs truncate">${item.display_name.split(',')[0]}</p>
-                  <p class="text-[10px] text-gray-500 line-clamp-1">${item.display_name}</p>
-                </div>
-              </button>
-            `).join('');
-            checkoutSearchResults.classList.remove('hidden');
-
-            checkoutSearchResults.querySelectorAll('.search-item').forEach(item => {
-              item.addEventListener('click', (e: any) => {
-                const display = e.currentTarget.dataset.display;
-                const addrEl = document.getElementById('cust-address') as HTMLTextAreaElement;
-                if (addrEl) addrEl.value = display;
-                if (badgeContainer && badgeLabel && badgeDetail) {
-                  badgeLabel.textContent = `Lokasi Terpilih (${display.split(',')[0]})`;
-                  badgeDetail.textContent = display;
-                  badgeContainer.classList.remove('hidden');
-                }
-                checkoutSearchResults.classList.add('hidden');
-                if (window.showToast) window.showToast('Alamat berhasil dipilih dari pencarian!', 'success');
-              });
-            });
-          } else {
-            if (checkoutSearchResults) {
-              checkoutSearchResults.innerHTML = '<div class="p-3 text-center text-gray-400 text-xs">Lokasi tidak ditemukan. Coba kata kunci lain.</div>';
-              checkoutSearchResults.classList.remove('hidden');
-            }
-          }
-        } catch(e) {}
-      }
-
-      let checkoutSearchTimeout: any = null;
-      checkoutSearchInput?.addEventListener('input', () => {
-        clearTimeout(checkoutSearchTimeout);
-        const query = checkoutSearchInput.value.trim();
-        checkoutSearchTimeout = setTimeout(() => performCheckoutSearch(query), 350);
-      });
-
-      // Quick Search Chips Click Handlers
-      document.querySelectorAll('.checkout-quick-chip').forEach(chip => {
-        chip.addEventListener('click', (e: any) => {
-          const q = e.currentTarget.dataset.query;
-          if (checkoutSearchInput) checkoutSearchInput.value = q;
-          performCheckoutSearch(q);
-        });
-      });
-
-      // Direct GPS Detection on Checkout
-      btnCheckoutGps?.addEventListener('click', () => {
-        const spinner = document.getElementById('checkout-gps-spinner');
-        const icon = document.getElementById('checkout-gps-icon');
-        spinner?.classList.remove('hidden');
-        icon?.classList.add('hidden');
-
-        const fallback = async () => {
-          try {
-            const res = await fetch('https://ipwhois.app/json/');
-            const data = await res.json();
-            const addrEl = document.getElementById('cust-address') as HTMLTextAreaElement;
-            if (addrEl && data.city) {
-              addrEl.value = `${data.city}, ${data.region || ''}, Indonesia`;
-              if (window.showToast) window.showToast(`Lokasi terdeteksi di sekitar ${data.city}!`, 'success');
-            }
-          } catch(e) {}
-          finally {
-            spinner?.classList.add('hidden');
-            icon?.classList.remove('hidden');
-          }
-        };
-
-        if (!navigator.geolocation) {
-          fallback();
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-          async (pos) => {
-            const { latitude, longitude } = pos.coords;
-            try {
-              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`);
-              const data = await res.json();
-              if (data && data.display_name) {
-                const addrEl = document.getElementById('cust-address') as HTMLTextAreaElement;
-                if (addrEl) addrEl.value = data.display_name;
-                if (badgeContainer && badgeLabel && badgeDetail) {
-                  badgeLabel.textContent = `GPS Presisi (${data.display_name.split(',')[0]})`;
-                  badgeDetail.textContent = data.display_name;
-                  badgeContainer.classList.remove('hidden');
-                }
-                if (window.showToast) window.showToast('Lokasi GPS Anda berhasil diterapkan!', 'success');
-              }
-            } catch(e) {}
-            finally {
-              spinner?.classList.add('hidden');
-              icon?.classList.remove('hidden');
-            }
-          },
-          () => {
-            fallback();
-          },
-          { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
-        );
-      });
-
-      // Auto-load default address from Supabase
-      try {
-        const { data: defaultAddr } = await supabase
-          .from('user_addresses')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .eq('is_default', true)
-          .maybeSingle();
-
-        if (defaultAddr) {
-          applyAddressToForm(defaultAddr);
-        } else {
-          // If no default, check latest
-          const { data: latestAddr } = await supabase
+          const { data: addresses, error } = await supabase
             .from('user_addresses')
             .select('*')
             .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (latestAddr) applyAddressToForm(latestAddr);
-        }
-      } catch(e) {}
+            .order('is_default', { ascending: false })
+            .order('created_at', { ascending: false });
 
-      // Listen for custom event from AddressModal
+          if (error || !addresses || addresses.length === 0) {
+            savedDropdownContainer?.classList.add('hidden');
+            return;
+          }
+
+          userSavedAddresses = addresses;
+          savedDropdownContainer?.classList.remove('hidden');
+
+          if (savedAddressSelect) {
+            savedAddressSelect.innerHTML = `
+              ${addresses.map((addr) => `
+                <option value="${addr.id}">
+                  ${addr.is_default ? '⭐ [Alamat Utama]' : '📍'} ${addr.label_name || 'Rumah'} - ${addr.recipient_name} (${addr.full_address ? addr.full_address.split(',')[0] : ''})
+                </option>
+              `).join('')}
+              <option value="ADD_NEW">➕ Kelola / Tambah Alamat Baru di Peta...</option>
+            `;
+
+            // If a specific ID is requested, pick it; otherwise pick the default address (which is first in the list)
+            const targetAddr = selectedIdToPick 
+              ? addresses.find(a => a.id === selectedIdToPick) 
+              : addresses[0];
+
+            if (targetAddr) {
+              savedAddressSelect.value = targetAddr.id;
+              applyAddressToForm(targetAddr);
+            }
+          }
+        } catch(e) {
+          console.warn('Error loading addresses in checkout', e);
+        }
+      }
+
+      // Dropdown Change Handler
+      savedAddressSelect?.addEventListener('change', (e: any) => {
+        const val = e.target.value;
+        if (val === 'ADD_NEW') {
+          if ((window as any).openAddressModal) {
+            (window as any).openAddressModal();
+          }
+        } else {
+          const chosen = userSavedAddresses.find(a => a.id === val);
+          if (chosen) {
+            applyAddressToForm(chosen);
+            if ((window as any).showToast) {
+              (window as any).showToast(`Alamat "${chosen.label_name}" dipilih!`, 'info');
+            }
+          }
+        }
+      });
+
+      // Initial Load
+      await loadSavedAddressesForCheckout();
+
+      // Listen for custom events from AddressModal
       window.addEventListener('addressSelected', (e: any) => {
-        applyAddressToForm(e.detail);
-        if (window.showToast) window.showToast('Alamat berhasil diterapkan!', 'success');
+        if (e.detail && e.detail.id) {
+          loadSavedAddressesForCheckout(e.detail.id);
+        } else {
+          applyAddressToForm(e.detail);
+        }
+        if ((window as any).showToast) (window as any).showToast('Alamat berhasil diterapkan!', 'success');
+      });
+
+      window.addEventListener('addressBookUpdated', () => {
+        loadSavedAddressesForCheckout();
       });
 
       // Pay Now Logic
@@ -540,17 +411,17 @@ import AddressModal from '../components/AddressModal.astro';
       btnPayNow?.addEventListener('click', async () => {
         const selectedPayment = document.querySelector('input[name="payment"]:checked') as HTMLInputElement;
         
-        const name = (document.getElementById('cust-name') as HTMLInputElement).value;
-        const phone = (document.getElementById('cust-phone') as HTMLInputElement).value;
-        const address = (document.getElementById('cust-address') as HTMLTextAreaElement).value;
+        const name = (document.getElementById('cust-name') as HTMLInputElement).value.trim();
+        const phone = (document.getElementById('cust-phone') as HTMLInputElement).value.trim();
+        const address = (document.getElementById('cust-address') as HTMLTextAreaElement).value.trim();
 
         if (!name || !phone || !address) {
-          if (window.showToast) window.showToast('Mohon lengkapi informasi pengiriman', 'error');
+          if ((window as any).showToast) (window as any).showToast('Mohon lengkapi informasi pengiriman', 'error');
           return;
         }
 
         if (!selectedPayment) {
-          if (window.showToast) window.showToast('Silakan pilih metode pembayaran', 'error');
+          if ((window as any).showToast) (window as any).showToast('Silakan pilih metode pembayaran', 'error');
           return;
         }
 
@@ -596,7 +467,7 @@ import AddressModal from '../components/AddressModal.astro';
 
         } catch (err: any) {
           console.error('Payment/Checkout Error:', err);
-          if (window.showToast) window.showToast(`Gagal: ${err.message || 'Terjadi kesalahan'}`, 'error');
+          if ((window as any).showToast) (window as any).showToast(`Gagal: ${err.message || 'Terjadi kesalahan'}`, 'error');
           btnPayNow.innerHTML = originalText;
           btnPayNow.removeAttribute('disabled');
         }

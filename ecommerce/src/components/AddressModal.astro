@@ -667,7 +667,18 @@
       btn.addEventListener('click', async (e: any) => {
         if (!confirm('Hapus alamat ini dari buku alamat Anda?')) return;
         const id = e.currentTarget.dataset.id;
+        const item = userAddresses.find(a => a.id === id);
         await supabase.from('user_addresses').delete().eq('id', id);
+        
+        // If deleted address was default, set newest remaining as default
+        if (item?.is_default) {
+          const remaining = userAddresses.filter(a => a.id !== id);
+          if (remaining.length > 0) {
+            await supabase.from('user_addresses').update({ is_default: true }).eq('id', remaining[0].id);
+          }
+        }
+
+        window.dispatchEvent(new CustomEvent('addressBookUpdated'));
         loadAddresses();
       });
     });
@@ -675,8 +686,10 @@
     cardsContainer.querySelectorAll('.btn-set-default').forEach(btn => {
       btn.addEventListener('click', async (e: any) => {
         const id = e.currentTarget.dataset.id;
+        // Strictly only ONE default address per user
         await supabase.from('user_addresses').update({ is_default: false }).eq('user_id', currentUser.id);
         await supabase.from('user_addresses').update({ is_default: true }).eq('id', id);
+        window.dispatchEvent(new CustomEvent('addressBookUpdated'));
         loadAddresses();
       });
     });
@@ -710,9 +723,14 @@
     const city = (document.getElementById('addr-city') as HTMLInputElement).value;
     const province = (document.getElementById('addr-province') as HTMLInputElement).value;
     const benchmark_notes = (document.getElementById('addr-notes') as HTMLInputElement).value;
-    const is_default = (document.getElementById('addr-is-default') as HTMLInputElement).checked;
+    let is_default = (document.getElementById('addr-is-default') as HTMLInputElement).checked;
     const latStr = (document.getElementById('addr-lat') as HTMLInputElement).value;
     const lngStr = (document.getElementById('addr-lng') as HTMLInputElement).value;
+
+    // First address is automatically default if none exists
+    if (!id && userAddresses.length === 0) {
+      is_default = true;
+    }
 
     const payload: any = {
       user_id: currentUser.id,
@@ -728,6 +746,7 @@
       longitude: lngStr ? parseFloat(lngStr) : null
     };
 
+    // Strictly ensure only one default address
     if (is_default) {
       await supabase.from('user_addresses').update({ is_default: false }).eq('user_id', currentUser.id);
     }
@@ -742,6 +761,7 @@
       (window as any).showToast('Alamat berhasil disimpan!', 'success');
     }
 
+    window.dispatchEvent(new CustomEvent('addressBookUpdated'));
     showList();
     loadAddresses();
   });
