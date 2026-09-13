@@ -20,15 +20,16 @@ body {
   @apply text-black bg-[#FAF9F6] antialiased;
 }
 
-/* Enforce 100% Serif Font Family, Sentence Case & High Contrast Black Text */
+/* Enforce 100% Serif Font Family */
 h1, h2, h3, h4, h5, h6, p, a, button, input, select, textarea, span, label, table, th, td {
   font-family: "Playfair Display", Georgia, serif !important;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  @apply text-black font-normal;
+p {
+  font-size: 1.05rem; /* Increased font size (+2px) for better legibility */
+  line-height: 1.6;
 }
 
 b, strong {
-  @apply font-semibold text-black;
+  font-weight: 600;
 }

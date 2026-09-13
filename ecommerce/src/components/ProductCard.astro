@@ -40,13 +40,13 @@ const { product } = Astro.props;
   
   <!-- Info (Berluti Serif Style: Title, Subtext, Price with High Contrast & Hover Underline) -->
   <div class="p-4 flex flex-col flex-1 bg-white text-left font-serif border-t border-gray-100">
-    <h3 class="text-sm font-serif font-normal text-black line-clamp-1 mb-1 group-hover:underline" title={product.name}>
+    <h3 class="text-base font-serif font-normal text-black line-clamp-1 mb-1 group-hover:underline" title={product.name}>
       {product.name}
     </h3>
-    <p class="text-xs text-gray-600 font-serif font-normal mb-3">
+    <p class="text-sm text-gray-700 font-serif font-normal mb-3">
       {product.model || product.type || 'Pantofel Handmade Sidoarjo'}
     </p>
-    <p class="text-sm font-serif font-semibold text-black">
+    <p class="text-base font-serif font-semibold text-black">
       Rp {product.price.toLocaleString('id-ID')}
     </p>
   </div>
