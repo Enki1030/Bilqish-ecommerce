@@ -8,7 +8,7 @@ interface Props {
 const { product } = Astro.props;
 ---
 <div 
-  class="product-card group relative bg-white flex flex-col hover:-translate-y-1 transition-transform duration-500 cursor-pointer" 
+  class="product-card group relative bg-white border border-gray-100 flex flex-col hover:shadow-lg transition-all duration-500 cursor-pointer overflow-hidden" 
   data-category={product.category} 
   data-model={product.model} 
   data-sizes={JSON.stringify(product.sizes)}
@@ -20,33 +20,34 @@ const { product } = Astro.props;
     data-product-name={product.name} 
     data-product-price={product.price} 
     data-product-image={product.image} 
-    class="favorite-btn absolute top-3 right-3 p-2 bg-white/80 hover:bg-white text-gray-400 hover:text-primary transition-all z-20 focus:outline-none rounded-full shadow-2xs"
+    class="favorite-btn absolute top-3 right-3 p-2 bg-white/80 hover:bg-white text-gray-400 hover:text-[#5c1616] transition-all z-20 focus:outline-none rounded-full shadow-xs"
     onclick="event.stopPropagation()"
   >
-    <svg class="w-5 h-5 fill-current transition-colors heart-icon" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+    <svg class="w-4 h-4 fill-current transition-colors heart-icon" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
   </button>
 
-  <!-- Image -->
-  <a href={`/product/${product.id}`} class="block relative bg-gray-100 aspect-[4/5] overflow-hidden flex items-center justify-center">
-    <img src={product.image} alt={product.name} class="w-full h-full object-center object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out" />
-  </a>
+  <!-- Image Container (Berluti Style Grey Box Placeholder Background) -->
+  <div class="relative bg-[#F2F1ED] aspect-[4/4] overflow-hidden flex items-center justify-center p-4">
+    {product.image ? (
+      <img src={product.image} alt={product.name} class="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out" />
+    ) : (
+      <div class="w-full h-full bg-gray-200 flex flex-col items-center justify-center text-gray-400">
+        <svg class="w-10 h-10 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        <span class="text-[10px] uppercase font-serif tracking-widest">[ Gambar Produk ]</span>
+      </div>
+    )}
+  </div>
   
-  <!-- Info -->
-  <div class="pt-5 pb-3 flex flex-col flex-1 text-center">
-    <a href={`/product/${product.id}`} class="block group-hover:text-primary transition-colors">
-      <h3 class="text-base font-heading font-normal text-gray-900 tracking-widest uppercase mb-2" title={product.name}>
-        {product.name}
-      </h3>
-      <p class="text-xl font-body font-medium text-gray-900 mb-6">Rp {product.price.toLocaleString('id-ID')}</p>
-    </a>
-    
-    <div class="mt-auto">
-      <a 
-        href={`/product/${product.id}`}
-        class="block w-full bg-white border border-gray-900 text-gray-900 text-xs font-button font-medium uppercase tracking-widest px-4 py-3 hover:bg-gray-900 hover:text-white transition-colors text-center"
-      >
-        Lihat Detail
-      </a>
-    </div>
+  <!-- Info (Berluti Serif Style: Title, Material/Subtext, Price) -->
+  <div class="p-4 flex flex-col flex-1 bg-white text-left font-serif border-t border-gray-100">
+    <h3 class="text-sm font-serif font-normal text-gray-900 tracking-wide line-clamp-1 mb-0.5" title={product.name}>
+      {product.name}
+    </h3>
+    <p class="text-xs text-gray-500 font-serif font-normal mb-3">
+      {product.model || product.type || 'Pantofel Handmade Sidoarjo'}
+    </p>
+    <p class="text-sm font-serif font-semibold text-gray-900">
+      Rp {product.price.toLocaleString('id-ID')}
+    </p>
   </div>
 </div>
