@@ -102,7 +102,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       
       <!-- Breadcrumb -->
       <nav class="flex text-xs font-heading tracking-widest uppercase text-gray-500 mb-8 font-medium">
-        <a href="/" class="hover:text-primary transition-colors">Shop</a>
+        <a href="/" class="hover:text-primary transition-colors">Toko</a>
         <span class="mx-3">/</span>
         <span class="text-gray-900">{product.name}</span>
       </nav>
@@ -147,18 +147,45 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
                   <svg class="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                   <span class="text-xs font-bold text-gray-900 tracking-wide uppercase font-heading">Estimasi Waktu Tiba</span>
                 </div>
-                <span id="lead-time-mode-badge" class="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">Ready Stock</span>
+                <span id="lead-time-mode-badge" class="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">Stok Siap</span>
               </div>
               <p class="text-base font-bold text-gray-900" id="estimated-arrival-date">Menghitung estimasi...</p>
               <p class="text-[11px] text-gray-500 font-light leading-relaxed" id="estimated-arrival-details">
                 Estimasi pengerjaan handmade & pengiriman standar (3 Hari Ekspedisi ke seluruh wilayah).
               </p>
             </div>
+
+            <div class="mt-5 grid grid-cols-2 gap-3" role="group" aria-label="Jenis pembelian">
+              <button type="button" id="mode-satuan" class="purchase-mode cursor-pointer border border-gray-900 bg-gray-900 text-white px-4 py-3 text-xs font-heading font-semibold uppercase tracking-widest transition-colors" data-mode="satuan" aria-pressed="true">
+                Beli Satuan
+              </button>
+              <button type="button" id="mode-b2b" class="purchase-mode cursor-pointer border border-gray-200 bg-white text-gray-700 px-4 py-3 text-xs font-heading font-semibold uppercase tracking-widest transition-colors" data-mode="b2b" aria-pressed="false">
+                Beli B2B
+              </button>
+            </div>
+          </div>
+
+          <!-- Stitching Selection -->
+          <div class="mb-8">
+            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Pilih Jenis Jahitan</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {['Jahitan 1', 'Jahitan 2', 'Jahitan 3'].map((stitching, index) => (
+                <label class="cursor-pointer group">
+                  <input type="radio" name="stitching" value={stitching} class="peer sr-only" checked={index === 0} />
+                  <span class="flex items-center gap-3 p-3 border border-gray-200 peer-checked:border-gray-900 peer-checked:bg-white hover:border-gray-300 transition-colors">
+                    <span class="w-12 h-12 bg-gray-50 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                      <img src={product.image_url} alt={stitching} class="w-full h-full object-cover mix-blend-multiply opacity-80" />
+                    </span>
+                    <span class="font-heading font-semibold text-gray-900 text-sm tracking-wide">{stitching}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
           </div>
 
           <!-- Outsole Model Selection -->
           <div class="mb-8">
-            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Pilih Model Outsole</h3>
+            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Pilih Outsole</h3>
             <div class="grid grid-cols-2 gap-4">
               <label class="cursor-pointer group">
                 <input type="radio" name="outsole" value="Model 1" class="peer sr-only" checked />
@@ -168,7 +195,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
                   </div>
                   <div>
                     <p class="font-heading font-semibold text-gray-900 text-sm tracking-wide">Model 1</p>
-                    <p class="text-sm text-gray-600 font-body">Standard Sole</p>
+                    <p class="text-sm text-gray-600 font-body">Sol Standar</p>
                   </div>
                 </div>
               </label>
@@ -181,17 +208,35 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
                   </div>
                   <div>
                     <p class="font-heading font-semibold text-gray-900 text-sm tracking-wide">Model 2</p>
-                    <p class="text-sm text-gray-600 font-body">Premium Sole</p>
+                    <p class="text-sm text-gray-600 font-body">Sol Premium</p>
                   </div>
                 </div>
               </label>
             </div>
           </div>
 
+          <!-- Insole Selection -->
+          <div id="insole-selection" class="hidden mb-8">
+            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Pilih Insole</h3>
+            <div class="grid grid-cols-3 gap-3">
+              {['Insole 1', 'Insole 2', 'Insole 3'].map((insole, index) => (
+                <label class="cursor-pointer group">
+                  <input type="radio" name="insole" value={insole} class="peer sr-only" checked={index === 0} />
+                  <span class="flex items-center gap-3 p-3 border border-gray-200 peer-checked:border-gray-900 peer-checked:bg-white hover:border-gray-300 transition-colors">
+                    <span class="w-12 h-12 bg-gray-50 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                      <img src={product.image_url} alt={insole} class="w-full h-full object-cover mix-blend-multiply opacity-80" />
+                    </span>
+                    <span class="font-heading font-semibold text-gray-900 text-sm tracking-wide">{insole}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           <!-- Size Selection -->
           <div class="mb-8">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest">Pilih Ukuran Size</h3>
+              <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest">Pilih Ukuran</h3>
               <a href="#size-chart" class="text-xs text-gray-500 hover:text-primary uppercase tracking-widest transition-colors font-heading">Panduan Ukuran</a>
             </div>
             <div class="grid grid-cols-4 sm:grid-cols-5 gap-3" id="size-selector">
@@ -205,6 +250,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
               Harap pilih ukuran terlebih dahulu
             </p>
+            <p id="b2b-size-note" class="hidden text-xs text-gray-500 font-body mt-3">Ukuran ini akan dibuat seragam untuk seluruh jumlah B2B.</p>
           </div>
 
           <!-- Quantity -->
@@ -219,16 +265,16 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
               </button>
             </div>
-            <p class="text-xs text-gray-500 font-body mt-3">Sisa stok: <span id="live-stock-count">{effectiveStock}</span> pasang</p>
+            <p id="quantity-note" class="text-xs text-gray-500 font-body mt-3">Sisa stok: <span id="live-stock-count">{effectiveStock}</span> pasang</p>
           </div>
 
           <!-- Actions -->
           <div class="flex flex-col sm:flex-row gap-4 mb-12">
             <button id="add-to-cart-btn" class="flex-1 bg-transparent border border-gray-900 text-gray-900 font-button font-medium text-xs tracking-widest uppercase px-8 py-4 hover:bg-gray-900 hover:text-white transition-colors focus:outline-none">
-              Add to cart
+              Tambah ke Keranjang
             </button>
             <button id="buy-now-btn" class="flex-1 bg-gray-900 border border-gray-900 text-white font-button font-medium text-xs tracking-widest uppercase px-8 py-4 hover:bg-gray-800 transition-colors focus:outline-none">
-              Buy it now
+              Beli Sekarang
             </button>
           </div>
 
@@ -236,7 +282,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           <div class="border-t border-gray-200">
             <details class="group py-5" open>
               <summary class="flex justify-between items-center font-heading font-semibold text-gray-900 uppercase tracking-widest text-sm cursor-pointer list-none">
-                Description
+                Deskripsi
                 <span class="transition group-open:rotate-180">
                   <svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
@@ -247,7 +293,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
             </details>
             <details class="group py-5 border-t border-gray-200">
               <summary class="flex justify-between items-center font-heading font-semibold text-gray-900 uppercase tracking-widest text-sm cursor-pointer list-none">
-                Shipping & Returns
+                Pengiriman & Pengembalian
                 <span class="transition group-open:rotate-180">
                   <svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </span>
@@ -304,6 +350,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
     document.addEventListener('DOMContentLoaded', () => {
       let selectedSize = null;
       let quantity = 1;
+      let purchaseMode = 'satuan';
       let currentMaxStock = initialStock;
 
       // --- DOM Elements ---
@@ -315,6 +362,12 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       const btnAddToCart = document.getElementById('add-to-cart-btn');
       const btnBuyNow = document.getElementById('buy-now-btn');
       const outsoleRadios = document.querySelectorAll('input[name="outsole"]');
+      const stitchingRadios = document.querySelectorAll('input[name="stitching"]');
+      const insoleRadios = document.querySelectorAll('input[name="insole"]');
+      const purchaseModeBtns = document.querySelectorAll('.purchase-mode');
+      const insoleSelection = document.getElementById('insole-selection');
+      const b2bSizeNote = document.getElementById('b2b-size-note');
+      const quantityNote = document.getElementById('quantity-note');
 
       // --- Real-time Live Stock Sync from Supabase ---
       async function syncLiveStock() {
@@ -415,10 +468,10 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           const badgeEl = document.getElementById('lead-time-mode-badge');
           if (badgeEl) {
             if (procurementDelay > 0) {
-              badgeEl.textContent = 'Handmade Pre-Order';
+              badgeEl.textContent = 'Pesanan Pengrajin';
               badgeEl.className = 'text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full';
             } else {
-              badgeEl.textContent = 'Ready Stock';
+              badgeEl.textContent = 'Stok Siap';
               badgeEl.className = 'text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full';
             }
           }
@@ -431,6 +484,40 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 
       outsoleRadios.forEach(radio => {
         radio.addEventListener('change', updateDynamicLeadTime);
+      });
+
+      function updatePurchaseMode(nextMode) {
+        purchaseMode = nextMode;
+        const isB2b = purchaseMode === 'b2b';
+        quantity = isB2b ? Math.min(20, currentMaxStock) : 1;
+
+        purchaseModeBtns.forEach(button => {
+          const isActive = button.dataset.mode === purchaseMode;
+          button.classList.toggle('border-gray-900', isActive);
+          button.classList.toggle('bg-gray-900', isActive);
+          button.classList.toggle('text-white', isActive);
+          button.classList.toggle('border-gray-200', !isActive);
+          button.classList.toggle('bg-white', !isActive);
+          button.classList.toggle('text-gray-700', !isActive);
+          button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        insoleSelection?.classList.toggle('hidden', !isB2b);
+        b2bSizeNote?.classList.toggle('hidden', !isB2b);
+        if (quantityNote) {
+          quantityNote.innerHTML = isB2b
+            ? `Jumlah B2B: <span id="live-stock-count">${currentMaxStock}</span> pasang (kelipatan 20)`
+            : `Sisa stok: <span id="live-stock-count">${currentMaxStock}</span> pasang`;
+        }
+        if (qtyInput) qtyInput.value = quantity.toString();
+        if (qtyInput) qtyInput.setAttribute('max', currentMaxStock.toString());
+        updateDynamicLeadTime();
+      }
+
+      purchaseModeBtns.forEach(button => {
+        button.addEventListener('click', () => {
+          updatePurchaseMode(button.dataset.mode || 'satuan');
+        });
       });
 
       // --- Size Selection Logic ---
@@ -456,20 +543,22 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 
       // --- Quantity Logic ---
       btnMinus?.addEventListener('click', () => {
-        if (quantity > 1) {
-          quantity--;
+        const increment = purchaseMode === 'b2b' ? 20 : 1;
+        if (quantity > increment) {
+          quantity -= increment;
           if (qtyInput) qtyInput.value = quantity.toString();
           updateDynamicLeadTime();
         }
       });
 
       btnPlus?.addEventListener('click', () => {
-        if (quantity < currentMaxStock) {
-          quantity++;
+        const increment = purchaseMode === 'b2b' ? 20 : 1;
+        if (quantity + increment <= currentMaxStock) {
+          quantity += increment;
           if (qtyInput) qtyInput.value = quantity.toString();
           updateDynamicLeadTime();
         } else {
-          if (window.showToast) window.showToast('Maksimal stok tercapai', 'error');
+          if (window.showToast) window.showToast(purchaseMode === 'b2b' ? 'Stok tidak cukup untuk menambah 20 pasang' : 'Maksimal stok tercapai', 'error');
         }
       });
 
@@ -492,6 +581,16 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           if (radio.checked) selectedOutsole = radio.value;
         });
 
+        let selectedStitching = 'Jahitan 1';
+        stitchingRadios.forEach(radio => {
+          if (radio.checked) selectedStitching = radio.value;
+        });
+
+        let selectedInsole = null;
+        insoleRadios.forEach(radio => {
+          if (radio.checked) selectedInsole = radio.value;
+        });
+
         // Load existing cart
         let cart = [];
         try {
@@ -504,12 +603,15 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           name: product.name,
           price: product.price,
           image: product.image_url,
+          mode: purchaseMode,
           size: selectedSize,
+          stitching: selectedStitching,
           outsole: selectedOutsole,
+          insole: purchaseMode === 'b2b' ? selectedInsole : null,
           quantity: quantity
         };
 
-        const existingItemIndex = cart.findIndex(item => item.id === itemToAdd.id && item.size === itemToAdd.size && item.outsole === itemToAdd.outsole);
+        const existingItemIndex = cart.findIndex(item => item.id === itemToAdd.id && item.mode === itemToAdd.mode && item.size === itemToAdd.size && item.stitching === itemToAdd.stitching && item.outsole === itemToAdd.outsole && item.insole === itemToAdd.insole);
         
         if (existingItemIndex > -1) {
           cart[existingItemIndex].quantity += itemToAdd.quantity;
@@ -544,24 +646,26 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       // Interactive Thumbnail Image Switcher
       function bindThumbnails() {
         const mainImg = document.getElementById('mainProductImage');
-        const thumbnailButtons = document.querySelectorAll('.thumbnail-btn');
+        const thumbnailContainer = document.querySelector('.thumbnail-btn')?.parentElement;
+        if (!mainImg || !thumbnailContainer) return;
 
-        thumbnailButtons.forEach((btn) => {
-          btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const newSrc = btn.getAttribute('data-img-src');
-            if (mainImg && newSrc) {
-              mainImg.setAttribute('src', newSrc);
-            }
+        thumbnailContainer.addEventListener('click', (event) => {
+          const target = event.target;
+          const thumbnail = target instanceof Element ? target.closest('.thumbnail-btn') : null;
+          if (!thumbnail) return;
 
-            thumbnailButtons.forEach((b) => {
-              b.classList.remove('border-gray-900', 'border-2');
-              b.classList.add('border-gray-200', 'opacity-70');
-            });
+          event.preventDefault();
+          const newSrc = thumbnail.dataset.imgSrc;
+          if (!newSrc) return;
 
-            btn.classList.remove('border-gray-200', 'opacity-70');
-            btn.classList.add('border-gray-900', 'border-2');
+          mainImg.setAttribute('src', newSrc);
+          thumbnailContainer.querySelectorAll('.thumbnail-btn').forEach(button => {
+            button.classList.remove('border-gray-900', 'border-2');
+            button.classList.add('border-gray-200', 'opacity-70');
           });
+
+          thumbnail.classList.remove('border-gray-200', 'opacity-70');
+          thumbnail.classList.add('border-gray-900', 'border-2');
         });
       }
 

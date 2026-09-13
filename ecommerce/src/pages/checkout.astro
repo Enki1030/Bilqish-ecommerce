@@ -278,7 +278,8 @@ import AddressModal from '../components/AddressModal.astro';
               <img src="${item.image}" class="w-16 h-16 object-cover mix-blend-multiply bg-gray-50 border border-gray-200" />
               <div class="flex-1">
                 <p class="text-xs font-heading font-semibold text-gray-900 tracking-wide uppercase line-clamp-1">${item.name}</p>
-                <p class="text-[11px] font-body text-gray-500 mt-1">Size ${item.size} • ${item.outsole || 'Model 1'}</p>
+                <p class="text-[11px] font-body text-gray-500 mt-1">${item.mode === 'b2b' ? 'B2B' : 'Satuan'} • Ukuran ${item.size}</p>
+                <p class="text-[11px] font-body text-gray-500 mt-1">${item.stitching || 'Jahitan 1'} • ${item.outsole || 'Outsole 1'}${item.insole ? ` • ${item.insole}` : ''}</p>
                 <div class="flex justify-between items-center mt-2">
                   <span class="text-[13px] font-body font-bold text-gray-900">${item.quantity} x Rp ${item.price.toLocaleString('id-ID')}</span>
                 </div>

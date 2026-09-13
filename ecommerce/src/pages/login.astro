@@ -164,8 +164,9 @@ import Footer from '../components/Footer.astro';
       showError(error.message);
       setLoading(btnLogin, false, 'Masuk');
     } else {
-      // Redirect to homepage on success
-      window.location.href = '/';
+      const redirect = new URLSearchParams(window.location.search).get('redirect');
+      const safeRedirect = redirect && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/';
+      window.location.href = safeRedirect;
     }
   });
 
@@ -194,10 +195,12 @@ import Footer from '../components/Footer.astro';
 
   // --- LOGIN WITH GOOGLE ---
   btnGoogle.addEventListener('click', async () => {
+    const redirect = new URLSearchParams(window.location.search).get('redirect');
+    const safeRedirect = redirect && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/';
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin, // Akan kembali ke halaman utama
+        redirectTo: `${window.location.origin}/login?redirect=${encodeURIComponent(safeRedirect)}`,
       }
     });
 
