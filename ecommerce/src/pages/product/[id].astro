@@ -97,241 +97,276 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 <Layout title={`${product.name} - Ballqish Shoes`}>
   <Header />
 
-  <main class="flex-1 bg-[#FAF9F6] pt-8 pb-24">
-    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <!-- Breadcrumb -->
-      <nav class="flex text-xs font-heading tracking-widest uppercase text-gray-500 mb-8 font-medium">
-        <a href="/" class="hover:text-primary transition-colors">Toko</a>
-        <span class="mx-3">/</span>
-        <span class="text-gray-900">{product.name}</span>
-      </nav>
+  <main data-theme="editorial" theme-ui class="flex-1 bg-ivory pb-28 md:pb-16">
+    <div class="max-w-[1400px] mx-auto px-6 md:px-10 py-8 md:py-12">
 
-      <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
-        
-        <!-- LEFT: Image Gallery -->
-        <div class="w-full lg:w-1/2 flex flex-col-reverse md:flex-row gap-4 lg:sticky lg:top-32 lg:h-max">
-          <!-- Thumbnails (Main Photo & Promo Mockup Photos with Scrollbar) -->
-          <div class="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto w-full md:w-24 md:max-h-[540px] flex-shrink-0 pr-1 scrollbar-thin scrollbar-thumb-gray-300">
+      {/* ---------- Kembali ke koleksi ---------- */}
+      <a href="/#collection" class="inline-flex items-center gap-2 mb-8 text-[11px] uppercase tracking-[0.25em] text-ink/60 hover:text-oxblood transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Koleksi
+      </a>
+
+      <div class="grid lg:grid-cols-12 gap-10 lg:gap-16">
+
+        {/* ================= KOLOM KIRI — GALERI (7 dari 12) ================= */}
+        <div class="lg:col-span-6">
+
+          {/* Gambar utama 1:1 + badge */}
+          <div class="relative aspect-square bg-bone overflow-hidden">
+            <img id="mainProductImage" src={product.image_url} alt={product.name} class="w-full h-full object-cover" />
+            <span class="absolute bottom-4 left-4 bg-ivory/90 backdrop-blur-sm px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] text-ink">
+              Tampilan Utama
+            </span>
+          </div>
+
+          {/* Galeri thumbnail 3 kolom */}
+          <div id="thumbnail-gallery" class="grid grid-cols-3 gap-3 mt-3">
             {allImages.map((imgSrc, idx) => (
-              <button 
+              <button
                 type="button"
                 data-img-src={imgSrc}
-                class={`thumbnail-btn w-20 h-20 md:w-full md:h-24 bg-white border flex-shrink-0 flex items-center justify-center transition-all cursor-pointer rounded-lg overflow-hidden ${
-                  idx === 0 ? 'border-gray-900 border-2' : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-400'
+                class={`thumbnail-btn w-full aspect-square bg-bone border-2 overflow-hidden transition-all duration-300 cursor-pointer ${
+                  idx === 0
+                    ? 'border-gray-900 border-2'
+                    : 'border-gray-200 opacity-70 hover:opacity-100'
                 }`}
               >
-                <img src={imgSrc} alt={`Tampilan ${idx + 1}`} class="w-full h-full object-cover mix-blend-multiply" />
+                <img src={imgSrc} alt={`Tampilan ${idx + 1}`} class="w-full h-full object-cover" />
               </button>
             ))}
           </div>
-          
-          <!-- Main Image Display -->
-          <div class="flex-1 bg-white border border-gray-200 aspect-[4/5] flex items-center justify-center p-8 relative rounded-xl overflow-hidden shadow-xs">
-            <img id="mainProductImage" src={product.image_url} alt={product.name} class="w-full h-full object-cover mix-blend-multiply transition-all duration-300" />
-          </div>
         </div>
 
-        <!-- RIGHT: Product Details -->
-        <div class="w-full lg:w-1/2 flex flex-col">
-          
-          <!-- Title & Price -->
-          <div class="mb-10 border-b border-gray-200 pb-8">
-            <p class="text-xs font-heading font-medium text-gray-500 mb-3 tracking-[0.2em] uppercase">{product.category}</p>
-            <p class="text-2xl font-body font-bold text-gray-900">Rp {product.price.toLocaleString('id-ID')}</p>
-            
-            <!-- Privacy-Safe Dynamic Delivery Lead Time Estimator Widget -->
-            <div class="mt-5 p-4 bg-[#FAF9F6] border border-gray-200 rounded-xl font-sans space-y-2">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <svg class="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                  <span class="text-xs font-bold text-gray-900 tracking-wide uppercase font-heading">Estimasi Waktu Tiba</span>
-                </div>
-                <span id="lead-time-mode-badge" class="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">Stok Siap</span>
-              </div>
-              <p class="text-base font-bold text-gray-900" id="estimated-arrival-date">Menghitung estimasi...</p>
-              <p class="text-[11px] text-gray-500 font-light leading-relaxed" id="estimated-arrival-details">
-                Estimasi pengerjaan handmade & pengiriman standar (3 Hari Ekspedisi ke seluruh wilayah).
-              </p>
+        {/* ================= KOLOM KANAN — INFORMASI (5 dari 12) ================= */}
+        <div class="lg:col-span-6 flex flex-col">
+
+          {/* LEVEL 1 — Kategori & Kode referensi */}
+          <p class="text-[12px] uppercase tracking-[0.25em] text-ink/45">
+            {product.category} — Ref. {product.model}
+          </p>
+
+          {/* LEVEL 2 — Nama produk */}
+          <h1 class="mt-4 text-[34px] md:text-[44px] font-bold leading-[1.1] text-ink">
+            {product.name}
+          </h1>
+
+          {/* LEVEL 3 — Material / sub judul */}
+          <p class="mt-3 text-[15px] text-ink/60">
+            {product.model || product.type || 'Kulit Sapi Pilihan'}
+          </p>
+
+          {/* LEVEL 4 — Harga */}
+          <p class="mt-6 text-[22px] font-semibold text-ink">
+            Rp {product.price.toLocaleString('id-ID')}
+          </p>
+
+          {/* LEVEL 5 — Deskripsi singkat */}
+          <p class="mt-6 text-[14px] leading-[1.7] text-ink/65 line-clamp-4">
+            {cleanDescription || `Sepatu ${product.name} dari Ballqish dirancang dengan tingkat ketelitian tinggi. Model ${product.model} ini menghadirkan perpaduan material premium yang tahan lama.`}
+          </p>
+
+          {/* LEVEL 6 — Pilihan ukuran */}
+          <div class="mt-10">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50">Ukuran (EU)</h2>
+              <a href="#size-chart" class="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.15em] text-ink/50 hover:text-oxblood transition-colors">
+                Panduan ukuran
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15l6-6 4 4 8-8M21 5h-5M21 5v5"></path></svg>
+              </a>
             </div>
 
-            <div class="mt-5 grid grid-cols-2 gap-3" role="group" aria-label="Jenis pembelian">
-              <button type="button" id="mode-satuan" class="purchase-mode cursor-pointer border border-gray-900 bg-gray-900 text-white px-4 py-3 text-xs font-heading font-semibold uppercase tracking-widest transition-colors" data-mode="satuan" aria-pressed="true">
+            <div id="size-selector" class="grid grid-cols-4 sm:grid-cols-5 gap-3">
+              {sizes.map(size => (
+                <button
+                  type="button"
+                  data-size={size}
+                  class="size-btn py-3 border border-gray-200 text-sm font-medium text-gray-700 hover:border-ink transition-all duration-200 focus:outline-none cursor-pointer"
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+
+            <p id="size-error" class="hidden mt-3 text-[11px] uppercase tracking-[0.15em] text-oxblood">
+              Harap pilih ukuran terlebih dahulu
+            </p>
+          </div>
+
+          {/* LEVEL 7 — Beli satuan / B2B */}
+          <div class="mt-10">
+            <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Jenis Pembelian</h2>
+            <div class="grid grid-cols-2 gap-3" role="group" aria-label="Jenis pembelian">
+              <button type="button" id="mode-satuan" class="purchase-mode cursor-pointer border border-gray-900 bg-gray-900 text-white px-4 py-3.5 text-[11px] uppercase tracking-[0.2em] transition-colors" data-mode="satuan" aria-pressed="true">
                 Beli Satuan
               </button>
-              <button type="button" id="mode-b2b" class="purchase-mode cursor-pointer border border-gray-200 bg-white text-gray-700 px-4 py-3 text-xs font-heading font-semibold uppercase tracking-widest transition-colors" data-mode="b2b" aria-pressed="false">
+              <button type="button" id="mode-b2b" class="purchase-mode cursor-pointer border border-gray-200 bg-white text-gray-700 px-4 py-3.5 text-[11px] uppercase tracking-[0.2em] transition-colors" data-mode="b2b" aria-pressed="false">
                 Beli B2B
               </button>
             </div>
           </div>
 
-          <!-- Stitching Selection -->
-          <div class="mb-8">
-            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Pilih Jenis Jahitan</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {['Jahitan 1', 'Jahitan 2', 'Jahitan 3'].map((stitching, index) => (
-                <label class="cursor-pointer group">
-                  <input type="radio" name="stitching" value={stitching} class="peer sr-only" checked={index === 0} />
-                  <span class="flex items-center gap-3 p-3 border border-gray-200 peer-checked:border-gray-900 peer-checked:bg-white hover:border-gray-300 transition-colors">
-                    <span class="w-12 h-12 bg-gray-50 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                      <img src={product.image_url} alt={stitching} class="w-full h-full object-cover mix-blend-multiply opacity-80" />
-                    </span>
-                    <span class="font-heading font-semibold text-gray-900 text-sm tracking-wide">{stitching}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <!-- Outsole Model Selection -->
-          <div class="mb-8">
-            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Pilih Outsole</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <label class="cursor-pointer group">
-                <input type="radio" name="outsole" value="Model 1" class="peer sr-only" checked />
-                <div class="flex items-center gap-3 p-3 border border-gray-200 peer-checked:border-gray-900 peer-checked:bg-white hover:border-gray-300 transition-colors">
-                  <div class="w-12 h-12 bg-gray-50 flex-shrink-0 flex items-center justify-center">
-                    <img src={product.image_url} alt="Model 1" class="w-full h-full object-cover mix-blend-multiply opacity-80" />
-                  </div>
-                  <div>
-                    <p class="font-heading font-semibold text-gray-900 text-sm tracking-wide">Model 1</p>
-                    <p class="text-sm text-gray-600 font-body">Sol Standar</p>
-                  </div>
-                </div>
-              </label>
-              
-              <label class="cursor-pointer group">
-                <input type="radio" name="outsole" value="Model 2" class="peer sr-only" />
-                <div class="flex items-center gap-3 p-3 border border-gray-200 peer-checked:border-gray-900 peer-checked:bg-white hover:border-gray-300 transition-colors">
-                  <div class="w-12 h-12 bg-gray-50 flex-shrink-0 flex items-center justify-center">
-                    <img src={product.image_url} alt="Model 2" class="w-full h-full object-cover mix-blend-multiply filter contrast-125" />
-                  </div>
-                  <div>
-                    <p class="font-heading font-semibold text-gray-900 text-sm tracking-wide">Model 2</p>
-                    <p class="text-sm text-gray-600 font-body">Sol Premium</p>
-                  </div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <!-- Insole Selection -->
-          <div id="insole-selection" class="hidden mb-8">
-            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Pilih Insole</h3>
+          {/* LEVEL 8 — Pilih jenis jahitan */}
+          <div class="mt-10">
+            <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Pilih Jenis Jahitan</h2>
             <div class="grid grid-cols-3 gap-3">
-              {['Insole 1', 'Insole 2', 'Insole 3'].map((insole, index) => (
-                <label class="cursor-pointer group">
-                  <input type="radio" name="insole" value={insole} class="peer sr-only" checked={index === 0} />
-                  <span class="flex items-center gap-3 p-3 border border-gray-200 peer-checked:border-gray-900 peer-checked:bg-white hover:border-gray-300 transition-colors">
-                    <span class="w-12 h-12 bg-gray-50 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                      <img src={product.image_url} alt={insole} class="w-full h-full object-cover mix-blend-multiply opacity-80" />
+              {['Jahitan 1', 'Jahitan 2', 'Jahitan 3'].map((stitching, index) => (
+                <label class="cursor-pointer">
+                  <input type="radio" name="stitching" value={stitching} class="peer sr-only" checked={index === 0} />
+                  <span class="block border p-1.5 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
+                    <span class="block aspect-square bg-bone overflow-hidden">
+                      <img src={product.image_url} alt={stitching} class="w-full h-full object-cover opacity-85" />
                     </span>
-                    <span class="font-heading font-semibold text-gray-900 text-sm tracking-wide">{insole}</span>
+                    <span class="block text-center text-[11px] uppercase tracking-[0.15em] text-ink/60 py-2.5">{stitching}</span>
                   </span>
                 </label>
               ))}
             </div>
           </div>
 
-          <!-- Size Selection -->
-          <div class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest">Pilih Ukuran</h3>
-              <a href="#size-chart" class="text-xs text-gray-500 hover:text-primary uppercase tracking-widest transition-colors font-heading">Panduan Ukuran</a>
+          {/* LEVEL 9 — Pilih outsole */}
+          <div class="mt-10">
+            <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Pilih Outsole</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="cursor-pointer">
+                <input type="radio" name="outsole" value="Model 1" class="peer sr-only" checked />
+                <span class="flex items-center gap-3 border p-2 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
+                  <span class="w-14 h-14 bg-bone overflow-hidden shrink-0">
+                    <img src={product.image_url} alt="Model 1" class="w-full h-full object-cover opacity-85" />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-[13px] font-medium text-ink">Model 1</span>
+                    <span class="block text-[12px] text-ink/55">Sol Standar</span>
+                  </span>
+                </span>
+              </label>
+
+              <label class="cursor-pointer">
+                <input type="radio" name="outsole" value="Model 2" class="peer sr-only" />
+                <span class="flex items-center gap-3 border p-2 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
+                  <span class="w-14 h-14 bg-bone overflow-hidden shrink-0">
+                    <img src={product.image_url} alt="Model 2" class="w-full h-full object-cover opacity-85" />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-[13px] font-medium text-ink">Model 2</span>
+                    <span class="block text-[12px] text-ink/55">Sol Premium</span>
+                  </span>
+                </span>
+              </label>
             </div>
-            <div class="grid grid-cols-4 sm:grid-cols-5 gap-3" id="size-selector">
-              {sizes.map(size => (
-                <button type="button" data-size={size} class="size-btn py-3 border border-gray-200 text-sm font-button font-medium text-gray-700 hover:border-gray-900 transition-all focus:outline-none">
-                  {size}
+
+            {/* Insole — hanya tampil pada mode B2B (dikendalikan JS) */}
+            <div id="insole-selection" class="hidden mt-10">
+              <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Pilih Insole</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {['Insole 1', 'Insole 2'].map((insole, index) => (
+                  <label class="cursor-pointer">
+                    <input type="radio" name="insole" value={insole} class="peer sr-only" checked={index === 0} />
+                    <span class="flex items-center gap-3 border p-2 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
+                      <span class="w-14 h-14 bg-bone overflow-hidden shrink-0">
+                        <img src={product.image_url} alt={insole} class="w-full h-full object-cover opacity-85" />
+                      </span>
+                      <span class="min-w-0">
+                        <span class="block text-[13px] font-medium text-ink">{insole}</span>
+                        <span class="block text-[12px] text-ink/55">{index === 0 ? 'Standar' : 'Extra Empuk'}</span>
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* LEVEL 10 — Jumlah / stok */}
+          <div class="mt-10">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50">Jumlah</h2>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center border border-line bg-transparent">
+                <button type="button" id="qty-minus" class="px-5 py-3.5 text-ink/60 hover:bg-bone hover:text-ink transition-colors focus:outline-none cursor-pointer" aria-label="Kurangi jumlah">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"></path></svg>
                 </button>
-              ))}
+                <input type="number" id="qty-input" value="1" min="1" max={effectiveStock} class="w-14 text-center text-[15px] font-medium text-ink focus:outline-none bg-transparent appearance-none border-none p-0" readonly />
+                <button type="button" id="qty-plus" class="px-5 py-3.5 text-ink/60 hover:bg-bone hover:text-ink transition-colors focus:outline-none cursor-pointer" aria-label="Tambah jumlah">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                </button>
+              </div>
+
+              <p id="quantity-note" class="text-[12px] text-ink/50">
+                Sisa stok: <span id="live-stock-count">{effectiveStock}</span> pasang
+              </p>
             </div>
-            <p id="size-error" class="hidden text-xs text-primary font-heading uppercase tracking-wide mt-3 flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-              Harap pilih ukuran terlebih dahulu
-            </p>
-            <p id="b2b-size-note" class="hidden text-xs text-gray-500 font-body mt-3">Ukuran ini akan dibuat seragam untuk seluruh jumlah B2B.</p>
+            <p id="b2b-size-note" class="hidden mt-3 text-[12px] text-ink/55 border-l-2 border-oxblood pl-3">Ukuran ini akan dibuat seragam untuk seluruh jumlah B2B.</p>
           </div>
 
-          <!-- Quantity -->
-          <div class="mb-10">
-            <h3 class="text-xs font-heading font-semibold text-gray-900 uppercase tracking-widest mb-4">Jumlah</h3>
-            <div class="flex items-center border border-gray-200 w-max bg-white">
-              <button type="button" id="qty-minus" class="px-5 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 12H4"></path></svg>
-              </button>
-              <input type="number" id="qty-input" value="1" min="1" max={effectiveStock} class="w-12 text-center text-gray-900 font-heading font-semibold focus:outline-none bg-transparent appearance-none border-none p-0" readonly />
-              <button type="button" id="qty-plus" class="px-5 py-3 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
-              </button>
-            </div>
-            <p id="quantity-note" class="text-xs text-gray-500 font-body mt-3">Sisa stok: <span id="live-stock-count">{effectiveStock}</span> pasang</p>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex flex-col sm:flex-row gap-4 mb-12">
-            <button id="add-to-cart-btn" class="flex-1 bg-transparent border border-gray-900 text-gray-900 font-button font-medium text-xs tracking-widest uppercase px-8 py-4 hover:bg-gray-900 hover:text-white transition-colors focus:outline-none">
-              Tambah ke Keranjang
+          {/* LEVEL 11 — Tombol aksi */}
+          <div class="mt-10 flex items-stretch gap-3">
+            <button id="add-to-cart-btn" class="flex-1 bg-ink border border-ink text-ivory font-medium text-[12px] uppercase tracking-[0.25em] px-8 py-4 hover:bg-oxblood hover:border-oxblood transition-colors cursor-pointer">
+              Masukkan ke Tas
             </button>
-            <button id="buy-now-btn" class="flex-1 bg-gray-900 border border-gray-900 text-white font-button font-medium text-xs tracking-widest uppercase px-8 py-4 hover:bg-gray-800 transition-colors focus:outline-none">
+            <button id="buy-now-btn" class="flex-1 bg-transparent border border-ink text-ink font-medium text-[12px] uppercase tracking-[0.25em] px-8 py-4 hover:bg-ink hover:text-ivory transition-colors cursor-pointer">
               Beli Sekarang
             </button>
+
+            {/* Wishlist */}
+            <button
+              type="button"
+              data-product-id={product.id}
+              data-product-name={product.name}
+              data-product-price={product.price}
+              data-product-image={product.image_url}
+              class="favorite-btn w-14 shrink-0 border border-ink/25 bg-ivory flex items-center justify-center text-ink/50 transition-colors duration-300 hover:border-ink cursor-pointer"
+              aria-label="Simpan ke wishlist"
+            >
+              <svg class="w-5 h-5 fill-current transition-colors heart-icon" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            </button>
           </div>
 
-          <!-- Description Accordion -->
-          <div class="border-t border-gray-200">
-            <details class="group py-5" open>
-              <summary class="flex justify-between items-center font-heading font-semibold text-gray-900 uppercase tracking-widest text-sm cursor-pointer list-none">
-                Deskripsi
-                <span class="transition group-open:rotate-180">
-                  <svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </span>
-              </summary>
-              <div class="text-gray-700 mt-4 leading-snug font-body font-light text-base whitespace-pre-line">
-                {cleanDescription || `Sepatu ${product.name} dari Ballqish dirancang dengan tingkat ketelitian tinggi. Model ${product.model} ini menghadirkan perpaduan material premium yang tahan lama, sangat nyaman digunakan untuk kegiatan sehari-hari maupun acara khusus.`}
-              </div>
-            </details>
-            <details class="group py-5 border-t border-gray-200">
-              <summary class="flex justify-between items-center font-heading font-semibold text-gray-900 uppercase tracking-widest text-sm cursor-pointer list-none">
-                Pengiriman & Pengembalian
-                <span class="transition group-open:rotate-180">
-                  <svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </span>
-              </summary>
-              <div class="text-gray-700 mt-4 leading-snug font-body font-light text-base">
-                Pengiriman akan diproses 1x24 jam setelah pembayaran dikonfirmasi. Garansi retur ukuran maksimal 3 hari sejak barang diterima (syarat dan ketentuan berlaku).
-              </div>
-            </details>
+          {/* Info tambahan (dikendalikan JS, tidak disruptif) */}
+          <div class="mt-6 p-4 bg-bone/40 border border-line">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-[10px] uppercase tracking-[0.25em] text-ink/50">Estimasi Waktu Tiba</span>
+              <span id="lead-time-mode-badge" class="text-[10px] font-medium uppercase tracking-[0.15em] text-ink bg-bone px-2 py-0.5">Stok Siap</span>
+            </div>
+            <p class="mt-2 text-[15px] font-medium text-ink" id="estimated-arrival-date">Menghitung estimasi...</p>
+            <p class="mt-1 text-[11px] text-ink/50 leading-relaxed" id="estimated-arrival-details">
+              Estimasi pengerjaan handmade & pengiriman standar.
+            </p>
           </div>
+
+          <div id="craftsman-material-notice" class="hidden mt-4 p-4 bg-amber-50 border border-amber-200">
+            <p id="craftsman-notice-text" class="text-[12px] text-amber-900 leading-relaxed"></p>
+          </div>
+
         </div>
       </div>
     </div>
-  </main>
-  
-  <!-- Mobile Sticky Floating Buy Bar (Visible only on < md screens like Shopee/Tokopedia) -->
-  <div class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 backdrop-blur-md px-4 py-3 border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] flex items-center justify-between gap-3">
-    <div>
-      <span class="text-[10px] text-gray-500 block uppercase tracking-wider font-heading">Total Harga</span>
-      <span class="text-base font-bold text-gray-900 leading-none font-body">Rp {product.price.toLocaleString('id-ID')}</span>
-    </div>
 
-    <div class="flex items-center gap-2 flex-1 max-w-[230px]">
-      <button 
-        id="mobile-add-cart-btn" 
-        type="button" 
-        class="flex-1 py-3 px-2 border border-gray-900 text-gray-900 text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-gray-50 active:scale-95 transition-all text-center cursor-pointer"
-      >
-        + Keranjang
-      </button>
-      <button 
-        id="mobile-buy-now-btn" 
-        type="button" 
-        class="flex-1 py-3 px-2 bg-gray-900 text-white text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-gray-800 active:scale-95 transition-all text-center shadow-xs cursor-pointer"
-      >
-        Beli Sekarang
-      </button>
+    {/* ---------- Mobile Sticky Buy Bar ---------- */}
+    <div class="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-ivory/95 backdrop-blur-md px-4 py-3 border-t border-line flex items-center justify-between gap-3">
+      <div>
+        <span class="text-[10px] text-ink/50 block uppercase tracking-wider">Total Harga</span>
+        <span class="text-[15px] font-semibold text-ink leading-none">Rp {product.price.toLocaleString('id-ID')}</span>
+      </div>
+
+      <div class="flex items-center gap-2 flex-1 max-w-[260px]">
+        <button
+          id="mobile-add-cart-btn"
+          type="button"
+          class="flex-1 py-3 px-2 border border-ink text-ink text-[11px] uppercase tracking-[0.15em] hover:bg-bone active:scale-95 transition-all text-center cursor-pointer"
+        >
+          + Tas
+        </button>
+        <button
+          id="mobile-buy-now-btn"
+          type="button"
+          class="flex-1 py-3 px-2 bg-ink text-ivory text-[11px] uppercase tracking-[0.15em] hover:bg-oxblood active:scale-95 transition-all text-center cursor-pointer"
+        >
+          Beli
+        </button>
+      </div>
     </div>
-  </div>
+  </main>
 
   <Footer />
 
@@ -339,10 +374,10 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     /* Hide number input arrows */
-    input[type=number]::-webkit-inner-spin-button, 
-    input[type=number]::-webkit-outer-spin-button { 
-      -webkit-appearance: none; 
-      margin: 0; 
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
   </style>
 
@@ -352,6 +387,9 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       let quantity = 1;
       let purchaseMode = 'satuan';
       let currentMaxStock = initialStock;
+      // Minimum pembelian B2B: 10 pasang. Satuan tetap minimal 1.
+      const B2B_MIN = 10;
+      const B2B_STEP = 10;
 
       // --- DOM Elements ---
       const sizeBtns = document.querySelectorAll('.size-btn');
@@ -469,10 +507,10 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           if (badgeEl) {
             if (procurementDelay > 0) {
               badgeEl.textContent = 'Pesanan Pengrajin';
-              badgeEl.className = 'text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full';
+              badgeEl.className = 'text-[10px] font-medium uppercase tracking-[0.15em] text-oxblood bg-oxblood/10 px-2 py-0.5';
             } else {
               badgeEl.textContent = 'Stok Siap';
-              badgeEl.className = 'text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full';
+              badgeEl.className = 'text-[10px] font-medium uppercase tracking-[0.15em] text-ink bg-bone px-2 py-0.5';
             }
           }
         } catch(e) {
@@ -489,7 +527,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       function updatePurchaseMode(nextMode) {
         purchaseMode = nextMode;
         const isB2b = purchaseMode === 'b2b';
-        quantity = isB2b ? Math.min(20, currentMaxStock) : 1;
+        quantity = isB2b ? Math.min(B2B_MIN, currentMaxStock) : 1;
 
         purchaseModeBtns.forEach(button => {
           const isActive = button.dataset.mode === purchaseMode;
@@ -506,11 +544,19 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
         b2bSizeNote?.classList.toggle('hidden', !isB2b);
         if (quantityNote) {
           quantityNote.innerHTML = isB2b
-            ? `Jumlah B2B: <span id="live-stock-count">${currentMaxStock}</span> pasang (kelipatan 20)`
+            ? `Jumlah B2B: <span id="live-stock-count">${currentMaxStock}</span> pasang (kelipatan ${B2B_MIN})`
             : `Sisa stok: <span id="live-stock-count">${currentMaxStock}</span> pasang`;
         }
         if (qtyInput) qtyInput.value = quantity.toString();
         if (qtyInput) qtyInput.setAttribute('max', currentMaxStock.toString());
+
+        // B2B sudah di batas minimum (10) -> tombol minus dimatikan
+        if (btnMinus) {
+          btnMinus.disabled = isB2b;
+          btnMinus.style.opacity = isB2b ? '0.35' : '1';
+          btnMinus.style.cursor = isB2b ? 'not-allowed' : 'pointer';
+        }
+
         updateDynamicLeadTime();
       }
 
@@ -543,22 +589,22 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 
       // --- Quantity Logic ---
       btnMinus?.addEventListener('click', () => {
-        const increment = purchaseMode === 'b2b' ? 20 : 1;
-        if (quantity > increment) {
-          quantity -= increment;
+        if (purchaseMode === 'b2b') return; // sudah minimum 10
+        if (quantity > 1) {
+          quantity -= 1;
           if (qtyInput) qtyInput.value = quantity.toString();
           updateDynamicLeadTime();
         }
       });
 
       btnPlus?.addEventListener('click', () => {
-        const increment = purchaseMode === 'b2b' ? 20 : 1;
+        const increment = purchaseMode === 'b2b' ? B2B_STEP : 1;
         if (quantity + increment <= currentMaxStock) {
           quantity += increment;
           if (qtyInput) qtyInput.value = quantity.toString();
           updateDynamicLeadTime();
         } else {
-          if (window.showToast) window.showToast(purchaseMode === 'b2b' ? 'Stok tidak cukup untuk menambah 20 pasang' : 'Maksimal stok tercapai', 'error');
+          if (window.showToast) window.showToast(purchaseMode === 'b2b' ? `Stok tidak cukup untuk menambah ${B2B_STEP} pasang` : 'Maksimal stok tercapai', 'error');
         }
       });
 
@@ -632,6 +678,54 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           // Direct redirect to checkout without intermediate modal
           window.location.href = '/checkout';
         }
+      }
+
+      // ---------- Wishlist (tombol kotak di panel aksi) ----------
+      // Memakai key localStorage yang sama dengan kartu produk di homepage,
+      // sehingga statusnya konsisten di kedua halaman.
+      const favBtnEl = document.querySelector('.favorite-btn');
+      if (favBtnEl) {
+        const pid = favBtnEl.getAttribute('data-product-id');
+        const pname = favBtnEl.getAttribute('data-product-name');
+        const pprice = favBtnEl.getAttribute('data-product-price');
+        const pimage = favBtnEl.getAttribute('data-product-image');
+
+        const readFavs = () => {
+          try {
+            const f = localStorage.getItem('ballqish_favs');
+            return f ? JSON.parse(f) : [];
+          } catch (e) { return []; }
+        };
+
+        const paintWishlist = () => {
+          const on = readFavs().some(f => f.id === pid);
+          const icon = favBtnEl.querySelector('.heart-icon');
+          if (!icon) return;
+          if (on) {
+            icon.classList.add('text-red-500', 'fill-red-500');
+            icon.classList.remove('text-gray-300', 'fill-current');
+          } else {
+            icon.classList.remove('text-red-500', 'fill-red-500');
+            icon.classList.add('text-gray-300', 'fill-current');
+          }
+        };
+
+        favBtnEl.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          const favs = readFavs();
+          const idx = favs.findIndex(f => f.id === pid);
+          if (idx > -1) favs.splice(idx, 1);
+          else favs.push({ id: pid, name: pname, price: parseInt(pprice || '0'), image: pimage });
+
+          localStorage.setItem('ballqish_favs', JSON.stringify(favs));
+          paintWishlist();
+          window.dispatchEvent(new Event('favoritesUpdated'));
+          if (window.showToast) {
+            window.showToast(idx > -1 ? 'Dihapus dari favorit' : 'Disimpan ke favorit', 'success');
+          }
+        });
+
+        paintWishlist();
       }
 
       btnAddToCart?.addEventListener('click', () => handleAddToCart(false));

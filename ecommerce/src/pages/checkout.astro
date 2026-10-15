@@ -4,229 +4,214 @@ import AddressModal from '../components/AddressModal.astro';
 ---
 
 <Layout title="Checkout - Ballqish Shoes">
-  <div class="bg-[#FAF9F6] min-h-screen py-6 sm:py-12">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <!-- Checkout Header -->
-      <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-6 sm:mb-8">
-        <h1 class="text-xl sm:text-2xl font-heading font-bold text-gray-900 tracking-wider uppercase">
-          Checkout Pesanan
-        </h1>
-        <a href="/" class="text-xs font-semibold text-gray-500 hover:text-primary transition-colors">
-          ← Kembali Belanja
+  <div data-theme="editorial" class="bg-ivory min-h-screen py-10 sm:py-14">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8">
+
+      {/* Checkout Header */}
+      <div class="flex items-end justify-between border-b border-line pb-6 mb-10 sm:mb-14">
+        <div>
+          <span class="block text-[10px] uppercase tracking-[0.4em] text-brass mb-3">Langkah Terakhir</span>
+          <h1 class="display-font text-4xl md:text-5xl font-normal text-ink leading-none">Checkout Pesanan</h1>
+        </div>
+        <a href="/" class="text-[11px] uppercase tracking-[0.25em] text-ink/50 hover:text-oxblood transition-colors pb-1">
+          &larr; Kembali Belanja
         </a>
       </div>
 
-      <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
-        
-        <!-- LEFT: Payment & Shipping Details -->
-        <div class="flex-1 space-y-6">
-          
-          <!-- Informasi Pengiriman Section -->
-          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none space-y-5 font-sans">
-            
-            <!-- Clean Header without squished buttons -->
-            <div class="border-b border-gray-100 pb-3">
-              <h2 class="text-xs font-sans font-medium text-gray-900 uppercase tracking-wider">
-                Informasi Pengiriman
-              </h2>
-              <p class="text-[11px] font-sans font-normal text-gray-400 mt-0.5">
-                Lengkapi kontak penerima dan pilih alamat tujuan
-              </p>
-            </div>
+      <div class="flex flex-col lg:flex-row gap-12 lg:gap-16">
 
-            <!-- Kontak Penerima (Nama & No. Telp) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* LEFT: Payment & Shipping Details */}
+        <div class="flex-1 space-y-12">
+
+          {/* Informasi Pengiriman */}
+          <section>
+            <header class="border-b border-line pb-4 mb-6">
+              <h2 class="text-[11px] uppercase tracking-[0.3em] text-ink font-semibold">Informasi Pengiriman</h2>
+              <p class="text-[13px] text-ink/50 mt-2">Lengkapi kontak penerima dan pilih alamat tujuan</p>
+            </header>
+
+            {/* Kontak Penerima */}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label class="block text-xs font-sans font-medium text-gray-700 mb-1.5 uppercase tracking-wide">
-                  Nama Penerima
-                </label>
-                <input 
-                  type="text" 
-                  id="cust-name" 
-                  class="w-full border border-gray-300 px-3.5 py-2.5 text-xs sm:text-sm font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] bg-white rounded-lg transition-colors" 
+                <label for="cust-name" class="block text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-2.5">Nama Penerima</label>
+                <input
+                  type="text"
+                  id="cust-name"
+                  class="w-full border border-line bg-white px-4 py-3.5 text-[14px] text-ink placeholder:text-ink/25 focus:outline-none focus:border-ink transition-colors"
                   placeholder="Contoh: Budi Santoso"
                 />
               </div>
               <div>
-                <label class="block text-xs font-sans font-medium text-gray-700 mb-1.5 uppercase tracking-wide">
-                  Nomor Telepon (WA)
-                </label>
-                <input 
-                  type="tel" 
-                  id="cust-phone" 
-                  class="w-full border border-gray-300 px-3.5 py-2.5 text-xs sm:text-sm font-sans font-normal text-gray-800 focus:outline-none focus:border-[#5c1616] bg-white rounded-lg transition-colors" 
+                <label for="cust-phone" class="block text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-2.5">Nomor Telepon (WA)</label>
+                <input
+                  type="tel"
+                  id="cust-phone"
+                  class="w-full border border-line bg-white px-4 py-3.5 text-[14px] text-ink placeholder:text-ink/25 focus:outline-none focus:border-ink transition-colors"
                   placeholder="081234567890"
                 />
               </div>
             </div>
 
-            <!-- Alamat Pengiriman Picker -->
-            <div class="space-y-1.5 pt-1">
-              <label class="block text-xs font-sans font-medium text-gray-700 uppercase tracking-wide">
-                Alamat Pengiriman
-              </label>
+            {/* Alamat Pengiriman Picker */}
+            <div class="pt-8 mt-8 border-t border-line">
+              <label class="block text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-2.5">Alamat Pengiriman</label>
 
               <div class="relative" id="address-picker-wrapper">
-                
-                <!-- State 1: Active Selected Address Card -->
-                <div id="selected-address-card" class="p-3.5 sm:p-4 border border-gray-200 hover:border-gray-300 bg-[#FAF9F6] rounded-xl space-y-2 transition-all">
-                  <div class="flex items-center justify-between gap-2 border-b border-gray-200/60 pb-2">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span id="card-addr-label" class="text-xs font-sans font-medium text-gray-900 uppercase tracking-wider">
+
+                {/* State 1: Alamat aktif */}
+                <div id="selected-address-card" class="bg-white border border-line p-5 space-y-3 transition-colors">
+                  <div class="flex items-center justify-between gap-3 border-b border-line pb-3">
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                      <span id="card-addr-label" class="text-[10px] uppercase tracking-[0.3em] text-ink">
                         RUMAH
                       </span>
-                      <span id="card-addr-badge" class="text-[9px] font-sans font-medium text-[#5c1616] bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded-full uppercase hidden">
+                      <span id="card-addr-badge" class="text-[9px] uppercase tracking-[0.15em] text-oxblood bg-oxblood/8 border border-oxblood/25 px-2 py-1 hidden">
                         Utama
                       </span>
                     </div>
-                    <button 
-                      id="address-dropdown-trigger" 
-                      type="button" 
-                      class="text-xs font-sans font-medium text-[#5c1616] hover:text-[#400f0f] hover:underline cursor-pointer flex items-center gap-1 shrink-0"
+                    <button
+                      id="address-dropdown-trigger"
+                      type="button"
+                      class="text-[10px] uppercase tracking-[0.2em] text-ink/50 hover:text-oxblood transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
                     >
                       <span>Pilih Alamat Lain</span>
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                   </div>
-                  
+
                   <div>
-                    <p id="card-full-address" class="text-xs font-sans font-normal text-gray-500 leading-relaxed">
+                    <p id="card-full-address" class="text-[13px] text-ink/65 leading-relaxed">
                       Memuat alamat...
                     </p>
                   </div>
                 </div>
 
-                <!-- State 2: No Address Empty State Card -->
-                <div id="no-address-card" class="hidden p-5 border-2 border-dashed border-gray-200 rounded-xl text-center space-y-2.5 bg-[#FAF9F6]">
-                  <p class="text-xs font-sans font-medium text-gray-700">Belum ada alamat pengiriman tersimpan</p>
-                  <button 
-                    id="btn-add-first-address" 
-                    type="button" 
-                    class="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-white bg-[#5c1616] hover:bg-[#400f0f] px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                {/* State 2: Belum ada alamat */}
+                <div id="no-address-card" class="hidden border border-dashed border-line px-6 py-12 text-center space-y-4">
+                  <p class="text-[13px] text-ink/65">Belum ada alamat pengiriman tersimpan</p>
+                  <button
+                    id="btn-add-first-address"
+                    type="button"
+                    class="inline-flex items-center gap-2 bg-ink text-ivory text-[11px] uppercase tracking-[0.25em] px-6 py-3.5 hover:bg-oxblood transition-colors cursor-pointer"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-                    + Buka Peta & Tambah Alamat
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                    Buka Peta &amp; Tambah Alamat
                   </button>
                 </div>
 
-                <!-- Dropdown Menu for Switching Addresses -->
-                <div 
-                  id="address-dropdown-menu" 
-                  class="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto hidden divide-y divide-gray-100 font-sans"
+                {/* Dropdown */}
+                <div
+                  id="address-dropdown-menu"
+                  class="absolute left-0 right-0 top-full mt-2 bg-white border border-line z-50 max-h-72 overflow-y-auto hidden divide-y divide-line"
                 >
-                  <!-- Diisi via JavaScript -->
+                  {/* Diisi via JavaScript */}
                 </div>
               </div>
             </div>
 
-            <!-- Hidden Input for Full Address -->
             <input type="hidden" id="cust-address" value="" />
-          </div>
+          </section>
 
-          <!-- Metode Pembayaran -->
-          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none">
-            <h2 class="text-xs font-sans font-medium text-gray-900 mb-6 uppercase tracking-widest">
-              Metode Pembayaran
-            </h2>
-            
+          {/* Metode Pembayaran */}
+          <section>
+            <header class="border-b border-line pb-4 mb-6">
+              <h2 class="text-[11px] uppercase tracking-[0.3em] text-ink font-semibold">Metode Pembayaran</h2>
+            </header>
+
             <div class="space-y-3">
-              <!-- E-Wallet -->
-              <label class="payment-method border border-gray-200 p-4 flex items-center cursor-pointer hover:border-gray-900 transition-colors bg-white rounded-lg sm:rounded-none">
-                <input type="radio" name="payment" value="ewallet" class="text-primary focus:ring-primary mr-4 w-4 h-4">
+              <label class="payment-method border border-gray-200 bg-white p-5 flex items-center cursor-pointer hover:border-ink transition-colors">
+                <input type="radio" name="payment" value="ewallet" class="mr-4 w-4 h-4 accent-[#5a1a1c]">
                 <div class="flex-1">
-                  <span class="font-sans font-medium text-gray-900 block text-sm tracking-wide">E-Wallet</span>
-                  <span class="text-xs text-gray-400 font-sans font-normal">GoPay, OVO, DANA, ShopeePay</span>
+                  <span class="block text-[14px] text-ink">E-Wallet</span>
+                  <span class="block text-[12px] text-ink/45 mt-1">GoPay, OVO, DANA, ShopeePay</span>
                 </div>
               </label>
 
-              <!-- Bank Transfer -->
-              <label class="payment-method border border-gray-200 p-4 flex items-center cursor-pointer hover:border-gray-900 transition-colors bg-white rounded-lg sm:rounded-none">
-                <input type="radio" name="payment" value="bank" class="text-primary focus:ring-primary mr-4 w-4 h-4">
+              <label class="payment-method border border-gray-200 bg-white p-5 flex items-center cursor-pointer hover:border-ink transition-colors">
+                <input type="radio" name="payment" value="bank" class="mr-4 w-4 h-4 accent-[#5a1a1c]">
                 <div class="flex-1">
-                  <span class="font-sans font-medium text-gray-900 block text-sm tracking-wide">Transfer Bank (Virtual Account)</span>
-                  <span class="text-xs text-gray-400 font-sans font-normal">BCA, Mandiri, BNI, BRI</span>
+                  <span class="block text-[14px] text-ink">Transfer Bank (Virtual Account)</span>
+                  <span class="block text-[12px] text-ink/45 mt-1">BCA, Mandiri, BNI, BRI</span>
                 </div>
               </label>
 
-              <!-- QRIS -->
-              <label class="payment-method border border-gray-200 p-4 flex items-center cursor-pointer hover:border-gray-900 transition-colors bg-white rounded-lg sm:rounded-none">
-                <input type="radio" name="payment" value="qris" class="text-primary focus:ring-primary mr-4 w-4 h-4">
+              <label class="payment-method border border-gray-200 bg-white p-5 flex items-center cursor-pointer hover:border-ink transition-colors">
+                <input type="radio" name="payment" value="qris" class="mr-4 w-4 h-4 accent-[#5a1a1c]">
                 <div class="flex-1">
-                  <span class="font-sans font-medium text-gray-900 block text-sm tracking-wide">QRIS</span>
-                  <span class="text-xs text-gray-400 font-sans font-normal">Scan dengan aplikasi M-Banking atau E-Wallet</span>
+                  <span class="block text-[14px] text-ink">QRIS</span>
+                  <span class="block text-[12px] text-ink/45 mt-1">Scan dengan aplikasi M-Banking atau E-Wallet</span>
                 </div>
               </label>
             </div>
 
-            <!-- QRIS Dummy Display -->
-            <div id="qris-display" class="hidden mt-6 p-6 border border-gray-300 text-center bg-[#FAF9F6] rounded-xl sm:rounded-none">
-              <p class="text-xs font-sans font-medium text-gray-900 uppercase tracking-widest mb-4">Scan kode QR (DUMMY)</p>
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DUMMY_PAYMENT_QRIS_BALLQISH" alt="QRIS Dummy" class="mx-auto border border-gray-200 mix-blend-multiply">
-              <p class="text-xs text-gray-400 font-sans font-normal mt-4">Peringatan: Ini hanya demonstrasi e-commerce.</p>
+            <div id="qris-display" class="hidden mt-6 p-8 border border-line text-center bg-white">
+              <p class="text-[10px] uppercase tracking-[0.3em] text-ink/50 mb-5">Scan kode QR (DUMMY)</p>
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DUMMY_PAYMENT_QRIS_BALLQISH" alt="QRIS Dummy" class="mx-auto">
+              <p class="text-[12px] text-ink/40 mt-5">Peringatan: Ini hanya demonstrasi e-commerce.</p>
             </div>
-          </div>
+          </section>
 
         </div>
 
-        <!-- RIGHT: Order Summary -->
-        <div class="w-full lg:w-96 flex-shrink-0 font-sans">
-          <div class="bg-white p-4 sm:p-8 border border-gray-200 rounded-xl sm:rounded-none sticky top-28">
-            <h3 class="text-xs font-sans font-medium text-gray-900 uppercase tracking-widest mb-6">Ringkasan Pesanan</h3>
-            
-            <!-- Items Container -->
-            <div id="checkout-items" class="space-y-4 mb-8 max-h-80 overflow-y-auto pr-2 hide-scrollbar">
+        {/* RIGHT: Ringkasan Pesanan */}
+        <aside class="w-full lg:w-[360px] flex-shrink-0">
+          <div class="lg:sticky lg:top-28">
+            <div class="flex items-baseline justify-between border-b border-ink pb-4 mb-7">
+              <h3 class="display-font text-2xl font-normal text-ink">Ringkasan Pesanan</h3>
+            </div>
+
+            <div id="checkout-items" class="space-y-5 mb-8 max-h-80 overflow-y-auto pr-2 hide-scrollbar">
               <!-- Diisi via JS -->
             </div>
 
-            <!-- Voucher (Flush aligned & Responsive) -->
-            <div class="mb-8 pt-8 border-t border-gray-200">
-              <label class="block text-xs font-sans font-medium text-gray-700 mb-3 uppercase tracking-wide">Kode Voucher</label>
-              <div class="flex w-full border border-gray-300 rounded-lg focus-within:border-gray-900 overflow-hidden transition-colors">
-                <input 
-                  type="text" 
-                  id="voucher-code" 
-                  class="flex-1 min-w-0 border-none px-3.5 py-3 text-sm font-sans font-normal focus:outline-none focus:ring-0 bg-transparent uppercase" 
-                  placeholder="BQL2026" 
+            {/* Voucher */}
+            <div class="mb-8 pt-7 border-t border-line">
+              <label for="voucher-code" class="block text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-3">Kode Voucher</label>
+              <div class="flex w-full border border-line focus-within:border-ink overflow-hidden transition-colors bg-white">
+                <input
+                  type="text"
+                  id="voucher-code"
+                  class="flex-1 min-w-0 border-none px-4 py-3.5 text-[13px] tracking-[0.15em] text-ink placeholder:text-ink/25 focus:outline-none focus:ring-0 bg-transparent uppercase"
+                  placeholder="BQL2026"
                 />
-                <button 
+                <button
                   id="apply-voucher"
-                  class="bg-gray-900 text-white px-5 py-3 text-xs font-heading font-semibold uppercase tracking-wider hover:bg-primary transition-colors cursor-pointer"
+                  class="bg-ink text-ivory px-5 text-[10px] uppercase tracking-[0.25em] hover:bg-oxblood transition-colors cursor-pointer"
                 >
-                  Gunakan
+                  Pakai
                 </button>
               </div>
             </div>
 
-            <!-- Total Price Calculation -->
-            <div class="space-y-3 mb-8 pt-4 border-t border-gray-200">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-500">Subtotal</span>
-                <span id="summary-subtotal" class="font-bold text-gray-900">Rp 0</span>
+            {/* Total */}
+            <div class="space-y-3 mb-8 pt-6 border-t border-line">
+              <div class="flex justify-between text-[13px]">
+                <span class="text-ink/50">Subtotal</span>
+                <span id="summary-subtotal" class="font-semibold text-ink">Rp 0</span>
               </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-500">Ongkos Kirim (Flat)</span>
-                <span id="summary-shipping" class="font-bold text-gray-900">Rp 7.000</span>
+              <div class="flex justify-between text-[13px]">
+                <span class="text-ink/50">Ongkos Kirim (Flat)</span>
+                <span id="summary-shipping" class="font-semibold text-ink">Rp 7.000</span>
               </div>
-              <div id="discount-row" class="flex justify-between text-sm hidden text-gray-900">
-                <span class="text-gray-500">Diskon</span>
-                <span id="summary-discount" class="font-bold">- Rp 0</span>
+              <div id="discount-row" class="flex justify-between text-[13px] hidden text-oxblood">
+                <span class="text-ink/50">Diskon</span>
+                <span id="summary-discount" class="font-semibold">- Rp 0</span>
               </div>
-              <div class="flex justify-between items-center pt-4 mt-4 border-t border-gray-200">
-                <span class="text-xs font-heading font-bold text-gray-900 uppercase tracking-widest">Total Tagihan</span>
-                <span id="summary-total" class="text-xl font-heading font-bold text-gray-900">Rp 0</span>
+              <div class="flex justify-between items-baseline pt-4 mt-4 border-t border-ink">
+                <span class="text-[10px] uppercase tracking-[0.3em] text-ink/50">Total Tagihan</span>
+                <span id="summary-total" class="display-font text-3xl font-normal text-ink">Rp 0</span>
               </div>
             </div>
 
-            <button id="btn-pay-now" class="w-full bg-primary border border-primary text-white font-heading font-semibold text-xs uppercase tracking-widest px-4 py-4 hover:bg-gray-900 hover:border-gray-900 transition-colors flex justify-center items-center rounded-lg sm:rounded-none cursor-pointer">
+            <button id="btn-pay-now" class="w-full bg-ink text-ivory text-[11px] uppercase tracking-[0.3em] px-4 py-4.5 hover:bg-oxblood transition-colors flex justify-center items-center cursor-pointer">
               Bayar Sekarang
             </button>
-            <p class="text-[10px] text-gray-400 text-center mt-4 flex items-center justify-center gap-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-              Pembayaran Anda aman dan terenkripsi.
+            <p class="text-[10px] uppercase tracking-[0.2em] text-ink/35 text-center mt-5 flex items-center justify-center gap-2">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              Pembayaran aman &amp; terenkripsi
             </p>
           </div>
-        </div>
+        </aside>
 
       </div>
     </div>
@@ -274,14 +259,14 @@ import AddressModal from '../components/AddressModal.astro';
         const itemsContainer = document.getElementById('checkout-items');
         if (itemsContainer) {
           itemsContainer.innerHTML = cart.map((item: any) => `
-            <div class="flex gap-4">
-              <img src="${item.image}" class="w-16 h-16 object-cover mix-blend-multiply bg-gray-50 border border-gray-200" />
-              <div class="flex-1">
-                <p class="text-xs font-heading font-semibold text-gray-900 tracking-wide uppercase line-clamp-1">${item.name}</p>
-                <p class="text-[11px] font-body text-gray-500 mt-1">${item.mode === 'b2b' ? 'B2B' : 'Satuan'} • Ukuran ${item.size}</p>
-                <p class="text-[11px] font-body text-gray-500 mt-1">${item.stitching || 'Jahitan 1'} • ${item.outsole || 'Outsole 1'}${item.insole ? ` • ${item.insole}` : ''}</p>
-                <div class="flex justify-between items-center mt-2">
-                  <span class="text-[13px] font-body font-bold text-gray-900">${item.quantity} x Rp ${item.price.toLocaleString('id-ID')}</span>
+            <div class="flex gap-4 pb-5 border-b border-line">
+              <img src="${item.image}" class="w-20 h-24 object-cover" />
+              <div class="flex-1 min-w-0">
+                <p class="display-font text-[16px] font-normal text-ink line-clamp-2 leading-snug">${item.name}</p>
+                <p class="text-[10px] uppercase tracking-[0.2em] text-ink/45 mt-2">${item.mode === 'b2b' ? 'B2B' : 'Satuan'} &bull; Ukuran ${item.size}</p>
+                <p class="text-[11px] text-ink/45 mt-1.5">${item.stitching || 'Jahitan 1'} &bull; ${item.outsole || 'Outsole 1'}${item.insole ? ` &bull; ${item.insole}` : ''}</p>
+                <div class="flex justify-between items-baseline mt-2.5">
+                  <span class="text-[13px] font-semibold text-ink">${item.quantity} &times; Rp ${item.price.toLocaleString('id-ID')}</span>
                 </div>
               </div>
             </div>
@@ -434,21 +419,21 @@ import AddressModal from '../components/AddressModal.astro';
 
             return `
               <div 
-                class="address-dropdown-item p-3.5 hover:bg-rose-50/40 cursor-pointer transition-colors flex items-start justify-between gap-3 ${isSelected ? 'bg-rose-50/30' : ''}" 
+                class="address-dropdown-item p-4 hover:bg-bone/50 cursor-pointer transition-colors flex items-start justify-between gap-3 ${isSelected ? 'bg-bone/40' : ''}" 
                 data-id="${addr.id}"
               >
-                <div class="space-y-1 min-w-0 flex-1">
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs font-sans font-medium uppercase tracking-wider text-gray-900">
+                <div class="space-y-1.5 min-w-0 flex-1">
+                  <div class="flex items-center gap-2.5 flex-wrap">
+                    <span class="text-[10px] uppercase tracking-[0.25em] text-ink">
                       ${addr.label_name || 'Rumah'} (${addr.recipient_name})
                     </span>
-                    ${addr.is_default ? '<span class="text-[9px] font-sans font-medium text-[#5c1616] bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded-full uppercase">Utama</span>' : ''}
+                    ${addr.is_default ? '<span class="text-[9px] uppercase tracking-[0.15em] text-oxblood bg-oxblood/8 border border-oxblood/25 px-2 py-0.5">Utama</span>' : ''}
                   </div>
-                  <p class="text-xs font-sans font-normal text-gray-500 line-clamp-1 leading-relaxed">
+                  <p class="text-[12px] text-ink/50 line-clamp-1 leading-relaxed">
                     ${fullTxt || addr.full_address}
                   </p>
                 </div>
-                ${isSelected ? '<span class="text-[#5c1616] text-xs font-bold shrink-0 mt-0.5">Terpilih</span>' : ''}
+                ${isSelected ? '<span class="text-[10px] uppercase tracking-[0.2em] text-oxblood shrink-0 mt-0.5">Terpilih</span>' : ''}
               </div>
             `;
           }).join('')}
@@ -456,10 +441,10 @@ import AddressModal from '../components/AddressModal.astro';
           <button 
             type="button" 
             id="btn-dropdown-add-new" 
-            class="w-full p-3 text-left bg-gray-50 hover:bg-gray-100 text-[#5c1616] font-sans font-medium text-xs flex items-center gap-2 transition-colors cursor-pointer border-t border-gray-100"
+            class="w-full p-4 text-left bg-bone/40 hover:bg-bone text-[10px] uppercase tracking-[0.25em] text-oxblood flex items-center gap-2.5 transition-colors cursor-pointer"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            <span>+ Buka Peta & Tambah Alamat Baru...</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+            <span>Buka Peta &amp; Tambah Alamat Baru</span>
           </button>
         `;
 

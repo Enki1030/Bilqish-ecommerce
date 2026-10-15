@@ -1,7 +1,29 @@
+/* Font (Bodoni Moda / Manrope / Inter / Playfair) dimuat lewat <link> di
+   layouts/Layout.astro — lebih cepat & andal daripada @import url() di dalam
+   file CSS, karena @import baru diekstrak SETELAH CSS selesai di-parse. */
+
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap');
 
 @theme {
+  /* ==========================================================
+     BALLQISH EDITORIAL PALETTE (sesuai design system Figma)
+     ========================================================== */
+  --color-ivory: #f4efe6;    /* Background utama halaman  */
+  --color-bone: #e8e0d2;     /* Background kartu / panel / placeholder gambar */
+  --color-ink: #1a1512;      /* Teks utama, tombol, footer */
+  --color-oxblood: #5a1a1c;  /* Aksen merah gelap, hover, highlight */
+  --color-brass: #a8865a;    /* Label editorial & aksen premium */
+  /* Garis rambut (hairline). Tanpa token ini class `border-line` tidak
+     menghasilkan CSS sama sekali, sehingga border-color jatuh ke
+     currentColor (= warna teks) dan garis ikut menjadi hitam pekat.
+     #D8D3CA setara rgba(26,21,18,0.13) di atas background ivory, dan
+     dipakai juga untuk .size-btn non-aktif agar semua garis seragam. */
+  --color-line: #d8d3ca;
+
+  --font-display: "Bodoni Moda", Georgia, serif;
+  --font-interface: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Legacy tokens (dijaga agar section yang belum di-redesign tidak rusak) --- */
   --color-primary: #5c1616;
   --color-primary-hover: #400f0f;
   --color-primary-light: #fdf5f5;
@@ -20,16 +42,311 @@ body {
   @apply text-black bg-[#FAF9F6] antialiased;
 }
 
-/* Enforce 100% Serif Font Family */
+/* Enforce 100% Serif Font Family (khas section lama / belum di-redesign) */
 h1, h2, h3, h4, h5, h6, p, a, button, input, select, textarea, span, label, table, th, td {
   font-family: "Playfair Display", Georgia, serif !important;
 }
 
-p {
-  font-size: 1.2rem; /* Increased font size (+3px) for optimal legibility */
-  line-height: 1.6;
-}
+/* Catatan: aturan lama `p { font-size: 1.2rem }` berada di luar @layer sehingga
+   SELALU mengalahkan utility text-* dari Tailwind. Aturan tersebut dihapus agar
+   tiap section bisa mengatur ukuran paragrafnya sendiri lewat utility class. */
 
 b, strong {
   font-weight: 600;
+}
+
+/* =====================================================================
+   BALLQISH EDITORIAL DESIGN SYSTEM — SCOPED
+   Berlaku hanya pada elemen ber-atribut data-theme="editorial".
+   Memungkinkan Typography System baru (Bodoni Moda + Manrope) diterapkan
+   bertahap tanpa mengubah section yang belum di-redesign.
+   ===================================================================== */
+[data-theme="editorial"],
+[data-theme="editorial"] * {
+  font-family: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif !important;
+}
+
+/* Display / judul: Bodoni Moda (weight 400, bukan bold).
+   Aturan kedua (di bawah) wajib ada karena aturan umum `[data-theme] *`
+   memakai !important dan ikut mengenai <span>/<em> di dalam judul —
+   tanpa itu anak judul kehilangan Bodoni dan jatuh ke font lain. */
+[data-theme="editorial"] h1,
+[data-theme="editorial"] h2,
+[data-theme="editorial"] h3,
+[data-theme="editorial"] h4,
+[data-theme="editorial"] .display-font,
+[data-theme="editorial"] .font-serif {
+  font-family: "Bodoni Moda", Georgia, serif !important;
+}
+
+/* Keturunan elemen display ikut memakai Bodoni Moda */
+[data-theme="editorial"] h1 *,
+[data-theme="editorial"] h2 *,
+[data-theme="editorial"] h3 *,
+[data-theme="editorial"] h4 *,
+[data-theme="editorial"] .display-font *,
+[data-theme="editorial"] .font-serif * {
+  font-family: "Bodoni Moda", Georgia, serif !important;
+}
+
+/* ------------------------------------------------------------------------
+   SISTEM BLOG — SERAGAM SANS-SERIF (Inter)
+   Dipakai di /blog dan /blog/[slug] lewat class `theme-ui`.
+   Menjamin SEMUA judul (h1-h6, .display-font, dan elemen di dalamnya)
+   memakai Inter, sehingga tidak ada lagi campuran serif + sans-serif
+   di area baca artikel.
+   Specificity lebih tinggi dari aturan Bodoni di atas, jadi selalu menang.
+   ------------------------------------------------------------------------ */
+[data-theme="editorial"].theme-ui,
+[data-theme="editorial"].theme-ui *,
+[data-theme="editorial"].theme-ui h1 *,
+[data-theme="editorial"].theme-ui h2 *,
+[data-theme="editorial"].theme-ui h3 *,
+[data-theme="editorial"].theme-ui h4 *,
+[data-theme="editorial"].theme-ui h5 *,
+[data-theme="editorial"].theme-ui h6 *,
+[data-theme="editorial"].theme-ui .display-font,
+[data-theme="editorial"].theme-ui .display-font *,
+[data-theme="editorial"].theme-ui .font-serif,
+[data-theme="editorial"].theme-ui .font-serif * {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+}
+
+/* =====================================================================
+   PEMETAAN WARNA UNTUK KOMPONEN YANG DIKENDALIKAN JAVASCRIPT
+   Logika index.astro tidak diubah sama sekali (tetap men-toggle
+   text-red-500 / fill-red-500 / text-gray-300 / fill-current).
+   Hanya Artikanya yang dipetakan ke palet Ballqish:
+     - belum disimpan  -> outline, ink 40%
+     - sudah disimpan  -> fill oxblood
+   ===================================================================== */
+[data-theme="editorial"] .text-red-500 {
+  color: #5a1a1c !important;
+}
+[data-theme="editorial"] .fill-red-500 {
+  fill: #5a1a1c !important;
+}
+[data-theme="editorial"] .text-gray-300 {
+  color: rgba(26, 21, 18, 0.4) !important;
+}
+
+/* Ikon hati (wishlist) — lingkaran di pojok kanan atas foto */
+[data-theme="editorial"] .favorite-btn {
+  cursor: pointer;
+}
+[data-theme="editorial"] .favorite-btn .heart-icon {
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+[data-theme="editorial"] .favorite-btn:hover {
+  color: #5a1a1c;
+  border-color: #5a1a1c;
+}
+/* Status tersimpan (JS men-toggle .text-red-500 pada ikon) */
+[data-theme="editorial"] .favorite-btn .heart-icon.text-red-500 {
+  fill: #5a1a1c !important;
+  stroke: #5a1a1c;
+}
+[data-theme="editorial"] .favorite-btn:has(.heart-icon.text-red-500) {
+  color: #5a1a1c;
+  border-color: #5a1a1c;
+  background-color: rgba(90, 26, 28, 0.08);
+}
+
+/* Filter tabs katalog — index.astro men-toggle text-black / text-gray-600 /
+   border-black / border-transparent. Dipetakan ke palet baru. */
+[data-theme="editorial"] .catalog-tab.text-black {
+  color: #1a1512 !important;
+}
+[data-theme="editorial"] .catalog-tab.text-gray-600 {
+  color: rgba(26, 21, 18, 0.5) !important;
+}
+[data-theme="editorial"] .catalog-tab.border-black {
+  border-color: #1a1512 !important;
+}
+[data-theme="editorial"] .catalog-tab.border-transparent {
+  border-color: transparent !important;
+}
+
+/* Utilitas: pakai Inter (dengan italic asli) di dalam scope editorial.
+   Diperlukan karena aturan [data-theme] * { Manrope !important } memakai
+   !important, jadi utility Tailwind biasa tidak bisa menimpanya. */
+[data-theme="editorial"] .font-inter {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+}
+
+/* Halaman /blog — tab kategori. JS men-toggle bg-white / text-gray-700 /
+   border-gray-200 dan bg-[#5c1616] / text-white; class itu dipetakan ke
+   palet baru. Logika JS tidak diubah. */
+[data-theme="editorial"] .category-tab-btn.bg-white {
+  background-color: transparent !important;
+  color: rgba(26, 21, 18, 0.6) !important;
+  border-color: transparent !important;
+  border-bottom-color: rgba(26, 21, 18, 0.25) !important;
+}
+[data-theme="editorial"] .category-tab-btn:hover {
+  color: #5a1a1c !important;
+  border-bottom-color: #5a1a1c !important;
+}
+[data-theme="editorial"] .category-tab-btn[class~="bg-\[\#5c1616\]"] {
+  background-color: transparent !important;
+  color: #1a1512 !important;
+  border-color: transparent !important;
+  border-bottom-color: #1a1512 !important;
+}
+
+/* ------------------------------------------------------------------------
+   HALAMAN DETAIL PRODUK — pemetaan class yang dikendalikan JavaScript.
+   Script product/[id].astro men-toggle class abu-abu berikut saat user
+   memilih ukuran / thumbnail / mode pembelian. Logika JS tidak diubah,
+   hanya warnanya yang dipetakan ke palet Ballqish.
+   ------------------------------------------------------------------------ */
+[data-theme="editorial"] .size-btn.border-gray-200,
+[data-theme="editorial"] .purchase-mode.border-gray-200 {
+  border-color: rgba(26, 21, 18, 0.13) !important;
+}
+/* Thumbnail non-aktif: tanpa garis sama sekali (foto nempel bersih) */
+[data-theme="editorial"] .thumbnail-btn.border-gray-200 {
+  border-color: transparent !important;
+}
+[data-theme="editorial"] .size-btn.border-gray-900,
+[data-theme="editorial"] .thumbnail-btn.border-gray-900,
+[data-theme="editorial"] .purchase-mode.border-gray-900 {
+  border-color: #1a1512 !important;
+}
+[data-theme="editorial"] .size-btn.bg-gray-900,
+[data-theme="editorial"] .purchase-mode.bg-gray-900 {
+  background-color: #1a1512 !important;
+}
+[data-theme="editorial"] .size-btn.text-white,
+[data-theme="editorial"] .purchase-mode.text-white {
+  color: #f4efe6 !important;
+}
+[data-theme="editorial"] .size-btn.text-gray-700,
+[data-theme="editorial"] .purchase-mode.text-gray-700 {
+  color: rgba(26, 21, 18, 0.7) !important;
+}
+[data-theme="editorial"] .purchase-mode.bg-white {
+  background-color: #f4efe6 !important;
+}
+
+/* ------------------------------------------------------------------------
+   MODE PEMBELIAN (SATUAN / B2B) — dipandu aria-pressed.
+   Script JS selalu menulis atribut ini, jadi state aktif/non-aktif SELALU
+   terlihat jelas-Class toggle dari JS tetap jalan, tapi tidak lagi jadi
+   satu-satunya penentu tampilan.
+   Karena aturan ini menyertakan `border`, garis tipis ikut terjaga.
+   ------------------------------------------------------------------------ */
+[data-theme="editorial"] .purchase-mode[aria-pressed="true"] {
+  background-color: #1a1512 !important;
+  color: #f4efe6 !important;
+  border: 1px solid #1a1512 !important;
+}
+[data-theme="editorial"] .purchase-mode[aria-pressed="false"] {
+  background-color: transparent !important;
+  color: rgba(26, 21, 18, 0.62) !important;
+  border: 1px solid rgba(26, 21, 18, 0.13) !important;
+}
+[data-theme="editorial"] .purchase-mode[aria-pressed="false"]:hover {
+  color: #1a1512 !important;
+  border-color: rgba(26, 21, 18, 0.35) !important;
+}
+/* Ikon hati di panel aksi (juga dipakai kartu produk di homepage) */
+[data-theme="editorial"] .favorite-btn .heart-icon {
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+[data-theme="editorial"] .favorite-btn:hover {
+  border-color: #5a1a1c !important;
+  color: #5a1a1c !important;
+}
+[data-theme="editorial"] .favorite-btn .heart-icon.text-red-500 {
+  fill: #5a1a1c !important;
+  stroke: #5a1a1c;
+}
+[data-theme="editorial"] .favorite-btn:has(.heart-icon.text-red-500) {
+  color: #5a1a1c;
+  border-color: #5a1a1c;
+  background-color: rgba(90, 26, 28, 0.08);
+}
+/* Utilitas: sembunyikan scrollbar (dipakai panel ringkasan pesanan) */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ------------------------------------------------------------------------
+   HALAMAN /checkout — pemetaan class yang dikendalikan JavaScript.
+   Script checkout.astro men-toggle class ini saat memilih metode pembayaran:
+     reset  -> hapus border-red-600 + bg-red-50, tambah border-gray-200
+     pilih  -> tambah border-gray-900 + bg-[#FAF9F6]
+   Logika JS tidak diubah, hanya warna yang dipetakan ke palet Ballqish.
+   ------------------------------------------------------------------------ */
+[data-theme="editorial"] .payment-method.border-gray-200 {
+  border-color: #d8d3ca !important;
+}
+[data-theme="editorial"] .payment-method.border-gray-900 {
+  border-color: #1a1512 !important;
+  background-color: #f4efe6 !important;
+}
+[data-theme="editorial"] .payment-method[class~="bg-\[\#FAF9F6\]"] {
+  background-color: #f4efe6 !important;
+}
+[data-theme="editorial"] .payment-method.border-red-600 {
+  border-color: #5a1a1c !important;
+}
+[data-theme="editorial"] .payment-method.bg-red-50 {
+  background-color: rgba(90, 26, 28, 0.05) !important;
+}
+/* Radio payment mengikuti aksen oxblood */
+[data-theme="editorial"] .payment-method input[type="radio"] {
+  accent-color: #5a1a1c;
+}
+
+/* ------------------------------------------------------------------------
+   AddressModal — tombol label (Rumah / Kantor / Apartemen / Toko).
+   Script AddressModal.astro men-toggle:
+     aktif  -> tambah bg-gray-900 + text-white + border-gray-900
+     nonaktif -> hapus ketiganya, tambah border-gray-200 + text-gray-700
+   Logika JS tidak diubah, hanya warnanya yang dipetakan ke palet Ballqish.
+   ------------------------------------------------------------------------ */
+[data-theme="editorial"] .addr-label-btn.border-gray-200 {
+  border-color: #d8d3ca !important;
+  color: rgba(26, 21, 18, 0.6) !important;
+}
+[data-theme="editorial"] .addr-label-btn.border-gray-900 {
+  border-color: #1a1512 !important;
+  background-color: #1a1512 !important;
+  color: #f4efe6 !important;
+}
+/* Peta Leaflet agar menyatu dengan palet ivory */
+[data-theme="editorial"] .leaflet-container {
+  background: #e8e0d2;
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+[data-theme="editorial"] .leaflet-control-attribution {
+  font-size: 9px !important;
+  background: rgba(244, 239, 230, 0.85) !important;
+  color: rgba(26, 21, 18, 0.45) !important;
+}
+
+/* ------------------------------------------------------------------------
+   DRAWER — semua panel geser (keranjang / favorit / riwayat / buku alamat /
+   menu mobile) memakai garis rambut di sisi kiri, bukan bayangan tebal.
+   ------------------------------------------------------------------------ */
+#cart-modal,
+#favorites-modal,
+#orders-modal,
+#address-modal,
+#mobile-nav-drawer {
+  box-shadow: -1px 0 0 rgba(26, 21, 18, 0.08);
+}
+/* Tombol WhatsApp mengambang */
+a[href*="wa.me"].fixed {
+  box-shadow: 0 6px 20px rgba(26, 21, 18, 0.14);
 }

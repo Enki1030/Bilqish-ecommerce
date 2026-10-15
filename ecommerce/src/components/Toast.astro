@@ -30,35 +30,35 @@
     if (!container) return;
 
     const toast = document.createElement('div');
-    toast.className = `pointer-events-auto w-full flex items-center gap-3.5 px-4 sm:px-5 py-3.5 text-gray-900 bg-white/95 backdrop-blur-md border border-gray-900/90 shadow-2xl rounded-xl toast-enter`;
-    
+    toast.className = `pointer-events-auto w-full flex items-center gap-4 px-5 py-4 bg-ivory/95 backdrop-blur-md border border-line toast-enter`;
+
     let icon = '';
     if (type === 'success') {
       icon = `
-        <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200/60">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+        <div class="w-8 h-8 text-ink flex items-center justify-center shrink-0 border border-line">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
         </div>
       `;
     } else if (type === 'error') {
       icon = `
-        <div class="w-8 h-8 rounded-full bg-rose-50 text-rose-700 flex items-center justify-center shrink-0 border border-rose-200/60">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <div class="w-8 h-8 text-oxblood flex items-center justify-center shrink-0 border border-oxblood/30">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
         </div>
       `;
     } else {
       icon = `
-        <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-800 flex items-center justify-center shrink-0 border border-slate-200">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div class="w-8 h-8 text-brass flex items-center justify-center shrink-0 border border-brass/40">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </div>
       `;
     }
 
     toast.innerHTML = `
       ${icon}
-      <div class="text-xs sm:text-[13px] font-heading font-bold uppercase tracking-wider leading-snug flex-1 text-gray-900 pr-2">${message}</div>
-      <button type="button" class="text-gray-400 hover:text-gray-900 p-1.5 rounded-lg hover:bg-gray-100 transition-colors shrink-0 cursor-pointer" onclick="this.parentElement.remove()">
+      <div class="text-[11px] uppercase tracking-[0.2em] leading-snug flex-1 text-ink pr-2" style="font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;">${message}</div>
+      <button type="button" class="text-ink/35 hover:text-oxblood transition-colors shrink-0 cursor-pointer p-0.5" onclick="this.parentElement.remove()">
         <span class="sr-only">Tutup</span>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
       </button>
     `;
 
