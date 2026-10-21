@@ -114,6 +114,14 @@ import Footer from '../components/Footer.astro';
   const errorText = document.getElementById('error-text');
   const successBox = document.getElementById('success-message');
   const successText = document.getElementById('success-text');
+  let authUnsubscribe: any;
+
+  // Listen for auth state changes and redirect to home on login
+  authUnsubscribe = supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN') {
+      window.location.href = '/';
+    }
+  });
 
   function showError(msg: string) {
     if (errorBox && errorText) {
@@ -155,9 +163,8 @@ import Footer from '../components/Footer.astro';
       showError(error.message);
       setLoading(btnLogin, false, 'Masuk');
     } else {
-      const redirect = new URLSearchParams(window.location.search).get('redirect');
-      const safeRedirect = redirect && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/';
-      window.location.href = safeRedirect;
+      // Selalu redirect ke home setelah login berhasil
+      window.location.href = '/';
     }
   });
 

@@ -20,7 +20,7 @@
      dipakai juga untuk .size-btn non-aktif agar semua garis seragam. */
   --color-line: #d8d3ca;
 
-  --font-display: "Bodoni Moda", Georgia, serif;
+  --font-display: "Playfair Display", Georgia, serif;
   --font-interface: "Manrope", ui-sans-serif, system-ui, sans-serif;
 
   /* --- Legacy tokens (dijaga agar section yang belum di-redesign tidak rusak) --- */
