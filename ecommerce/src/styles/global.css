@@ -350,3 +350,10 @@ b, strong {
 a[href*="wa.me"].fixed {
   box-shadow: 0 6px 20px rgba(26, 21, 18, 0.14);
 }
+
+/* Fix: `.inline-flex` menimpa `.hidden` di Tailwind bundle due to order.
+   Paksa badge count tersembunyi benar-benar ketika hidden class ada. */
+/* Fix:  menimpa  di Tailwind bundle karena urutan.
+   Paksa badge count tersembunyi benar-benar ketika hidden class ada. */
+/* Fix: `.inline-flex` menimpa `.hidden` di Tailwind bundle karena urutan.
+   Paksa badge count tersembunyi benar-benar ketika hidden class ada. */
