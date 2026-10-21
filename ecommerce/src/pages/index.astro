@@ -868,7 +868,7 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
 
       // Satu-satunya event delegation untuk tombol +/− dan hapus item.
       // Listener dipasang di luar updateCartUI agar tidak menumpuk setiap render.
-      document.getElementById('cart-items')?.addEventListener('click', (e) => {
+      document.getElementById('cart-items')?.addEventListener('click', async (e) => {
         const target = e.target as HTMLElement;
         const minusBtn = target.closest('.cart-qty-minus') as HTMLButtonElement | null;
         const plusBtn = target.closest('.cart-qty-plus') as HTMLButtonElement | null;
@@ -889,9 +889,21 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
           item.quantity += 1;
           void syncCartItem(item);
         } else if (removeBtn) {
-          if (!window.confirm('Hapus ' + item.name + ' dari keranjang?')) return;
+          const confirmed = await window.showConfirm({
+            eyebrow: 'Keranjang',
+            title: 'Hapus Item?',
+            message: `${item.name} akan dihapus dari keranjang Anda. Produk tetap tersedia di katalog.`,
+            confirmLabel: 'Hapus',
+            cancelLabel: 'Batal',
+            tone: 'danger',
+          });
+
+          // Pastikan item belum berubah posisi selama dialog terbuka.
+          if (!confirmed || cart[index] !== item) return;
+
           void removeRemoteCartItem(item);
           cart.splice(index, 1);
+          if (window.showToast) window.showToast('Item dihapus dari keranjang.', 'info');
         }
 
         updateCartUI();

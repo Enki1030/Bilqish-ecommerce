@@ -649,9 +649,21 @@
 
     cardsContainer.querySelectorAll('.btn-delete-addr').forEach(btn => {
       btn.addEventListener('click', async (e: any) => {
-        if (!confirm('Hapus alamat ini dari buku alamat Anda?')) return;
         const id = e.currentTarget.dataset.id;
         const item = userAddresses.find(a => a.id === id);
+
+        const confirmed = await (window as any).showConfirm({
+          eyebrow: 'Buku Alamat',
+          title: 'Hapus Alamat?',
+          message: item?.label_name
+            ? `Alamat "${item.label_name}" akan dihapus dari buku alamat Anda.`
+            : 'Alamat ini akan dihapus dari buku alamat Anda.',
+          confirmLabel: 'Hapus',
+          cancelLabel: 'Batal',
+          tone: 'danger',
+        });
+        if (!confirmed) return;
+
         await supabase.from('user_addresses').delete().eq('id', id);
         
         // If deleted address was default, set newest remaining as default
@@ -664,6 +676,7 @@
 
         window.dispatchEvent(new CustomEvent('addressBookUpdated'));
         loadAddresses();
+        if ((window as any).showToast) (window as any).showToast('Alamat berhasil dihapus.', 'info');
       });
     });
 
