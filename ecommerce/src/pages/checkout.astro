@@ -219,6 +219,7 @@ import AddressModal from '../components/AddressModal.astro';
 
   <script>
     import { supabase } from '../lib/supabase';
+    import { mergeRemoteCartIntoLocal, clearRemoteCart } from '../lib/cart';
 
     document.addEventListener('DOMContentLoaded', async () => {
       let cart = [];
@@ -229,6 +230,12 @@ import AddressModal from '../components/AddressModal.astro';
           cart = cart.filter((item: any) => item.id && item.id.length === 36);
           localStorage.setItem('ballqish_cart', JSON.stringify(cart));
         }
+      } catch(e) {}
+
+      // Hybrid cart: tarik cart Supabase untuk user login sebelum cek kosong.
+      try {
+        const mergedCart = await mergeRemoteCartIntoLocal();
+        if (mergedCart) cart = mergedCart.merged;
       } catch(e) {}
 
       if (cart.length === 0) {
@@ -585,6 +592,7 @@ import AddressModal from '../components/AddressModal.astro';
           fetch('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/984ad6b4-c842-44cb-a50e-855dbfb7d6d4', { method: 'POST' }).catch(console.error);
 
           // SUCCESS
+          await clearRemoteCart(session.user.id);
           localStorage.removeItem('ballqish_cart');
           window.location.href = '/?success=true';
 

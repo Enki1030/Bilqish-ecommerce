@@ -609,7 +609,12 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       });
 
       // --- Add to Cart Logic ---
-      function handleAddToCart(buyNow = false) {
+      async function handleAddToCart(buyNow = false) {
+        // Tunggu merge cart remote selesai (jika login) agar quantity tidak tertimpa.
+        if (window.__cartMergeReady) {
+          try { await window.__cartMergeReady; } catch (e) {}
+        }
+
         if (!selectedSize) {
           if (errorMsg) errorMsg.classList.remove('hidden');
           
@@ -796,6 +801,24 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       }
 
       checkMaterialStatus();
+    });
+  </script>
+
+  <script>
+    import { mergeRemoteCartIntoLocal, syncLocalCart } from '../../lib/cart';
+
+    // Hybrid cart: tarik cart Supabase untuk user login, lalu simpan setiap
+    // perubahan lokal (add-to-cart) kembali ke database.
+    // Promise ini ditunggu oleh handler add-to-cart agar kuantitas remote
+    // tidak tertimpa jika user menekan tombol sangat cepat setelah page load.
+    (window as any).__cartMergeReady = mergeRemoteCartIntoLocal()
+      .then((result) => {
+        if (result) window.dispatchEvent(new Event('cartUpdated'));
+      })
+      .catch(() => {});
+
+    window.addEventListener('cartUpdated', () => {
+      void syncLocalCart().catch(() => {});
     });
   </script>
 </Layout>

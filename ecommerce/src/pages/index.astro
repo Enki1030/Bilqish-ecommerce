@@ -687,6 +687,7 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
 
   <script>
     import { supabase } from '../lib/supabase';
+    import { mergeRemoteCartIntoLocal, syncCartItem, removeRemoteCartItem } from '../lib/cart';
     
     document.addEventListener('DOMContentLoaded', () => {
       let cart = [];
@@ -718,32 +719,6 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
           cart = JSON.parse(c);
           cart = cart.filter(item => item.id && item.id.length === 36);
           localStorage.setItem('ballqish_cart', JSON.stringify(cart));
-
-      // Event delegation: +/- kuantitas & hapus item (diberikan innerHTML merender ulang)
-      const cartItemsContainer = document.getElementById('cart-items');
-      cartItemsContainer?.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        const minusBtn = target.closest('.cart-qty-minus') as HTMLButtonElement | null;
-        const plusBtn = target.closest('.cart-qty-plus') as HTMLButtonElement | null;
-        const removeBtn = target.closest('.cart-item-remove') as HTMLButtonElement | null;
-        if (!minusBtn && !plusBtn && !removeBtn) return;
-
-        const btn = (minusBtn || plusBtn || removeBtn) as HTMLButtonElement;
-        const index = parseInt(btn.dataset.index || '-1', 10);
-        if (index < 0 || !cart[index]) return;
-
-        if (minusBtn) {
-          if (cart[index].quantity > 1) cart[index].quantity -= 1;
-        } else if (plusBtn) {
-          cart[index].quantity += 1;
-        } else if (removeBtn) {
-          if (!window.confirm('Hapus ' + cart[index].name + ' dari keranjang?')) return;
-          cart.splice(index, 1);
-        }
-
-        updateCartUI();
-        window.dispatchEvent(new Event('cartUpdated'));
-      });
         }
         if (f) {
           favorites = JSON.parse(f);
@@ -855,30 +830,32 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
           if (cart.length === 0) {
             cartItemsEl.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-ink/35 mt-20"><svg class="w-14 h-14 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg><p class="text-[11px] uppercase tracking-[0.25em]">Keranjang masih kosong</p></div>';
           } else {
-            cartItemsEl.innerHTML = cart.map(item => `
+            cartItemsEl.innerHTML = cart.map((item, i) => `
               <div class="bg-white border border-line p-3">
-                <div class="flex items-start gap-3">
+                <div class="flex items-stretch gap-3">
                   <img src="${item.image}" class="w-20 h-24 object-cover flex-shrink-0" />
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-start justify-between gap-2">
+                  <div class="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
                       <h4 class="display-font text-[18px] font-normal text-ink line-clamp-2 leading-snug">${item.name}</h4>
-                      <button type="button" class="cart-item-remove shrink-0 text-ink/35 hover:text-oxblood transition-colors p-1 cursor-pointer" data-index="${item._idx}" aria-label="Hapus item">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                      </button>
-                    </div>
-                    <div class="flex flex-wrap gap-1.5 mt-2">
-                      <span class="text-[10px] uppercase tracking-[0.15em] text-ink/60 bg-bone px-2 py-1">Ukuran ${item.size}</span>
+                      <div class="flex flex-wrap gap-1.5 mt-2">
+                        <span class="text-[10px] uppercase tracking-[0.15em] text-ink/60 bg-bone px-2 py-1">Ukuran ${item.size}</span>
+                      </div>
                     </div>
                     <div class="flex items-end justify-between gap-3 mt-3">
                       <div class="inline-flex items-center border border-line">
-                        <button type="button" class="cart-qty-minus w-7 h-7 flex items-center justify-center text-ink/60 hover:text-oxblood disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer" data-index="${item._idx}" ${item.quantity <= 1 ? 'disabled' : ''} aria-label="Kurangi jumlah">&minus;</button>
+                        <button type="button" class="cart-qty-minus w-7 h-7 flex items-center justify-center text-ink/60 hover:text-oxblood disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer" data-index="${i}" ${item.quantity <= 1 ? 'disabled' : ''} aria-label="Kurangi jumlah">&minus;</button>
                         <span class="w-8 text-center text-[12px] font-semibold text-ink">${item.quantity}</span>
-                        <button type="button" class="cart-qty-plus w-7 h-7 flex items-center justify-center text-ink/60 hover:text-oxblood cursor-pointer" data-index="${item._idx}" aria-label="Tambah jumlah">+</button>
+                        <button type="button" class="cart-qty-plus w-7 h-7 flex items-center justify-center text-ink/60 hover:text-oxblood cursor-pointer" data-index="${i}" aria-label="Tambah jumlah">+</button>
                       </div>
                       <p class="text-[14px] font-semibold text-ink">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</p>
                     </div>
+                  </div>
+                  <div class="flex items-center shrink-0">
+                    <button type="button" class="cart-item-remove w-9 h-9 flex items-center justify-center text-ink/35 hover:text-oxblood transition-colors cursor-pointer" data-index="${i}" aria-label="Hapus item">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -887,10 +864,11 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
         }
         
         localStorage.setItem('ballqish_cart', JSON.stringify(cart));
+      }
 
-      // Event delegation: +/- kuantitas & hapus item (diberikan innerHTML merender ulang)
-      const cartItemsContainer = document.getElementById('cart-items');
-      cartItemsContainer?.addEventListener('click', (e) => {
+      // Satu-satunya event delegation untuk tombol +/− dan hapus item.
+      // Listener dipasang di luar updateCartUI agar tidak menumpuk setiap render.
+      document.getElementById('cart-items')?.addEventListener('click', (e) => {
         const target = e.target as HTMLElement;
         const minusBtn = target.closest('.cart-qty-minus') as HTMLButtonElement | null;
         const plusBtn = target.closest('.cart-qty-plus') as HTMLButtonElement | null;
@@ -899,21 +877,26 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
 
         const btn = (minusBtn || plusBtn || removeBtn) as HTMLButtonElement;
         const index = parseInt(btn.dataset.index || '-1', 10);
-        if (index < 0 || !cart[index]) return;
+        const item = cart[index];
+        if (!item) return;
 
         if (minusBtn) {
-          if (cart[index].quantity > 1) cart[index].quantity -= 1;
+          if (item.quantity > 1) {
+            item.quantity -= 1;
+            void syncCartItem(item);
+          }
         } else if (plusBtn) {
-          cart[index].quantity += 1;
+          item.quantity += 1;
+          void syncCartItem(item);
         } else if (removeBtn) {
-          if (!window.confirm('Hapus ' + cart[index].name + ' dari keranjang?')) return;
+          if (!window.confirm('Hapus ' + item.name + ' dari keranjang?')) return;
+          void removeRemoteCartItem(item);
           cart.splice(index, 1);
         }
 
         updateCartUI();
         window.dispatchEvent(new Event('cartUpdated'));
       });
-      }
 
       addToCartBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -1048,6 +1031,17 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
       updateFavUI();
       updateCartUI();
       loadOrders();
+
+      // Hybrid cart: user login → gabungkan cart Supabase ke localStorage.
+      // Tamu → fungsi ini langsung berhenti tanpa menyentuh database.
+      void mergeRemoteCartIntoLocal()
+        .then((result) => {
+          if (!result) return;
+          cart = result.merged;
+          updateCartUI();
+          window.dispatchEvent(new Event('cartUpdated'));
+        })
+        .catch(() => {});
 
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('openCart') === 'true') {
