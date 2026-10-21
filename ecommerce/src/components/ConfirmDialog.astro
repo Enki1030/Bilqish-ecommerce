@@ -11,7 +11,7 @@
     aria-modal="true"
     aria-labelledby="confirm-title"
     aria-describedby="confirm-message"
-    class="relative w-full max-w-[460px] max-h-[calc(100dvh-2rem)] overflow-y-auto bg-ivory border border-line shadow-[0_30px_90px_-24px_rgba(26,24,21,0.45)] p-6 sm:p-8"
+    class="relative w-full max-w-[560px] max-h-[calc(100dvh-2rem)] overflow-y-auto bg-ivory border border-line shadow-[0_30px_90px_-24px_rgba(26,24,21,0.45)] p-7 sm:p-9"
   >
     <button
       id="confirm-close"
@@ -25,34 +25,34 @@
     </button>
 
     <div class="flex items-start gap-4 pr-8">
-      <div id="confirm-icon" class="w-11 h-11 shrink-0 flex items-center justify-center border border-line text-ink">
-        <svg data-confirm-icon="default" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
+      <div id="confirm-icon" class="w-12 h-12 shrink-0 flex items-center justify-center border border-line text-ink">
+        <svg data-confirm-icon="default" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <svg data-confirm-icon="danger" class="hidden w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
+        <svg data-confirm-icon="danger" class="hidden w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>
       </div>
 
       <div class="min-w-0 flex-1">
         <p id="confirm-eyebrow" class="text-[10px] uppercase tracking-[0.3em] text-ink/40">Konfirmasi</p>
-        <h3 id="confirm-title" class="display-font text-[24px] sm:text-[27px] leading-[1.15] text-ink mt-1.5">Konfirmasi</h3>
-        <p id="confirm-message" class="text-[13px] leading-relaxed text-ink/60 mt-2.5"></p>
+        <h3 id="confirm-title" class="display-font text-[26px] sm:text-[30px] leading-[1.15] text-ink mt-1.5">Konfirmasi</h3>
+        <p id="confirm-message" class="text-[14px] leading-[1.7] text-ink/60 mt-3"></p>
       </div>
     </div>
 
-    <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 mt-8 pt-5 border-t border-line">
+    <div class="grid grid-cols-2 gap-3 mt-8 pt-6 border-t border-line">
       <button
         id="confirm-cancel"
         type="button"
-        class="border border-line bg-bone text-ink px-5 py-3 text-[11px] uppercase tracking-[0.2em] hover:border-ink transition-colors cursor-pointer"
+        class="w-full border border-line bg-bone text-ink px-4 py-3.5 text-[11px] uppercase tracking-[0.2em] text-center hover:border-ink transition-colors cursor-pointer"
       >
         Batal
       </button>
       <button
         id="confirm-ok"
         type="button"
-        class="border border-ink bg-ink text-ivory px-5 py-3 text-[11px] uppercase tracking-[0.2em] hover:bg-oxblood hover:border-oxblood transition-colors cursor-pointer"
+        class="w-full border border-ink bg-ink text-ivory px-4 py-3.5 text-[11px] uppercase tracking-[0.2em] text-center hover:bg-oxblood hover:border-oxblood transition-colors cursor-pointer"
       >
         Oke
       </button>

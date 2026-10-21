@@ -351,9 +351,5 @@ a[href*="wa.me"].fixed {
   box-shadow: 0 6px 20px rgba(26, 21, 18, 0.14);
 }
 
-/* Fix: `.inline-flex` menimpa `.hidden` di Tailwind bundle karena urutan.
-   Paksa badge count tersembunyi benar-benar ketika hidden class ada. */
-#favorites-count.hidden,
-#cart-count.hidden {
-  display: none !important;
-}
+/* Badge count sengaja selalu tampil (termasuk "0") sebagai penanda
+   bahwa wishlist/keranjang ada dan bisa dicek. */

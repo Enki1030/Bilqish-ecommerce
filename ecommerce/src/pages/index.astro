@@ -798,13 +798,8 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
         // Update count di header langsung juga
         const favCountEl = document.getElementById('favorites-count');
         if (favCountEl) {
-          if (favorites.length > 0) {
-            favCountEl.textContent = favorites.length.toString();
-            favCountEl.classList.remove('hidden');
-          } else {
-            favCountEl.textContent = '0';
-            favCountEl.classList.add('hidden');
-          }
+          favCountEl.textContent = favorites.length.toString();
+          favCountEl.classList.remove('hidden');
         }
         window.dispatchEvent(new Event('favoritesUpdated'));
       }
@@ -817,11 +812,9 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
-        if(totalItems > 0 && cartCountEl) {
+        if (cartCountEl) {
           cartCountEl.textContent = totalItems.toString();
           cartCountEl.classList.remove('hidden');
-        } else if (cartCountEl) {
-          cartCountEl.classList.add('hidden');
         }
         
         if (cartTotalEl) cartTotalEl.textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;

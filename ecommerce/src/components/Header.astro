@@ -60,13 +60,13 @@ const { transparent = false } = Astro.props;
       {/* Favorites / Wishlist */}
       <button id="favorites-btn" title="Favorit Saya" class="relative p-1.5 text-ink hover:text-oxblood transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-        <span id="favorites-count" class="absolute top-0 right-0 min-w-[15px] h-[15px] px-[3px] inline-flex items-center justify-center text-[9px] font-medium text-ivory bg-oxblood rounded-full hidden">0</span>
+        <span id="favorites-count" class="absolute top-0 right-0 min-w-[15px] h-[15px] px-[3px] inline-flex items-center justify-center text-[9px] font-medium text-ivory bg-oxblood rounded-full">0</span>
       </button>
 
       {/* Cart */}
       <button id="cart-button" title="Keranjang Belanja" class="relative p-1.5 text-ink hover:text-oxblood transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-        <span id="cart-count" class="absolute top-0 right-0 min-w-[15px] h-[15px] px-[3px] inline-flex items-center justify-center text-[9px] font-medium text-ivory bg-oxblood rounded-full hidden">0</span>
+        <span id="cart-count" class="absolute top-0 right-0 min-w-[15px] h-[15px] px-[3px] inline-flex items-center justify-center text-[9px] font-medium text-ivory bg-oxblood rounded-full">0</span>
       </button>
 
       {/* Mobile Auth */}
@@ -290,15 +290,11 @@ const { transparent = false } = Astro.props;
       if (c) cart = JSON.parse(c);
     } catch(e) {}
 
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const totalItems = cart.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
 
-    if (totalItems > 0) {
-      cartCountEl.textContent = totalItems.toString();
-      cartCountEl.classList.remove('hidden');
-    } else {
-      cartCountEl.textContent = '0';
-      cartCountEl.classList.add('hidden');
-    }
+    // Badge selalu tampil — "0" adalah penanda cart kosong.
+    cartCountEl.textContent = totalItems.toString();
+    cartCountEl.classList.remove('hidden');
   }
 
   updateCartCountGlobal();
@@ -315,14 +311,11 @@ const { transparent = false } = Astro.props;
       if (f) favs = JSON.parse(f);
     } catch(e) {}
 
-    if (Array.isArray(favs) && favs.length > 0) {
-      favCountEl.textContent = favs.length.toString();
-      favCountEl.classList.remove('hidden');
-    } else {
-      favCountEl.textContent = '0';
-      favCountEl.textContent = '0';
-      favCountEl.classList.add('hidden');
-    }
+    const totalFavs = Array.isArray(favs) ? favs.length : 0;
+
+    // Badge selalu tampil — "0" adalah penanda wishlist kosong.
+    favCountEl.textContent = totalFavs.toString();
+    favCountEl.classList.remove('hidden');
   }
 
   updateFavCountGlobal();
