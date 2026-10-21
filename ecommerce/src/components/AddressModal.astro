@@ -137,18 +137,16 @@
 
         <div>
           <label class="block text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-2.5">Label Alamat</label>
-          <div class="flex gap-2">
-            {['Rumah', 'Kantor', 'Apartemen', 'Toko'].map(label => (
-              <button
-                type="button"
-                class="addr-label-btn flex-1 py-2.5 px-2 text-[10px] uppercase tracking-[0.15em] border border-gray-200 text-gray-700 hover:border-ink transition-colors cursor-pointer"
-                data-label={label}
-              >
-                {label}
-              </button>
-            ))}
+          <!-- Label Type -->
+          <div>
+            <label class="block text-[10px] uppercase tracking-[0.25em] text-ink/50 mb-2.5">Label Alamat</label>
+            <input
+              type="text"
+              id="addr-label"
+              class="w-full border border-line bg-white px-4 py-3 text-[13px] text-ink placeholder:text-ink/25 focus:outline-none focus:border-ink"
+              value="Rumah"
+            />
           </div>
-          <input type="hidden" id="addr-label" value="Rumah" />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
