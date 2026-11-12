@@ -16,7 +16,8 @@ import imgProduksi from '../assets/tahap_produksi.jpg';
 import imgCraft3 from '../assets/Pantofel_3.jpg';
 import imgGrosir from '../assets/grosir2.jpg';
 
-let productsData = null;
+let productsData: any[] | null = null;
+let productsFetchFailed = false;
 let latestArticles = [];
 
 try {
@@ -24,18 +25,32 @@ try {
     supabase.from('products').select('*').order('created_at', { ascending: false }),
     supabase.from('articles').select('id, title, slug, excerpt, cover_image, created_at').order('created_at', { ascending: false }).limit(3)
   ]);
-  productsData = prodRes.data;
-  latestArticles = artRes.data || [];
+
+  if (prodRes.error) {
+    productsFetchFailed = true;
+    console.error('Error fetching products:', prodRes.error);
+  } else {
+    productsData = prodRes.data || [];
+  }
+
+  if (artRes.error) {
+    console.error('Error fetching articles:', artRes.error);
+  } else {
+    latestArticles = artRes.data || [];
+  }
 } catch (err) {
+  productsFetchFailed = true;
   console.error('Error fetching from Supabase:', err);
 }
 
-const allProducts = (productsData && productsData.length > 0)
-  ? productsData.map(p => ({
+// Fallback hanya dipakai kalau Supabase benar-benar gagal.
+// Kalau query berhasil tetapi hasilnya kosong, katalog harus tampil kosong.
+const allProducts = productsFetchFailed
+  ? defaultProducts
+  : (productsData || []).map(p => ({
       ...p,
       image: p.image_url || p.image
-    }))
-  : defaultProducts;
+    }));
 
 // Hero CTA sekunder: arahkan ke detail produk pertama yang valid (uuid dari database),
 // fallback ke katalog bila belum ada produk dari database.
@@ -184,47 +199,58 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
         </div>
 
         {/* Catalog Filter Tabs */}
-        <div class="flex gap-8 overflow-x-auto hide-scrollbar pb-1">
-          <button
-            type="button"
-            class="catalog-tab text-[11px] uppercase tracking-[0.25em] text-ink border-b pb-2 cursor-pointer transition-colors border-ink"
-            data-tab="all"
-          >
-            Semua ({allProducts.length})
-          </button>
-          <button
-            type="button"
-            class="catalog-tab text-[11px] uppercase tracking-[0.25em] text-ink/50 border-b-2 border-transparent pb-2 cursor-pointer transition-colors"
-            data-tab="tanpa-tali"
-          >
-            Tanpa Tali
-          </button>
-          <button
-            type="button"
-            class="catalog-tab text-[11px] uppercase tracking-[0.25em] text-ink/50 border-b-2 border-transparent pb-2 cursor-pointer transition-colors"
-            data-tab="dengan-tali"
-          >
-            Dengan Tali
-          </button>
-        </div>
+        {allProducts.length > 0 && (
+          <div class="flex gap-8 overflow-x-auto hide-scrollbar pb-1">
+            <button
+              type="button"
+              class="catalog-tab text-[11px] uppercase tracking-[0.25em] text-ink border-b pb-2 cursor-pointer transition-colors border-ink"
+              data-tab="all"
+            >
+              Semua ({allProducts.length})
+            </button>
+            <button
+              type="button"
+              class="catalog-tab text-[11px] uppercase tracking-[0.25em] text-ink/50 border-b-2 border-transparent pb-2 cursor-pointer transition-colors"
+              data-tab="tanpa-tali"
+            >
+              Tanpa Tali
+            </button>
+            <button
+              type="button"
+              class="catalog-tab text-[11px] uppercase tracking-[0.25em] text-ink/50 border-b-2 border-transparent pb-2 cursor-pointer transition-colors"
+              data-tab="dengan-tali"
+            >
+              Dengan Tali
+            </button>
+          </div>
+        )}
       </div>
 
       {/* GRID PRODUK — pembungkus .catalog-product-item + data-category wajib dipertahankan */}
-      <div id="product-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-14">
-        {allProducts.map((product) => {
-          // model_type: 'G' = Tanpa Tali, 'T' = Dengan Tali (dari kolom Supabase)
-          // Fallback: ambil huruf pertama dari field model (G21 -> G, T02 -> T)
-          const modelType =
-            product.model_type ||
-            (product.model ? product.model[0].toUpperCase() : 'G');
-          const categoryTag = modelType === 'T' ? 'dengan-tali' : 'tanpa-tali';
-          return (
-            <div class="catalog-product-item" data-category={categoryTag}>
-              <ProductCard product={product} />
-            </div>
-          );
-        })}
-      </div>
+      {allProducts.length === 0 ? (
+        <div class="border-y border-line bg-bone/30 py-24 md:py-32 text-center">
+          <p class="display-font text-4xl md:text-6xl font-normal text-ink leading-tight">Belum ada produk</p>
+          <p class="text-[14px] md:text-[15px] text-ink/55 leading-relaxed mt-5 max-w-md mx-auto">
+            Koleksi sedang kosong. Produk formal akan tampil di sini setelah tersedia kembali.
+          </p>
+        </div>
+      ) : (
+        <div id="product-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-14">
+          {allProducts.map((product) => {
+            // model_type: 'G' = Tanpa Tali, 'T' = Dengan Tali (dari kolom Supabase)
+            // Fallback: ambil huruf pertama dari field model (G21 -> G, T02 -> T)
+            const modelType =
+              product.model_type ||
+              (product.model ? product.model[0].toUpperCase() : 'G');
+            const categoryTag = modelType === 'T' ? 'dengan-tali' : 'tanpa-tali';
+            return (
+              <div class="catalog-product-item" data-category={categoryTag}>
+                <ProductCard product={product} />
+              </div>
+            );
+          })}
+        </div>
+      )}
 
     </section>
 

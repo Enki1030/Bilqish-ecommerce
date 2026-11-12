@@ -7,12 +7,22 @@ import { products as defaultProducts } from '../../data/products';
 
 export async function getStaticPaths() {
   let productList: any[] = [];
+  let queryFailed = false;
   try {
     const res = await supabase.from('products').select('id');
-    if (res.data && res.data.length > 0) productList = res.data;
-  } catch (e) {}
+    if (res.error) {
+      queryFailed = true;
+      console.error('Error fetching product paths:', res.error);
+    } else {
+      productList = res.data || [];
+    }
+  } catch (e) {
+    queryFailed = true;
+  }
 
-  if (productList.length === 0) {
+  // Fallback hanya kalau query gagal. Kalau database kosong, jangan
+  // menghasilkan halaman produk lama dari data statis.
+  if (queryFailed && productList.length === 0) {
     productList = defaultProducts.map(p => ({ id: p.id }));
   }
 
@@ -24,17 +34,27 @@ export async function getStaticPaths() {
 const { id } = Astro.params;
 
 let product: any = null;
+let productQueryFailed = false;
 try {
   const res = await supabase
     .from('products')
     .select('*')
     .eq('id', id)
     .single();
-  if (res.data) product = res.data;
-} catch (e) {}
+  if (res.data) {
+    product = res.data;
+  } else if (res.error && res.error.code !== 'PGRST116') {
+    productQueryFailed = true;
+    console.error('Error fetching product:', res.error);
+  }
+} catch (e) {
+  productQueryFailed = true;
+}
 
 if (!product) {
-  const fb = defaultProducts.find(p => p.id === id);
+  // Fallback statis hanya untuk kegagalan query, bukan untuk produk
+  // yang memang sudah dihapus dari database.
+  const fb = productQueryFailed ? defaultProducts.find(p => p.id === id) : null;
   if (fb) {
     product = {
       ...fb,
