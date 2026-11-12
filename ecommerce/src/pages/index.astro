@@ -712,7 +712,7 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
 
   <script>
     import { supabase } from '../lib/supabase';
-    import { mergeRemoteCartIntoLocal, syncCartItem, removeRemoteCartItem } from '../lib/cart';
+    import { mergeRemoteCartIntoLocal, syncCartItem, removeRemoteCartItem, splitUnavailableProducts } from '../lib/cart';
     
     document.addEventListener('DOMContentLoaded', () => {
       let cart = [];
@@ -893,6 +893,55 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
         localStorage.setItem('ballqish_cart', JSON.stringify(cart));
       }
 
+      // Hapus produk yang sudah tidak ada di katalog dari cart/wishlist lokal.
+      // Ini hanya menyentuh localStorage milik user ini, bukan tabel products.
+      let isPruningUnavailable = false;
+      let cartMergePromise: Promise<any> | null = null;
+      async function pruneUnavailableItems() {
+        if (isPruningUnavailable) return;
+        if (cart.length === 0 && favorites.length === 0) return;
+        isPruningUnavailable = true;
+
+        try {
+          // Jangan memangkas cart lokal saat merge remote masih berjalan,
+          // supaya item dari Supabase tidak ikut tertimpa.
+          if (cartMergePromise) {
+            try { await cartMergePromise; } catch (e) {}
+          }
+
+          const [cartResult, favResult] = await Promise.all([
+            splitUnavailableProducts(cart),
+            splitUnavailableProducts(favorites),
+          ]);
+
+          let removedAny = false;
+
+          if (cartResult.removed.length > 0) {
+            removedAny = true;
+            cart = cartResult.available;
+            localStorage.setItem('ballqish_cart', JSON.stringify(cart));
+            cartResult.removed.forEach((item) => {
+              void removeRemoteCartItem(item);
+            });
+            updateCartUI();
+            window.dispatchEvent(new Event('cartUpdated'));
+          }
+
+          if (favResult.removed.length > 0) {
+            removedAny = true;
+            favorites = favResult.available;
+            localStorage.setItem('ballqish_favs', JSON.stringify(favorites));
+            updateFavUI();
+          }
+
+          if (removedAny && window.showToast) {
+            window.showToast('Produk sudah tidak tersedia', 'info');
+          }
+        } finally {
+          isPruningUnavailable = false;
+        }
+      }
+
       // Satu-satunya event delegation untuk tombol +/− dan hapus item.
       // Listener dipasang di luar updateCartUI agar tidak menumpuk setiap render.
       document.getElementById('cart-items')?.addEventListener('click', async (e) => {
@@ -980,8 +1029,13 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
         setTimeout(() => overlay.classList.add('hidden'), 300);
       }
 
-      triggerCart?.addEventListener('click', () => openModal(cartModal));
-      triggerFav?.addEventListener('click', () => openModal(favModal));
+      function openModalWithInventoryCheck(modalEl) {
+        openModal(modalEl);
+        void pruneUnavailableItems();
+      }
+
+      triggerCart?.addEventListener('click', () => openModalWithInventoryCheck(cartModal));
+      triggerFav?.addEventListener('click', () => openModalWithInventoryCheck(favModal));
       triggerOrder?.addEventListener('click', () => openModal(orderModal));
       
       closeBtns.forEach(btn => btn.addEventListener('click', closeAllModals));
@@ -1073,21 +1127,24 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
 
       // Hybrid cart: user login → gabungkan cart Supabase ke localStorage.
       // Tamu → fungsi ini langsung berhenti tanpa menyentuh database.
-      void mergeRemoteCartIntoLocal()
+      cartMergePromise = mergeRemoteCartIntoLocal()
         .then((result) => {
           if (!result) return;
           cart = result.merged;
           updateCartUI();
           window.dispatchEvent(new Event('cartUpdated'));
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => {
+          void pruneUnavailableItems();
+        });
 
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('openCart') === 'true') {
-        openModal(cartModal);
+        openModalWithInventoryCheck(cartModal);
         window.history.replaceState({}, document.title, window.location.pathname);
       } else if (urlParams.get('openFav') === 'true') {
-        openModal(favModal);
+        openModalWithInventoryCheck(favModal);
         window.history.replaceState({}, document.title, window.location.pathname);
       } else if (urlParams.get('openOrders') === 'true') {
         openModal(orderModal);

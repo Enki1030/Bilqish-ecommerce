@@ -219,7 +219,7 @@ import AddressModal from '../components/AddressModal.astro';
 
   <script>
     import { supabase } from '../lib/supabase';
-    import { mergeRemoteCartIntoLocal, clearRemoteCart } from '../lib/cart';
+    import { mergeRemoteCartIntoLocal, clearRemoteCart, splitUnavailableProducts } from '../lib/cart';
 
     document.addEventListener('DOMContentLoaded', async () => {
       let cart = [];
@@ -236,6 +236,18 @@ import AddressModal from '../components/AddressModal.astro';
       try {
         const mergedCart = await mergeRemoteCartIntoLocal();
         if (mergedCart) cart = mergedCart.merged;
+      } catch(e) {}
+
+      // Jangan lanjutkan checkout jika ada produk yang sudah dihapus admin.
+      try {
+        const { available, removed } = await splitUnavailableProducts(cart);
+        if (removed.length > 0) {
+          cart = available;
+          localStorage.setItem('ballqish_cart', JSON.stringify(cart));
+          if ((window as any).showToast) {
+            (window as any).showToast('Produk sudah tidak tersedia', 'info');
+          }
+        }
       } catch(e) {}
 
       if (cart.length === 0) {

@@ -54,6 +54,35 @@ export function writeLocalCart(cart: CartItem[]): void {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
 }
 
+/**
+ * Pisahkan item yang produknya masih ada dan yang sudah dihapus dari katalog.
+ * Dipakai cart dan wishlist. Jika query gagal, item tidak dihapus.
+ */
+export async function splitUnavailableProducts<T extends { id: string }>(
+  items: T[]
+): Promise<{ available: T[]; removed: T[] }> {
+  const ids = Array.from(new Set(items.map((item) => item?.id).filter(Boolean)));
+  if (ids.length === 0) return { available: items, removed: [] };
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('id')
+    .in('id', ids);
+
+  if (error || !data) return { available: items, removed: [] };
+
+  const existing = new Set((data as { id: string }[]).map((row) => row.id));
+  const available: T[] = [];
+  const removed: T[] = [];
+
+  for (const item of items) {
+    if (existing.has(item.id)) available.push(item);
+    else removed.push(item);
+  }
+
+  return { available, removed };
+}
+
 /** Mode yang disimpan di database (constraint: retail | b2b). */
 function dbMode(mode?: string): 'retail' | 'b2b' {
   return mode === 'b2b' ? 'b2b' : 'retail';
