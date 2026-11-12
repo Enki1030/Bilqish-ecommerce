@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import ProductCard from '../components/ProductCard.astro';
@@ -8,12 +9,12 @@ import { supabase } from '../lib/supabase';
 import { products as defaultProducts } from '../data/products';
 import bgPantofel from '../assets/backgroundpantofel.jpg';
 import imgHero from '../assets/Pantofel_heroSection.jpg';
-import imgBertali from '../assets/Pantofel_bertali.jpg';
-import imgNontali from '../assets/Pantofel_nontali.jpg';
-import imgCraft1 from '../assets/pantofel_1.jpg';
-import imgCraft2 from '../assets/Pantofel_2.jpg';
+import imgBertali from '../assets/bertali.png';
+import imgNontali from '../assets/non_tali.png';
+import imgSol from '../assets/Sollembut.jpg';
+import imgProduksi from '../assets/tahap_produksi.jpg';
 import imgCraft3 from '../assets/Pantofel_3.jpg';
-import imgB2B from '../assets/b2b_pantofel.jpg';
+import imgGrosir from '../assets/grosir2.jpg';
 
 let productsData = null;
 let latestArticles = [];
@@ -239,7 +240,14 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
 
         <div class="group flex flex-col">
           <div class="w-full aspect-[16/9] bg-bone overflow-hidden relative">
-            <img src={imgNontali.src} alt="Pantofel Tanpa Tali" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1200ms] ease-out" />
+            <Image
+              src={imgNontali}
+              alt="Pantofel tanpa tali Ballqish"
+              width={1280}
+              format="webp"
+              quality={82}
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
+            />
           </div>
           <div class="pt-6">
             <span class="block text-[10px] uppercase tracking-[0.3em] text-brass mb-3">Tanpa Tali</span>
@@ -255,7 +263,14 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
 
         <div class="group flex flex-col">
           <div class="w-full aspect-[16/9] bg-bone overflow-hidden relative">
-            <img src={imgBertali.src} alt="Pantofel Dengan Tali" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1200ms] ease-out" />
+            <Image
+              src={imgBertali}
+              alt="Pantofel bertali Ballqish"
+              width={1280}
+              format="webp"
+              quality={82}
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
+            />
           </div>
           <div class="pt-6">
             <span class="block text-[10px] uppercase tracking-[0.3em] text-brass mb-3">Dengan Tali</span>
@@ -286,15 +301,19 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-12">
           <div class="group relative aspect-[3/4] overflow-hidden">
             <img
-              src={imgCraft1.src}
-              alt="Detail sol dan insole Ballqish"
+              src={imgSol.src}
+              alt="Sol empuk dan anti licin Ballqish"
+              width="500"
+              height="650"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
             />
           </div>
           <div class="group relative aspect-[3/4] overflow-hidden">
             <img
-              src={imgCraft2.src}
-              alt="Workshop pengrajin Desa Sruni Sidoarjo"
+              src={imgProduksi.src}
+              alt="Proses produksi sepatu oleh pengrajin Ballqish"
+              width="736"
+              height="1104"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
             />
           </div>
@@ -302,6 +321,8 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
             <img
               src={imgCraft3.src}
               alt="Pemakaian di berbagai kesempatan"
+              width="736"
+              height="919"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
             />
           </div>
@@ -346,8 +367,12 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
         {/* Kiri: gambar penuh, mentok ke tepi layar */}
         <div class="relative min-h-[300px] lg:min-h-[620px] bg-ink/30 order-1">
           <img
-            src={imgB2B.src}
-            alt="Workshop produksi grosir Ballqish"
+            src={imgGrosir.src}
+            alt="Detail sepatu Ballqish dengan sol merah"
+            width="736"
+            height="1308"
+            loading="lazy"
+            decoding="async"
             class="absolute inset-0 w-full h-full object-cover"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-oxblood/50 via-transparent to-transparent"></div>
