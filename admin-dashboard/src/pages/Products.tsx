@@ -15,6 +15,18 @@ interface Product {
   stock?: number;
   sold?: number;
   created_at?: string;
+  is_b2b?: boolean;
+  insole_option_ids?: string[];
+  outsole_option_ids?: string[];
+}
+
+interface SoleOption {
+  id: string;
+  type: 'insole' | 'outsole';
+  name: string;
+  image_url: string;
+  is_active: boolean;
+  created_at?: string;
 }
 
 /**
@@ -89,6 +101,18 @@ export default function Products() {
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(['39', '40', '41', '42', '43']);
 
+  // B2B + pilihan insole/outsole (global library)
+  const [b2bEnabled, setB2bEnabled] = useState(false);
+  const [soleOptions, setSoleOptions] = useState<SoleOption[]>([]);
+  const [soleOptionsError, setSoleOptionsError] = useState('');
+  const [selectedInsoleIds, setSelectedInsoleIds] = useState<string[]>([]);
+  const [selectedOutsoleIds, setSelectedOutsoleIds] = useState<string[]>([]);
+  const [newInsoleName, setNewInsoleName] = useState('Insole 1');
+  const [newInsoleFile, setNewInsoleFile] = useState<File | null>(null);
+  const [newOutsoleName, setNewOutsoleName] = useState('Outsole 1');
+  const [newOutsoleFile, setNewOutsoleFile] = useState<File | null>(null);
+  const [isAddingOption, setIsAddingOption] = useState(false);
+
   // Filter & Search States
   const [searchQuery, setSearchQuery] = useState('');
   const [searchCategory, setSearchCategory] = useState<'all' | 'name' | 'code'>('all');
@@ -98,9 +122,29 @@ export default function Products() {
 
   const availableSizes = ['39', '40', '41', '42', '43'];
   const isAllSizesSelected = selectedSizes.length === availableSizes.length;
+  const outsoleOptions = soleOptions.filter(option => option.type === 'outsole');
+  const insoleOptions = soleOptions.filter(option => option.type === 'insole');
+
+  const fetchSoleOptions = async () => {
+    const { data, error } = await supabase
+      .from('sole_options')
+      .select('id, type, name, image_url, is_active, created_at')
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching sole options:', error);
+      setSoleOptionsError('Tabel sole_options belum tersedia. Jalankan SQL setup di Supabase.');
+      setSoleOptions([]);
+    } else {
+      setSoleOptionsError('');
+      setSoleOptions((data as SoleOption[]) || []);
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
+    fetchSoleOptions();
   }, []);
 
   // Sync display name automatically if admin has not custom-edited it (for new mode)
@@ -166,6 +210,13 @@ export default function Products() {
     setGalleryFiles([]);
     setGalleryPreviews([]);
     setSelectedSizes([...availableSizes]);
+    setB2bEnabled(false);
+    setSelectedInsoleIds([]);
+    setSelectedOutsoleIds([]);
+    setNewInsoleName('Insole 1');
+    setNewInsoleFile(null);
+    setNewOutsoleName('Outsole 1');
+    setNewOutsoleFile(null);
     setIsModalOpen(true);
   };
 
@@ -211,6 +262,13 @@ export default function Products() {
 
     setGalleryPreviews(existingGallery);
     setGalleryFiles([]);
+    setB2bEnabled(product.is_b2b !== false);
+    setSelectedInsoleIds(Array.isArray(product.insole_option_ids) ? product.insole_option_ids : []);
+    setSelectedOutsoleIds(Array.isArray(product.outsole_option_ids) ? product.outsole_option_ids : []);
+    setNewInsoleName('Insole 1');
+    setNewInsoleFile(null);
+    setNewOutsoleName('Outsole 1');
+    setNewOutsoleFile(null);
     setIsModalOpen(true);
   };
 
@@ -276,11 +334,96 @@ export default function Products() {
     }
   };
 
+  const toggleSoleOption = (type: 'insole' | 'outsole', id: string) => {
+    if (type === 'insole') {
+      setSelectedInsoleIds(prev =>
+        prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+      );
+    } else {
+      setSelectedOutsoleIds(prev =>
+        prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+      );
+    }
+  };
+
+  const handleAddSoleOption = async (type: 'insole' | 'outsole') => {
+    const name = (type === 'insole' ? newInsoleName : newOutsoleName).trim();
+    const file = type === 'insole' ? newInsoleFile : newOutsoleFile;
+
+    if (!name) {
+      alert(`Nama ${type} harus diisi`);
+      return;
+    }
+    if (!file) {
+      alert(`Gambar ${type} harus diisi`);
+      return;
+    }
+
+    setIsAddingOption(true);
+    try {
+      const webpFile = await convertToWebP(file);
+      const filePath = `soles/${type}-${Date.now()}.webp`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-image')
+        .upload(filePath, webpFile, {
+          contentType: 'image/webp',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        alert('Gagal mengupload gambar ' + type + ': ' + uploadError.message);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('product-image')
+        .getPublicUrl(filePath);
+
+      const { data, error } = await supabase
+        .from('sole_options')
+        .insert({
+          type,
+          name,
+          image_url: urlData.publicUrl,
+          is_active: true,
+        })
+        .select('id, type, name, image_url, is_active, created_at')
+        .single();
+
+      if (error || !data) {
+        alert('Gagal menyimpan pilihan ' + type + ': ' + (error?.message || 'Data kosong'));
+        return;
+      }
+
+      await fetchSoleOptions();
+
+      if (type === 'insole') {
+        setSelectedInsoleIds(prev => [...prev, data.id]);
+        setNewInsoleName('');
+        setNewInsoleFile(null);
+      } else {
+        setSelectedOutsoleIds(prev => [...prev, data.id]);
+        setNewOutsoleName('');
+        setNewOutsoleFile(null);
+      }
+    } finally {
+      setIsAddingOption(false);
+    }
+  };
+
   const handleDelete = async (id: string, name: string) => {
     if (window.confirm(`Yakin ingin menghapus produk ${name}?`)) {
-      const { error } = await supabase.from('products').delete().eq('id', id);
+      const { data, error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+        .select('id');
+
       if (error) {
         alert('Gagal menghapus produk: ' + error.message);
+      } else if (!data || data.length === 0) {
+        alert('Produk tidak dihapus. Pastikan akun ini terdaftar sebagai admin di tabel admin_emails dan policy DELETE products sudah aktif.');
       } else {
         fetchProducts();
         fetch('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/984ad6b4-c842-44cb-a50e-855dbfb7d6d4', { method: 'POST' }).catch(console.error);
@@ -418,12 +561,17 @@ export default function Products() {
       price: parseInt(price) || 0,
       category,
       model: modelCode,
+      model_type: prefix,
       sizes: selectedSizes,
       image_url: finalImageUrl,
       gallery_urls: finalGalleryUrls,
+      is_b2b: b2bEnabled,
+      insole_option_ids: b2bEnabled ? selectedInsoleIds : [],
+      outsole_option_ids: selectedOutsoleIds,
     };
 
     let error = null;
+    let schemaWarning = '';
     if (editingProduct) {
       const res = await supabase.from('products').update(payload).eq('id', editingProduct.id);
       error = res.error;
@@ -432,9 +580,13 @@ export default function Products() {
       error = res.error;
     }
 
-    // If gallery_urls column is missing from Supabase schema, retry without gallery_urls
-    if (error && error.message && error.message.toLowerCase().includes("gallery_urls")) {
+    // Jika kolom B2B/gallery belum dibuat, coba simpan tanpa kolom tersebut.
+    if (error && error.message && /gallery_urls|is_b2b|insole_option_ids|outsole_option_ids/i.test(error.message)) {
       delete payload.gallery_urls;
+      delete payload.is_b2b;
+      delete payload.insole_option_ids;
+      delete payload.outsole_option_ids;
+      schemaWarning = 'Produk disimpan, tetapi kolom B2B belum aktif. Jalankan SQL setup di Supabase.';
       if (editingProduct) {
         const res = await supabase.from('products').update(payload).eq('id', editingProduct.id);
         error = res.error;
@@ -443,15 +595,16 @@ export default function Products() {
         error = res.error;
       }
     }
-    
+
     setIsSubmitting(false);
-    
+
     if (error) {
       alert('Gagal menyimpan produk: ' + error.message);
     } else {
       setIsModalOpen(false);
       setEditingProduct(null);
       fetchProducts();
+      if (schemaWarning) alert(schemaWarning);
       // Otomatis picu Cloudflare rebuild E-Commerce di latar belakang
       fetch('https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/984ad6b4-c842-44cb-a50e-855dbfb7d6d4', { method: 'POST' }).catch(console.error);
     }
@@ -679,6 +832,19 @@ export default function Products() {
                   </div>
                 </div>
 
+                <label className="flex items-center gap-3 p-4 border border-[#E2E8F0] rounded-xl cursor-pointer hover:border-[#5c1616] transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={b2bEnabled}
+                    onChange={(e) => setB2bEnabled(e.target.checked)}
+                    className="w-4 h-4 accent-[#5c1616] cursor-pointer"
+                  />
+                  <span className="flex-1">
+                    <span className="block text-[14px] font-semibold text-[#1A1A1A]">Produk mendukung B2B</span>
+                    <span className="block text-[12px] text-[#71717A] mt-0.5">Aktifkan untuk menampilkan pilihan insole saat pembelian grosir.</span>
+                  </span>
+                </label>
+
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-[14px] font-semibold text-[#333333]">Nama Tampilan Produk</label>
@@ -784,6 +950,122 @@ export default function Products() {
                       </label>
                     ))}
                   </div>
+                </div>
+
+                <div className="space-y-5">
+                  {soleOptionsError && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-[12px] rounded-lg">
+                      {soleOptionsError}
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-[14px] font-semibold text-[#333333]">Pilihan Outsole</label>
+                      <span className="text-[12px] text-[#71717A]">{selectedOutsoleIds.length} dipilih</span>
+                    </div>
+
+                    {outsoleOptions.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                        {outsoleOptions.map(option => (
+                          <label key={option.id} className="flex items-center gap-2 p-2 border border-[#E2E8F0] rounded-lg cursor-pointer hover:border-[#5c1616] transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={selectedOutsoleIds.includes(option.id)}
+                              onChange={() => toggleSoleOption('outsole', option.id)}
+                              className="w-4 h-4 accent-[#5c1616] cursor-pointer"
+                            />
+                            <img src={option.image_url} alt={option.name} className="w-10 h-10 object-cover rounded border border-[#E2E8F0]" />
+                            <span className="text-[13px] font-medium text-[#1A1A1A] truncate">{option.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[12px] text-[#71717A] mb-2">Belum ada pilihan outsole. Tambah menggunakan formulir di bawah.</p>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <input
+                        type="text"
+                        value={newOutsoleName}
+                        onChange={(e) => setNewOutsoleName(e.target.value)}
+                        placeholder="Nama outsole baru"
+                        className="flex-1 border border-[#E2E8F0] rounded-lg px-3 py-2 text-[13px] focus:border-[#5c1616] outline-none"
+                      />
+                      <label className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-[#1A1A1A] text-[12px] font-medium rounded-lg cursor-pointer transition-colors">
+                        {newOutsoleFile ? newOutsoleFile.name : 'Upload Gambar'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setNewOutsoleFile(e.target.files?.[0] || null)}
+                          className="hidden"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleAddSoleOption('outsole')}
+                        disabled={isAddingOption}
+                        className="px-3 py-2 bg-[#5c1616] hover:bg-[#400f0f] text-white text-[12px] font-medium rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        Tambah Outsole
+                      </button>
+                    </div>
+                  </div>
+
+                  {b2bEnabled && (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-[14px] font-semibold text-[#333333]">Pilihan Insole (B2B)</label>
+                        <span className="text-[12px] text-[#71717A]">{selectedInsoleIds.length} dipilih</span>
+                      </div>
+
+                      {insoleOptions.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                          {insoleOptions.map(option => (
+                            <label key={option.id} className="flex items-center gap-2 p-2 border border-[#E2E8F0] rounded-lg cursor-pointer hover:border-[#5c1616] transition-colors">
+                              <input
+                                type="checkbox"
+                                checked={selectedInsoleIds.includes(option.id)}
+                                onChange={() => toggleSoleOption('insole', option.id)}
+                                className="w-4 h-4 accent-[#5c1616] cursor-pointer"
+                              />
+                              <img src={option.image_url} alt={option.name} className="w-10 h-10 object-cover rounded border border-[#E2E8F0]" />
+                              <span className="text-[13px] font-medium text-[#1A1A1A] truncate">{option.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[12px] text-[#71717A] mb-2">Belum ada pilihan insole. Tambah menggunakan formulir di bawah.</p>
+                      )}
+
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <input
+                          type="text"
+                          value={newInsoleName}
+                          onChange={(e) => setNewInsoleName(e.target.value)}
+                          placeholder="Nama insole baru"
+                          className="flex-1 border border-[#E2E8F0] rounded-lg px-3 py-2 text-[13px] focus:border-[#5c1616] outline-none"
+                        />
+                        <label className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-[#1A1A1A] text-[12px] font-medium rounded-lg cursor-pointer transition-colors">
+                          {newInsoleFile ? newInsoleFile.name : 'Upload Gambar'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setNewInsoleFile(e.target.files?.[0] || null)}
+                            className="hidden"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => handleAddSoleOption('insole')}
+                          disabled={isAddingOption}
+                          className="px-3 py-2 bg-[#5c1616] hover:bg-[#400f0f] text-white text-[12px] font-medium rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                        >
+                          Tambah Insole
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>

@@ -89,6 +89,36 @@ if (product.stock !== undefined && product.stock !== null) {
 
 const effectiveStock = Math.max(0, initialStock - totalSold);
 
+// Opsi insole/outsole diatur global oleh admin (gambar + nama).
+let soleOptions: any[] = [];
+try {
+  const { data: soleData } = await supabase
+    .from('sole_options')
+    .select('id, type, name, image_url')
+    .eq('is_active', true);
+  soleOptions = soleData || [];
+} catch (e) {
+  soleOptions = [];
+}
+
+// Produk lama yang belum punya kolom is_b2b tetap dianggap mendukung B2B.
+const productIsB2b = product.is_b2b !== false;
+const selectedInsoleIds: string[] = Array.isArray(product.insole_option_ids) ? product.insole_option_ids : [];
+const selectedOutsoleIds: string[] = Array.isArray(product.outsole_option_ids) ? product.outsole_option_ids : [];
+
+const configuredOutsoleOptions = soleOptions.filter(
+  option => option.type === 'outsole' && selectedOutsoleIds.includes(option.id)
+);
+const configuredInsoleOptions = soleOptions.filter(
+  option => option.type === 'insole' && selectedInsoleIds.includes(option.id)
+);
+
+// Fallback agar produk lama / produk tanpa konfigurasi tetap bisa dibeli.
+const fallbackOutsoleOption = { id: 'default-outsole', name: 'Standar', image_url: product.image_url };
+const fallbackInsoleOption = { id: 'default-insole', name: 'Standar', image_url: product.image_url };
+const outsoleOptions = configuredOutsoleOptions.length > 0 ? configuredOutsoleOptions : [fallbackOutsoleOption];
+const insoleOptions = configuredInsoleOptions.length > 0 ? configuredInsoleOptions : [fallbackInsoleOption];
+
 const allImages = [product.image_url, ...galleryList].filter(Boolean);
 const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK):[\s\S]*?-->/g, '').trim();
 
@@ -138,7 +168,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
         </div>
 
         {/* ================= KOLOM KANAN — INFORMASI (5 dari 12) ================= */}
-        <div class="lg:col-span-6 flex flex-col">
+        <div class="lg:col-span-6 flex flex-col min-w-0">
 
           {/* LEVEL 1 — Kategori & Kode referensi */}
           <p class="text-[12px] uppercase tracking-[0.25em] text-ink/45">
@@ -195,85 +225,60 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           {/* LEVEL 7 — Beli satuan / B2B */}
           <div class="mt-10">
             <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Jenis Pembelian</h2>
-            <div class="grid grid-cols-2 gap-3" role="group" aria-label="Jenis pembelian">
+            <div class={productIsB2b ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-1 gap-3'} role="group" aria-label="Jenis pembelian">
               <button type="button" id="mode-satuan" class="purchase-mode cursor-pointer border border-gray-900 bg-gray-900 text-white px-4 py-3.5 text-[11px] uppercase tracking-[0.2em] transition-colors" data-mode="satuan" aria-pressed="true">
                 Beli Satuan
               </button>
-              <button type="button" id="mode-b2b" class="purchase-mode cursor-pointer border border-gray-200 bg-white text-gray-700 px-4 py-3.5 text-[11px] uppercase tracking-[0.2em] transition-colors" data-mode="b2b" aria-pressed="false">
-                Beli B2B
-              </button>
+              {productIsB2b && (
+                <button type="button" id="mode-b2b" class="purchase-mode cursor-pointer border border-gray-200 bg-white text-gray-700 px-4 py-3.5 text-[11px] uppercase tracking-[0.2em] transition-colors" data-mode="b2b" aria-pressed="false">
+                  Beli B2B
+                </button>
+              )}
             </div>
           </div>
 
-          {/* LEVEL 8 — Pilih jenis jahitan */}
+          {/* LEVEL 8 — Pilih outsole */}
           <div class="mt-10">
-            <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Pilih Jenis Jahitan</h2>
-            <div class="grid grid-cols-3 gap-3">
-              {['Jahitan 1', 'Jahitan 2', 'Jahitan 3'].map((stitching, index) => (
-                <label class="cursor-pointer">
-                  <input type="radio" name="stitching" value={stitching} class="peer sr-only" checked={index === 0} />
-                  <span class="block border p-1.5 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
-                    <span class="block aspect-square bg-bone overflow-hidden">
-                      <img src={product.image_url} alt={stitching} class="w-full h-full object-cover opacity-85" />
+            <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Pilih Outsole</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {outsoleOptions.map((option, index) => (
+                <label key={option.id} class="cursor-pointer">
+                  <input type="radio" name="outsole" value={option.name} class="peer sr-only" checked={index === 0} />
+                  <span class="flex items-center gap-3 border p-2 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
+                    <span class="w-14 h-14 bg-bone overflow-hidden shrink-0">
+                      <img src={option.image_url} alt={option.name} class="w-full h-full object-cover opacity-85" />
                     </span>
-                    <span class="block text-center text-[11px] uppercase tracking-[0.15em] text-ink/60 py-2.5">{stitching}</span>
+                    <span class="min-w-0">
+                      <span class="block text-[13px] font-medium text-ink">{option.name}</span>
+                      <span class="block text-[12px] text-ink/55">Pilihan sol luar</span>
+                    </span>
                   </span>
                 </label>
               ))}
             </div>
-          </div>
 
-          {/* LEVEL 9 — Pilih outsole */}
-          <div class="mt-10">
-            <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Pilih Outsole</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label class="cursor-pointer">
-                <input type="radio" name="outsole" value="Model 1" class="peer sr-only" checked />
-                <span class="flex items-center gap-3 border p-2 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
-                  <span class="w-14 h-14 bg-bone overflow-hidden shrink-0">
-                    <img src={product.image_url} alt="Model 1" class="w-full h-full object-cover opacity-85" />
-                  </span>
-                  <span class="min-w-0">
-                    <span class="block text-[13px] font-medium text-ink">Model 1</span>
-                    <span class="block text-[12px] text-ink/55">Sol Standar</span>
-                  </span>
-                </span>
-              </label>
-
-              <label class="cursor-pointer">
-                <input type="radio" name="outsole" value="Model 2" class="peer sr-only" />
-                <span class="flex items-center gap-3 border p-2 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
-                  <span class="w-14 h-14 bg-bone overflow-hidden shrink-0">
-                    <img src={product.image_url} alt="Model 2" class="w-full h-full object-cover opacity-85" />
-                  </span>
-                  <span class="min-w-0">
-                    <span class="block text-[13px] font-medium text-ink">Model 2</span>
-                    <span class="block text-[12px] text-ink/55">Sol Premium</span>
-                  </span>
-                </span>
-              </label>
-            </div>
-
-            {/* Insole — hanya tampil pada mode B2B (dikendalikan JS) */}
-            <div id="insole-selection" class="hidden mt-10">
-              <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Pilih Insole</h2>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {['Insole 1', 'Insole 2'].map((insole, index) => (
-                  <label class="cursor-pointer">
-                    <input type="radio" name="insole" value={insole} class="peer sr-only" checked={index === 0} />
-                    <span class="flex items-center gap-3 border p-2 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
-                      <span class="w-14 h-14 bg-bone overflow-hidden shrink-0">
-                        <img src={product.image_url} alt={insole} class="w-full h-full object-cover opacity-85" />
+            {/* Insole hanya muncul saat mode B2B dan produk ini mendukung B2B. */}
+            {productIsB2b && (
+              <div id="insole-selection" class="hidden mt-8">
+                <h2 class="text-[11px] uppercase tracking-[0.25em] text-ink/50 mb-4">Pilih Insole</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {insoleOptions.map((option, index) => (
+                    <label key={option.id} class="cursor-pointer">
+                      <input type="radio" name="insole" value={option.name} class="peer sr-only" checked={index === 0} />
+                      <span class="flex items-center gap-3 border p-2 transition-colors duration-300 border-line hover:border-ink/50 peer-checked:border-ink">
+                        <span class="w-14 h-14 bg-bone overflow-hidden shrink-0">
+                          <img src={option.image_url} alt={option.name} class="w-full h-full object-cover opacity-85" />
+                        </span>
+                        <span class="min-w-0">
+                          <span class="block text-[13px] font-medium text-ink">{option.name}</span>
+                          <span class="block text-[12px] text-ink/55">Pilihan sol dalam</span>
+                        </span>
                       </span>
-                      <span class="min-w-0">
-                        <span class="block text-[13px] font-medium text-ink">{insole}</span>
-                        <span class="block text-[12px] text-ink/55">{index === 0 ? 'Standar' : 'Extra Empuk'}</span>
-                      </span>
-                    </span>
-                  </label>
-                ))}
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* LEVEL 10 — Jumlah / stok */}
@@ -292,7 +297,7 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
                 </button>
               </div>
 
-              <p id="quantity-note" class="text-[12px] text-ink/50">
+              <p id="quantity-note" class="text-[12px] text-ink/50 min-w-0 flex-1 leading-relaxed">
                 Sisa stok: <span id="live-stock-count">{effectiveStock}</span> pasang
               </p>
             </div>
@@ -301,10 +306,10 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
 
           {/* LEVEL 11 — Tombol aksi */}
           <div class="mt-10 flex items-stretch gap-3">
-            <button id="add-to-cart-btn" class="flex-1 bg-ink border border-ink text-ivory font-medium text-[12px] uppercase tracking-[0.25em] px-8 py-4 hover:bg-oxblood hover:border-oxblood transition-colors cursor-pointer">
+            <button id="add-to-cart-btn" class="flex-1 min-w-0 bg-ink border border-ink text-ivory font-medium text-[10px] sm:text-[12px] uppercase tracking-[0.15em] sm:tracking-[0.25em] px-3 sm:px-8 py-4 hover:bg-oxblood hover:border-oxblood transition-colors cursor-pointer">
               Masukkan ke Tas
             </button>
-            <button id="buy-now-btn" class="flex-1 bg-transparent border border-ink text-ink font-medium text-[12px] uppercase tracking-[0.25em] px-8 py-4 hover:bg-ink hover:text-ivory transition-colors cursor-pointer">
+            <button id="buy-now-btn" class="flex-1 min-w-0 bg-transparent border border-ink text-ink font-medium text-[10px] sm:text-[12px] uppercase tracking-[0.15em] sm:tracking-[0.25em] px-3 sm:px-8 py-4 hover:bg-ink hover:text-ivory transition-colors cursor-pointer">
               Beli Sekarang
             </button>
 
@@ -400,7 +405,6 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
       const btnAddToCart = document.getElementById('add-to-cart-btn');
       const btnBuyNow = document.getElementById('buy-now-btn');
       const outsoleRadios = document.querySelectorAll('input[name="outsole"]');
-      const stitchingRadios = document.querySelectorAll('input[name="stitching"]');
       const insoleRadios = document.querySelectorAll('input[name="insole"]');
       const purchaseModeBtns = document.querySelectorAll('.purchase-mode');
       const insoleSelection = document.getElementById('insole-selection');
@@ -632,11 +636,6 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           if (radio.checked) selectedOutsole = radio.value;
         });
 
-        let selectedStitching = 'Jahitan 1';
-        stitchingRadios.forEach(radio => {
-          if (radio.checked) selectedStitching = radio.value;
-        });
-
         let selectedInsole = null;
         insoleRadios.forEach(radio => {
           if (radio.checked) selectedInsole = radio.value;
@@ -656,13 +655,13 @@ const cleanDescription = (product.description || '').replace(/<!--(GALLERY|STOCK
           image: product.image_url,
           mode: purchaseMode,
           size: selectedSize,
-          stitching: selectedStitching,
+          stitching: null,
           outsole: selectedOutsole,
           insole: purchaseMode === 'b2b' ? selectedInsole : null,
           quantity: quantity
         };
 
-        const existingItemIndex = cart.findIndex(item => item.id === itemToAdd.id && item.mode === itemToAdd.mode && item.size === itemToAdd.size && item.stitching === itemToAdd.stitching && item.outsole === itemToAdd.outsole && item.insole === itemToAdd.insole);
+        const existingItemIndex = cart.findIndex(item => item.id === itemToAdd.id && item.mode === itemToAdd.mode && item.size === itemToAdd.size && item.outsole === itemToAdd.outsole && item.insole === itemToAdd.insole);
         
         if (existingItemIndex > -1) {
           cart[existingItemIndex].quantity += itemToAdd.quantity;

@@ -1,0 +1,3 @@
+# Local-only database notes and SQL migrations.
+# Never commit the sql folder.
+/sql/

@@ -29,6 +29,14 @@
     const container = document.getElementById('toast-container');
     if (!container) return;
 
+    const escapeHtml = (value: unknown): string =>
+      String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
     const toast = document.createElement('div');
     toast.className = `pointer-events-auto w-full max-w-lg flex items-center gap-4 px-5 py-4 bg-ivory/95 backdrop-blur-md border border-line shadow-[0_18px_50px_-20px_rgba(26,24,21,0.35)] toast-enter`;
 
@@ -55,7 +63,7 @@
 
     toast.innerHTML = `
       ${icon}
-      <div class="text-[11px] uppercase tracking-[0.2em] leading-snug flex-1 text-ink pr-2" style="font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;">${message}</div>
+      <div class="text-[11px] uppercase tracking-[0.2em] leading-snug flex-1 text-ink pr-2" style="font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;">${escapeHtml(message)}</div>
       <button type="button" class="text-ink/35 hover:text-oxblood transition-colors shrink-0 cursor-pointer p-0.5" onclick="this.parentElement.remove()">
         <span class="sr-only">Tutup</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
