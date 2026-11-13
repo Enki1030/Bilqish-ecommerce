@@ -271,8 +271,31 @@ const { transparent = false } = Astro.props;
     }
   });
 
+  let isLoggingOut = false;
+
   const performLogout = async () => {
-    await supabase.auth.signOut();
+    if (isLoggingOut) return;
+
+    const confirmed = await window.showConfirm({
+      eyebrow: 'Akun',
+      title: 'Keluar dari Akun?',
+      message: 'Apakah Anda yakin ingin keluar dari akun Ballqish? Keranjang dan favorit tetap tersimpan di perangkat ini.',
+      confirmLabel: 'Keluar',
+      cancelLabel: 'Batal',
+      tone: 'default',
+    });
+
+    if (!confirmed) return;
+
+    isLoggingOut = true;
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      isLoggingOut = false;
+      if (window.showToast) window.showToast('Gagal keluar. Silakan coba lagi.', 'error');
+      return;
+    }
+
     window.location.reload();
   };
 
