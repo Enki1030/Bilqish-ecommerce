@@ -399,9 +399,12 @@
   async function detectLocation() {
     const spinner = document.getElementById('gps-spinner');
     const gpsIcon = document.getElementById('gps-icon');
-    spinner?.classList.remove('hidden');
-    gpsIcon?.classList.add('hidden');
-    updateMapStatus('🔄 Mendeteksi lokasi sekitar Anda...');
+    const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    const setGpsLoading = (loading: boolean) => {
+      spinner?.classList.toggle('hidden', !loading);
+      gpsIcon?.classList.toggle('hidden', loading);
+    };
 
     const applyLocation = (lat: number, lon: number, accuracy: number, msg: string) => {
       if (map && marker) {
@@ -412,8 +415,7 @@
         reverseGeocode(lat, lon);
         updateMapStatus(msg);
       }
-      spinner?.classList.add('hidden');
-      gpsIcon?.classList.remove('hidden');
+      setGpsLoading(false);
     };
 
     const fallbackToIP = async (reason: string) => {
@@ -431,10 +433,17 @@
       } catch(e) {
         updateMapStatus('💡 Silakan ketik nama daerah atau geser pin merah.');
       } finally {
-        spinner?.classList.add('hidden');
-        gpsIcon?.classList.remove('hidden');
+        setGpsLoading(false);
       }
     };
+
+    const showLocationHelp = (message: string) => {
+      updateMapStatus(message);
+      setGpsLoading(false);
+    };
+
+    setGpsLoading(true);
+    updateMapStatus('🔄 Mendeteksi lokasi sekitar Anda...');
 
     if (!navigator.geolocation) {
       fallbackToIP('Perangkat tidak mendukung GPS');
@@ -462,12 +471,25 @@
       },
       (err) => {
         if (err.code === 1) { // PERMISSION_DENIED
-          updateMapStatus('⚠️ Izin lokasi belum diizinkan di browser HP. Klik ikon gembok di URL atas untuk aktifkan.');
-          fallbackToIP('Izin lokasi belum diaktifkan');
-        } else {
-          // Timeout or position unavailable -> immediately fallback to IP/Wi-Fi
-          fallbackToIP('Sinyal satelit di dalam ruangan terbatas');
+          showLocationHelp(
+            isMobile
+              ? '⚠️ Izin lokasi diblokir. Aktifkan Lokasi di pengaturan HP & izinkan browser. Atau ketik nama daerah manual.'
+              : '⚠️ Izin lokasi diblokir. Klik ikon gembok di address bar & izinkan Lokasi. Atau ketik nama daerah manual.'
+          );
+          return;
         }
+
+        if (err.code === 2) { // POSITION_UNAVAILABLE — biasanya GPS/Location perangkat mati
+          showLocationHelp(
+            isMobile
+              ? '⚠️ GPS HP belum aktif. Nyalakan Lokasi di pengaturan HP, lalu coba lagi. Atau ketik nama daerah manual.'
+              : '⚠️ Layanan lokasi perangkat belum aktif. Aktifkan Location di pengaturan sistem, lalu coba lagi.'
+          );
+          return;
+        }
+
+        // Timeout atau sinyal terbatas -> fallback ke perkiraan IP/Wi-Fi.
+        fallbackToIP('Sinyal lokasi terbatas');
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     );
