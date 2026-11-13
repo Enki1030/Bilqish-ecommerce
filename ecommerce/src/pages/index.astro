@@ -145,6 +145,12 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
 
           {/* ---------------- TEXT COLUMN (5 dari 12) ---------------- */}
           <div class="md:col-span-5">
+            {/* Wordmark mobile: header tidak menampilkan brand di layar kecil,
+                jadi BALLQISH dipindah ke atas label musim. */}
+            <span id="hero-wordmark" class="block md:hidden display-font text-[22px] tracking-[0.32em] text-ivory mb-5">
+              BALLQISH
+            </span>
+
             {/* Eyebrow / Label Kategori */}
             <span class="block text-[10px] uppercase tracking-[0.4em] text-ivory/85 md:text-brass mb-6">
               Musim Gugur / Dingin 2026
