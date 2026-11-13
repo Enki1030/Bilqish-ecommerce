@@ -11,8 +11,8 @@ import Footer from '../components/Footer.astro';
 
     <div class="mx-auto w-full max-w-md">
       <span class="block text-center text-[10px] uppercase tracking-[0.4em] text-brass mb-4">Akun Pelanggan</span>
-      <h2 class="display-font text-center text-4xl font-normal text-ink leading-none">Selamat Datang</h2>
-      <p class="mt-4 text-center text-[13px] text-ink/50 leading-relaxed">
+      <h2 id="auth-title" class="display-font text-center text-4xl font-normal text-ink leading-none">Selamat Datang</h2>
+      <p id="auth-subtitle" class="mt-4 text-center text-[13px] text-ink/50 leading-relaxed">
         Masuk untuk melihat riwayat pesanan dan checkout lebih cepat.
       </p>
     </div>
@@ -94,6 +94,14 @@ import Footer from '../components/Footer.astro';
         </div>
       </form>
 
+      <a
+        href="/login"
+        id="switch-to-login"
+        class="hidden mt-4 w-full block text-center text-[11px] tracking-[0.04em] text-ink/50 hover:text-ink underline underline-offset-4 transition-colors cursor-pointer"
+      >
+        Masuk kalau sudah punya akun
+      </a>
+
     </div>
   </main>
 
@@ -114,7 +122,11 @@ import Footer from '../components/Footer.astro';
   const errorText = document.getElementById('error-text');
   const successBox = document.getElementById('success-message');
   const successText = document.getElementById('success-text');
+  const switchToLogin = document.getElementById('switch-to-login') as HTMLAnchorElement;
+  const authTitle = document.getElementById('auth-title');
+  const authSubtitle = document.getElementById('auth-subtitle');
   let authUnsubscribe: any;
+  let mode: 'login' | 'register' = 'login';
 
   // Listen for auth state changes and redirect to home on login
   authUnsubscribe = supabase.auth.onAuthStateChange((event, session) => {
@@ -149,12 +161,40 @@ import Footer from '../components/Footer.astro';
     }
   }
 
-  // --- LOGIN WITH EMAIL ---
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  function setMode(nextMode: 'login' | 'register') {
+    mode = nextMode;
+    const isRegister = mode === 'register';
+
+    // Mode daftar: tombol Masuk disembunyikan, tombol Daftar Baru jadi aksi utama.
+    btnLogin.classList.toggle('hidden', isRegister);
+    switchToLogin.classList.toggle('hidden', !isRegister);
+
+    if (authTitle) {
+      authTitle.textContent = isRegister ? 'Buat Akun' : 'Selamat Datang';
+    }
+    if (authSubtitle) {
+      authSubtitle.textContent = isRegister
+        ? 'Daftar untuk menyimpan riwayat pesanan dan checkout lebih cepat.'
+        : 'Masuk untuk melihat riwayat pesanan dan checkout lebih cepat.';
+    }
+
+    if (isRegister) {
+      btnRegister.classList.remove('border', 'border-ink', 'text-ink', 'hover:bg-ink', 'hover:text-ivory');
+      btnRegister.classList.add('bg-ink', 'text-ivory', 'hover:bg-oxblood');
+    } else {
+      btnRegister.classList.remove('bg-ink', 'text-ivory', 'hover:bg-oxblood');
+      btnRegister.classList.add('border', 'border-ink', 'text-ink', 'hover:bg-ink', 'hover:text-ivory');
+    }
+
+    form.dataset.mode = mode;
+    if (errorBox) errorBox.classList.add('hidden');
+    if (successBox) successBox.classList.add('hidden');
+  }
+
+  async function signInWithEmail() {
     setLoading(btnLogin, true, 'Masuk');
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
+
+    const { error } = await supabase.auth.signInWithPassword({
       email: emailInput.value,
       password: passwordInput.value,
     });
@@ -166,18 +206,17 @@ import Footer from '../components/Footer.astro';
       // Selalu redirect ke home setelah login berhasil
       window.location.href = '/';
     }
-  });
+  }
 
-  // --- REGISTER WITH EMAIL ---
-  btnRegister.addEventListener('click', async () => {
+  async function signUpWithEmail() {
     if (!emailInput.value || !passwordInput.value) {
       showError("Harap isi email dan password terlebih dahulu.");
       return;
     }
-    
+
     setLoading(btnRegister, true, 'Daftar Baru');
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email: emailInput.value,
       password: passwordInput.value,
     });
@@ -187,9 +226,38 @@ import Footer from '../components/Footer.astro';
     if (error) {
       showError(error.message);
     } else {
+      // Setelah pendaftaran, kembali ke mode masuk agar tidak bingung.
+      setMode('login');
       showSuccess("Pendaftaran berhasil! Silakan periksa kotak masuk email Anda (atau folder Spam) untuk mengonfirmasi akun Anda.");
     }
+  }
+
+  // --- SUBMIT: LOGIN ATAU DAFTAR SESUAI MODE ---
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (mode === 'register') {
+      await signUpWithEmail();
+    } else {
+      await signInWithEmail();
+    }
   });
+
+  // --- PINDAH KE MODE DAFTAR / JALANKAN DAFTAR ---
+  btnRegister.addEventListener('click', () => {
+    if (mode === 'login') {
+      setMode('register');
+      return;
+    }
+    form.requestSubmit();
+  });
+
+  // --- KEMBALI KE MODE MASUK ---
+  switchToLogin.addEventListener('click', (event) => {
+    event.preventDefault();
+    setMode('login');
+  });
+
+  setMode('login');
 
   // --- LOGIN WITH GOOGLE ---
   btnGoogle.addEventListener('click', async () => {
