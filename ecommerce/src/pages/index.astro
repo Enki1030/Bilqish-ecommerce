@@ -423,59 +423,90 @@ const articlesToShow = latestArticles.length > 0 ? latestArticles : fallbackArti
       </div>
     </section>
 
-    {/* SECTION 6: B2B GROSIR & RESELLER — foto grosir sebagai background penuh */}
-    <section
-      id="b2b"
-      class="relative overflow-hidden bg-ink bg-cover bg-center text-ivory"
-      style={`background-image: url('${imgGrosir.src}');`}
-    >
-      <div class="absolute inset-0 bg-gradient-to-b from-ink/65 via-ink/70 to-ink/80" aria-hidden="true"></div>
+    {/* SECTION 6: B2B GROSIR & RESELLER
+        Mobile: foto grosir full-bleed.
+        Desktop: background oxblood dengan foto di sisi kiri. */}
+    <section id="b2b" class="relative overflow-hidden bg-oxblood text-ivory">
+      {/* Foto background hanya untuk mobile/tablet portrait */}
+      <div class="absolute inset-0 lg:hidden" aria-hidden="true">
+        <img
+          src={imgGrosir.src}
+          alt=""
+          width="736"
+          height="1308"
+          loading="lazy"
+          decoding="async"
+          class="w-full h-full object-cover"
+        />
+        <div class="absolute inset-0 bg-gradient-to-b from-ink/65 via-ink/70 to-ink/80"></div>
+      </div>
 
-      <div class="relative z-10 max-w-[1400px] mx-auto px-6 md:px-10 py-20 lg:py-24">
-        <div class="max-w-[520px] lg:ml-auto">
-          <span class="block text-[10px] uppercase tracking-[0.4em] text-[#e8c98a] mb-6">
-            Fasilitas Grosir &amp; Pengadaan Instansi
+      <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2">
+        {/* Desktop: foto di sisi kiri, mentok ke tepi layar */}
+        <div class="relative hidden lg:block min-h-[620px] bg-ink/30">
+          <img
+            src={imgGrosir.src}
+            alt="Detail sepatu Ballqish dengan sol merah"
+            width="736"
+            height="1308"
+            loading="lazy"
+            decoding="async"
+            class="absolute inset-0 w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-oxblood/50 via-transparent to-transparent"></div>
+          <span class="absolute bottom-6 left-6 md:left-10 text-[10px] uppercase tracking-[0.3em] leading-relaxed text-ivory/80">
+            Pengiriman Terpercaya ke Seluruh Indonesia
           </span>
+        </div>
 
-          <h2 class="display-font text-4xl md:text-5xl font-normal leading-[1.2]">
-            Kerja Sama Grosir, Reseller &amp; Seragam Instansi
-          </h2>
+        {/* Teks: di atas foto pada mobile, di atas background oxblood pada desktop */}
+        <div class="relative px-6 md:px-12 lg:px-16 xl:px-20 py-20 lg:py-24">
+          <div class="max-w-[520px]">
+            <span class="block text-[10px] uppercase tracking-[0.4em] text-[#e8c98a] mb-6">
+              Fasilitas Grosir &amp; Pengadaan Instansi
+            </span>
 
-          <p class="text-base leading-relaxed text-ivory/85 mt-7">
-            Ballqish melayani pemesanan sepatu pantofel partai besar langsung dari workshop pengrajin Sidoarjo untuk toko sepatu, instansi pemerintah, sekolah, dan perusahaan.
-          </p>
+            <h2 class="display-font text-4xl md:text-5xl font-normal leading-[1.2]">
+              Kerja Sama Grosir, Reseller &amp; Seragam Instansi
+            </h2>
 
-          {/* Dua fitur — 2 kolom, tanpa kotak dan tanpa garis pemisah */}
-          <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-9">
-            <div>
-              <h3 class="display-font text-2xl font-normal mb-2.5">Diskon Grosir Khusus</h3>
-              <p class="text-[15px] text-ivory/80 leading-relaxed">
-                Minimal order 12 pasang dengan harga langsung pabrik.
-              </p>
+            <p class="text-base leading-relaxed text-ivory/85 mt-7">
+              Ballqish melayani pemesanan sepatu pantofel partai besar langsung dari workshop pengrajin Sidoarjo untuk toko sepatu, instansi pemerintah, sekolah, dan perusahaan.
+            </p>
+
+            {/* Dua fitur — 2 kolom, tanpa kotak dan tanpa garis pemisah */}
+            <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-9">
+              <div>
+                <h3 class="display-font text-2xl font-normal mb-2.5">Diskon Grosir Khusus</h3>
+                <p class="text-[15px] text-ivory/80 leading-relaxed">
+                  Minimal order 12 pasang dengan harga langsung pabrik.
+                </p>
+              </div>
+              <div>
+                <h3 class="display-font text-2xl font-normal mb-2.5">Custom Logo &amp; Size</h3>
+                <p class="text-[15px] text-ivory/80 leading-relaxed">
+                  Bisa embossed logo perusahaan/instansi &amp; ukuran khusus.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 class="display-font text-2xl font-normal mb-2.5">Custom Logo &amp; Size</h3>
-              <p class="text-[15px] text-ivory/80 leading-relaxed">
-                Bisa embossed logo perusahaan/instansi &amp; ukuran khusus.
-              </p>
-            </div>
-          </div>
 
-          {/* CTA — tombol ivory agar kontras di atas foto gelap */}
-          <div class="mt-12">
-            <a
-              href="https://wa.me/6281234567890?text=Halo%20Tim%20B2B%20Ballqish,%20saya%20tertarik%20untuk%20kerja%20sama%20grosir%2Fseragam%20instansi"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center bg-ivory text-ink px-8 py-4 text-[11px] uppercase tracking-[0.3em] transition-colors duration-300 hover:bg-brass hover:text-ink"
-            >
-              Hubungi Tim B2B via WhatsApp
-            </a>
+            {/* CTA — tombol ivory agar kontras di atas foto/merah */}
+            <div class="mt-12">
+              <a
+                href="https://wa.me/6281234567890?text=Halo%20Tim%20B2B%20Ballqish,%20saya%20tertarik%20untuk%20kerja%20sama%20grosir%2Fseragam%20instansi"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center bg-ivory text-ink px-8 py-4 text-[11px] uppercase tracking-[0.3em] transition-colors duration-300 hover:bg-brass hover:text-ink"
+              >
+                Hubungi Tim B2B via WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       </div>
 
-      <span class="absolute bottom-6 left-6 right-6 md:left-10 md:right-10 text-[10px] uppercase tracking-[0.3em] leading-relaxed text-ivory">
+      {/* Label pengiriman versi mobile */}
+      <span class="absolute bottom-6 left-6 right-6 z-10 text-[10px] uppercase tracking-[0.3em] leading-relaxed text-ivory lg:hidden">
         Pengiriman Terpercaya ke Seluruh Indonesia
       </span>
     </section>
